@@ -1,5 +1,9 @@
 # Building patchwork
 
+## Zero-effort setup
+
+Opening this repository in [GitHub Codespaces](https://github.com/features/codespaces), a [devcontainer](https://containers.dev/)-capable editor (e.g. VS Code with the Dev Containers extension), or a GitHub Copilot cloud coding agent automatically provides all prerequisites via `.devcontainer/devcontainer.json`. No manual installation is needed.
+
 ## Prerequisites
 
 - C++23-capable compiler (Clang 16+ or GCC 13+)
@@ -55,3 +59,5 @@ Rscript codegen/generate_patches.R
 ```
 
 Requires R with the `yaml` package (`install.packages("yaml")`).
+
+Alternatively, run `scripts/install-tools.sh` directly on a plain Ubuntu system to install all prerequisites (R, Meson, Ninja) in one step.

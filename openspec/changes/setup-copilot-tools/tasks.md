@@ -1,17 +1,17 @@
 ## 1. Install Script (shared toolchain definition)
 
-- [ ] 1.1 Create `scripts/install-tools.sh` that installs all project prerequisites:
+- [x] 1.1 Create `scripts/install-tools.sh` that installs all project prerequisites:
   - `apt-get update && apt-get install -y r-base r-cran-yaml`
   - `pip3 install --upgrade meson ninja`
-- [ ] 1.2 Make the script executable (`chmod +x`)
-- [ ] 1.3 Add a smoke-test block at the end of the script that prints the version of each installed tool (`meson --version`, `ninja --version`, `Rscript --version`) so failures surface immediately
+- [x] 1.2 Make the script executable (`chmod +x`)
+- [x] 1.3 Add a smoke-test block at the end of the script that prints the version of each installed tool (`meson --version`, `ninja --version`, `Rscript --version`) so failures surface immediately
 
 ## 2. Devcontainer Configuration
 
-- [ ] 2.1 Create `.devcontainer/devcontainer.json` using `mcr.microsoft.com/devcontainers/cpp` as the base image (pin to an Ubuntu 24.04 LTS tag)
-- [ ] 2.2 Set `postCreateCommand` to run `scripts/install-tools.sh`
-- [ ] 2.3 Set `remoteUser` to `vscode` (the default non-root user in the Microsoft C++ image)
-- [ ] 2.4 Verify the configuration is valid JSON and that the image name and tag exist on the Microsoft Container Registry
+- [x] 2.1 Create `.devcontainer/devcontainer.json` using `mcr.microsoft.com/devcontainers/cpp` as the base image (pin to an Ubuntu 24.04 LTS tag)
+- [x] 2.2 Set `postCreateCommand` to run `scripts/install-tools.sh`
+- [x] 2.3 Set `remoteUser` to `vscode` (the default non-root user in the Microsoft C++ image)
+- [x] 2.4 Verify the configuration is valid JSON and that the image name and tag exist on the Microsoft Container Registry
 
 ## 3. Update GitHub Actions Workflow (duplication removal)
 
@@ -22,5 +22,5 @@
 
 ## 4. Update BUILD.md
 
-- [ ] 4.1 Add a "Zero-effort setup" section at the top of `BUILD.md` explaining that opening the repository in GitHub Codespaces, a devcontainer-capable editor, or a GitHub Copilot cloud session provides all prerequisites automatically via `.devcontainer/devcontainer.json`
-- [ ] 4.2 Retain the existing manual installation instructions as the fallback path, but note that `scripts/install-tools.sh` can also be run directly on a plain Ubuntu system
+- [x] 4.1 Add a "Zero-effort setup" section at the top of `BUILD.md` explaining that opening the repository in GitHub Codespaces, a devcontainer-capable editor, or a GitHub Copilot cloud session provides all prerequisites automatically via `.devcontainer/devcontainer.json`
+- [x] 4.2 Retain the existing manual installation instructions as the fallback path, but note that `scripts/install-tools.sh` can also be run directly on a plain Ubuntu system

@@ -1,0 +1,5 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04",
+  "postCreateCommand": "bash scripts/install-tools.sh",
+  "remoteUser": "vscode"
+}
