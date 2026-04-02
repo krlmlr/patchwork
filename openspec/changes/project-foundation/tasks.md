@@ -21,16 +21,16 @@
 
 ## 4. Game State Types
 
-- [ ] 4.1 Create `src/player_state.hpp` defining `PlayerState` with: `std::bitset<81>` board, and packed scalar fields for position (0–53), buttons (0–127), income (0–31)
-- [ ] 4.2 Implement `PlayerState` default constructor initialising board empty, position 0, buttons 5, income 0
-- [ ] 4.3 Implement cell accessors: `bool cell(int row, int col) const` and `void set_cell(int row, int col, bool v)` with bounds assertions
-- [ ] 4.4 Add a `static_assert(sizeof(PlayerState) <= 16)` to enforce the 128-bit layout budget
-- [ ] 4.5 Create `src/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum)
-- [ ] 4.6 Implement `GameState` default constructor: both players default-constructed, all 33 patches available, circle marker 0, bonus unclaimed
-- [ ] 4.7 Implement `GameState` accessors: `patch_available(int idx)`, `set_patch_available(int idx, bool)`, `circle_marker()`, `set_circle_marker(int)`, `bonus_status()`, `set_bonus_status(...)`
+- [x] 4.1 Create `src/player_state.hpp` defining `PlayerState` with: `std::bitset<81>` board, and packed scalar fields for position (0–53), buttons (0–127), income (0–31)
+- [x] 4.2 Implement `PlayerState` default constructor initialising board empty, position 0, buttons 5, income 0
+- [x] 4.3 Implement cell accessors: `bool cell(int row, int col) const` and `void set_cell(int row, int col, bool v)` with bounds assertions
+- [x] 4.4 Add a `static_assert(sizeof(PlayerState) <= 16)` to enforce the 128-bit layout budget
+- [x] 4.5 Create `src/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum)
+- [x] 4.6 Implement `GameState` default constructor: both players default-constructed, all 33 patches available, circle marker 0, bonus unclaimed
+- [x] 4.7 Implement `GameState` accessors: `patch_available(int idx)`, `set_patch_available(int idx, bool)`, `circle_marker()`, `set_circle_marker(int)`, `bonus_status()`, `set_bonus_status(...)`
 
 ## 5. Unit Tests
 
-- [ ] 5.1 Add `tests/test_player_state.cpp` with Catch2 tests covering: default construction values, cell set/get round-trip, all scalar field round-trips across their full ranges, `sizeof` assertion
-- [ ] 5.2 Add `tests/test_game_state.cpp` with Catch2 tests covering: default construction values, patch availability round-trip for boundary indices (0 and 32), circle marker range, bonus status transitions
-- [ ] 5.3 Register all test files in `tests/meson.build` and verify `meson test -C build` passes with all tests green
+- [x] 5.1 Add `tests/test_player_state.cpp` with Catch2 tests covering: default construction values, cell set/get round-trip, all scalar field round-trips across their full ranges, `sizeof` assertion
+- [x] 5.2 Add `tests/test_game_state.cpp` with Catch2 tests covering: default construction values, patch availability round-trip for boundary indices (0 and 32), circle marker range, bonus status transitions
+- [x] 5.3 Register all test files in `tests/meson.build` and verify `meson test -C build` passes with all tests green
