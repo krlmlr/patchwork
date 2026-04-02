@@ -1,0 +1,16 @@
+[env]
+_.path = ["build"]
+
+[tasks.setup]
+description = "Configure the build directory"
+run = "meson setup build"
+
+[tasks.build]
+description = "Build the project"
+run = "ninja -C build"
+depends = ["setup"]
+
+[tasks.test]
+description = "Run the test suite"
+run = "meson test -C build"
+depends = ["build"]
