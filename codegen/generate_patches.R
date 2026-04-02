@@ -72,7 +72,7 @@ for (i in seq_along(catalog)) {
   cells_init <- paste(cell_strs, collapse = ", ")
 
   comma <- if (i < length(catalog)) "," else ""
-  add(sprintf("    {%d, %d, %d, %d, %d, {%s}}%s",
+  add(sprintf("    {%d, %d, %d, %d, %d, {{%s}}}%s",
               p$id, p$buttons, p$time, p$income, n, cells_init, comma))
 }
 
