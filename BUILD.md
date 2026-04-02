@@ -1,6 +1,20 @@
 # Building patchwork
 
-## Prerequisites
+## Zero-effort setup
+
+Open this repository in **GitHub Codespaces**, a **devcontainer-capable
+editor** (VS Code with the Dev Containers extension), or a **GitHub Copilot
+cloud session**. The `.devcontainer/devcontainer.json` configuration
+automatically installs all prerequisites listed below, so you can start
+building immediately without any manual steps.
+
+Alternatively, run the shared installer on a plain Ubuntu 24.04 system:
+
+```sh
+sudo bash scripts/install-tools.sh
+```
+
+## Manual prerequisites
 
 - C++23-capable compiler (Clang 16+ or GCC 13+)
 - [Meson](https://mesonbuild.com/) ≥ 1.0

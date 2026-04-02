@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# install-tools.sh — installs all prerequisites for building, testing,
+# formatting, and working with the patchwork project.
+# Suitable for Ubuntu 24.04 (Noble) and compatible derivatives.
+# Run as root (or with sudo) or in a container that already has sudo.
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Package manager packages
+# ---------------------------------------------------------------------------
+apt-get update -y
+apt-get install -y --no-install-recommends \
+    git \
+    ca-certificates \
+    clang-format \
+    r-base \
+    r-cran-yaml \
+    nodejs \
+    npm
+
+# ---------------------------------------------------------------------------
+# Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
+# ---------------------------------------------------------------------------
+apt-get install -y --no-install-recommends pipx
+PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install meson
+PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install ninja
+
+# ---------------------------------------------------------------------------
+# Node.js-based tools: OpenSpec CLI and Markdown linter
+# ---------------------------------------------------------------------------
+npm install -g @fission-ai/openspec@latest markdownlint-cli2
+
+# ---------------------------------------------------------------------------
+# Smoke tests — verify each tool is accessible and print its version
+# ---------------------------------------------------------------------------
+echo ""
+echo "=== Tool versions ==="
+meson --version
+ninja --version
+Rscript --version
+clang-format --version
+node --version
+npm --version
+openspec --version
+markdownlint-cli2 --version
+echo "=== All tools installed successfully ==="

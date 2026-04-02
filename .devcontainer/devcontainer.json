@@ -1,0 +1,6 @@
+{
+  "name": "patchwork C++23",
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04",
+  "postCreateCommand": "sudo bash scripts/install-tools.sh",
+  "remoteUser": "vscode"
+}
