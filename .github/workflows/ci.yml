@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y meson ninja-build g++-14
+
+      - name: Set up Meson
+        run: meson setup build --wipe
+        env:
+          CXX: g++-14
+
+      - name: Compile
+        run: meson compile -C build
+
+      - name: Test
+        run: meson test -C build --print-errorlogs
+
+  format-check:
+    name: Format Check (clang-format)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y clang-format-18
+
+      - name: Check C++ formatting
+        run: |
+          find src tests -name '*.hpp' -o -name '*.cpp' | \
+            xargs clang-format-18 --dry-run --Werror
+
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run markdownlint-cli2
+        uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          config: .markdownlint-cli2.yaml

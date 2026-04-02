@@ -1,0 +1,15 @@
+# markdownlint-cli2 configuration
+# https://github.com/DavidAnson/markdownlint-cli2
+
+globs:
+  - "**/*.md"
+  - "!node_modules"
+  - "!build"
+
+config:
+  # MD013 - Line length: disabled (long tables and code blocks are acceptable)
+  MD013: false
+  # MD033 - Inline HTML: disabled (used in README badges/tables)
+  MD033: false
+  # MD041 - First line should be top-level heading
+  MD041: true

@@ -1,8 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
+
 #include "game_state.hpp"
 
-using patchwork::GameState;
 using patchwork::BonusStatus;
+using patchwork::GameState;
 
 TEST_CASE("GameState default construction", "[game_state]") {
     GameState gs;
@@ -13,23 +14,17 @@ TEST_CASE("GameState default construction", "[game_state]") {
             REQUIRE(gs.player(p).buttons() == 5);
             REQUIRE(gs.player(p).income() == 0);
             for (int r = 0; r < 9; ++r)
-                for (int c = 0; c < 9; ++c)
-                    REQUIRE(gs.player(p).cell(r, c) == false);
+                for (int c = 0; c < 9; ++c) REQUIRE(gs.player(p).cell(r, c) == false);
         }
     }
 
     SECTION("all 33 patches available") {
-        for (int i = 0; i < 33; ++i)
-            REQUIRE(gs.patch_available(i) == true);
+        for (int i = 0; i < 33; ++i) REQUIRE(gs.patch_available(i) == true);
     }
 
-    SECTION("circle marker is 0") {
-        REQUIRE(gs.circle_marker() == 0);
-    }
+    SECTION("circle marker is 0") { REQUIRE(gs.circle_marker() == 0); }
 
-    SECTION("bonus is unclaimed") {
-        REQUIRE(gs.bonus_status() == BonusStatus::kUnclaimed);
-    }
+    SECTION("bonus is unclaimed") { REQUIRE(gs.bonus_status() == BonusStatus::kUnclaimed); }
 }
 
 TEST_CASE("GameState patch availability round-trip", "[game_state]") {
@@ -38,15 +33,13 @@ TEST_CASE("GameState patch availability round-trip", "[game_state]") {
     SECTION("mark patch 0 unavailable") {
         gs.set_patch_available(0, false);
         REQUIRE(gs.patch_available(0) == false);
-        for (int i = 1; i < 33; ++i)
-            REQUIRE(gs.patch_available(i) == true);
+        for (int i = 1; i < 33; ++i) REQUIRE(gs.patch_available(i) == true);
     }
 
     SECTION("mark patch 32 unavailable") {
         gs.set_patch_available(32, false);
         REQUIRE(gs.patch_available(32) == false);
-        for (int i = 0; i < 32; ++i)
-            REQUIRE(gs.patch_available(i) == true);
+        for (int i = 0; i < 32; ++i) REQUIRE(gs.patch_available(i) == true);
     }
 
     SECTION("re-enable patch") {
@@ -88,8 +81,7 @@ TEST_CASE("GameState shared state does not interfere with patch bits", "[game_st
     gs.set_bonus_status(BonusStatus::kPlayer1);
 
     // All patches should still be available
-    for (int i = 0; i < 33; ++i)
-        REQUIRE(gs.patch_available(i) == true);
+    for (int i = 0; i < 33; ++i) REQUIRE(gs.patch_available(i) == true);
 
     // Circle and bonus still correct
     REQUIRE(gs.circle_marker() == 32);

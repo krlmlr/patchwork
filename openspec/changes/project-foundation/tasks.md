@@ -34,3 +34,11 @@
 - [x] 5.1 Add `tests/test_player_state.cpp` with Catch2 tests covering: default construction values, cell set/get round-trip, all scalar field round-trips across their full ranges, `sizeof` assertion
 - [x] 5.2 Add `tests/test_game_state.cpp` with Catch2 tests covering: default construction values, patch availability round-trip for boundary indices (0 and 32), circle marker range, bonus status transitions
 - [x] 5.3 Register all test files in `tests/meson.build` and verify `meson test -C build` passes with all tests green
+
+## 6. README, Formatting Tooling, and CI
+
+- [x] 6.1 Create `README.md` at the project root with project description, prerequisites table, and instructions for build, test, codegen, and formatting
+- [x] 6.2 Add `.clang-format` config (Google-based style, 100-column limit) and apply formatting to all hand-written C++ sources
+- [x] 6.3 Add `src/generated/.clang-format` disabling formatting for auto-generated files
+- [x] 6.4 Add `.markdownlint-cli2.yaml` config for Markdown linting
+- [x] 6.5 Create `.github/workflows/ci.yml` with three jobs: Build & Test (Meson + GCC 14), Format Check (clang-format-18), and Lint Markdown (markdownlint-cli2)

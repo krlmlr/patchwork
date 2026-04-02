@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+
 #include "player_state.hpp"
 
 using patchwork::PlayerState;
@@ -8,21 +9,14 @@ TEST_CASE("PlayerState default construction", "[player_state]") {
 
     SECTION("board is empty") {
         for (int r = 0; r < 9; ++r)
-            for (int c = 0; c < 9; ++c)
-                REQUIRE(ps.cell(r, c) == false);
+            for (int c = 0; c < 9; ++c) REQUIRE(ps.cell(r, c) == false);
     }
 
-    SECTION("position is 0") {
-        REQUIRE(ps.position() == 0);
-    }
+    SECTION("position is 0") { REQUIRE(ps.position() == 0); }
 
-    SECTION("buttons is 5 (starting value)") {
-        REQUIRE(ps.buttons() == 5);
-    }
+    SECTION("buttons is 5 (starting value)") { REQUIRE(ps.buttons() == 5); }
 
-    SECTION("income is 0") {
-        REQUIRE(ps.income() == 0);
-    }
+    SECTION("income is 0") { REQUIRE(ps.income() == 0); }
 }
 
 TEST_CASE("PlayerState cell set/get round-trip", "[player_state]") {
@@ -34,8 +28,7 @@ TEST_CASE("PlayerState cell set/get round-trip", "[player_state]") {
         // All other cells remain false
         for (int r = 0; r < 9; ++r)
             for (int c = 0; c < 9; ++c)
-                if (r != 3 || c != 4)
-                    REQUIRE(ps.cell(r, c) == false);
+                if (r != 3 || c != 4) REQUIRE(ps.cell(r, c) == false);
     }
 
     SECTION("set and clear cell") {

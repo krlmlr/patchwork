@@ -20,8 +20,8 @@ namespace patchwork {
 class PlayerState {
 public:
     constexpr PlayerState() noexcept
-        : word0_{0}
-        , word1_{encode_buttons(5)} // starting buttons = 5
+        : word0_{0},
+          word1_{encode_buttons(5)}  // starting buttons = 5
     {}
 
     // ── Board accessors ──
@@ -29,8 +29,7 @@ public:
     [[nodiscard]] constexpr bool cell(int row, int col) const noexcept {
         assert(row >= 0 && row < 9 && col >= 0 && col < 9);
         int idx = row * 9 + col;
-        if (idx < 64)
-            return (word0_ >> idx) & 1U;
+        if (idx < 64) return (word0_ >> idx) & 1U;
         return (word1_ >> (idx - 64)) & 1U;
     }
 
@@ -38,12 +37,10 @@ public:
         assert(row >= 0 && row < 9 && col >= 0 && col < 9);
         int idx = row * 9 + col;
         if (idx < 64) {
-            word0_ = v ? (word0_ | (uint64_t{1} << idx))
-                       : (word0_ & ~(uint64_t{1} << idx));
+            word0_ = v ? (word0_ | (uint64_t{1} << idx)) : (word0_ & ~(uint64_t{1} << idx));
         } else {
             int shift = idx - 64;
-            word1_ = v ? (word1_ | (uint64_t{1} << shift))
-                       : (word1_ & ~(uint64_t{1} << shift));
+            word1_ = v ? (word1_ | (uint64_t{1} << shift)) : (word1_ & ~(uint64_t{1} << shift));
         }
     }
 
@@ -55,8 +52,7 @@ public:
 
     constexpr void set_position(int v) noexcept {
         assert(v >= 0 && v <= 53);
-        word1_ = (word1_ & ~(kPosMask << kPosShift))
-               | (static_cast<uint64_t>(v) << kPosShift);
+        word1_ = (word1_ & ~(kPosMask << kPosShift)) | (static_cast<uint64_t>(v) << kPosShift);
     }
 
     // ── Buttons (7 bits, range 0–127) ──
@@ -67,8 +63,7 @@ public:
 
     constexpr void set_buttons(int v) noexcept {
         assert(v >= 0 && v <= 127);
-        word1_ = (word1_ & ~(kBtnMask << kBtnShift))
-               | (static_cast<uint64_t>(v) << kBtnShift);
+        word1_ = (word1_ & ~(kBtnMask << kBtnShift)) | (static_cast<uint64_t>(v) << kBtnShift);
     }
 
     // ── Income (5 bits, range 0–31) ──
@@ -79,8 +74,7 @@ public:
 
     constexpr void set_income(int v) noexcept {
         assert(v >= 0 && v <= 31);
-        word1_ = (word1_ & ~(kIncMask << kIncShift))
-               | (static_cast<uint64_t>(v) << kIncShift);
+        word1_ = (word1_ & ~(kIncMask << kIncShift)) | (static_cast<uint64_t>(v) << kIncShift);
     }
 
 private:
@@ -90,13 +84,13 @@ private:
 
     // Board occupies bits 0..80 across word0_ (0..63) and word1_ (0..16).
     // Scalar fields start at bit 17 of word1_ (= global bit 81).
-    static constexpr int kPosShift = 17;  // 81 - 64
+    static constexpr int kPosShift = 17;        // 81 - 64
     static constexpr uint64_t kPosMask = 0x3F;  // 6 bits
 
-    static constexpr int kBtnShift = 23;  // 17 + 6
+    static constexpr int kBtnShift = 23;        // 17 + 6
     static constexpr uint64_t kBtnMask = 0x7F;  // 7 bits
 
-    static constexpr int kIncShift = 30;  // 23 + 7
+    static constexpr int kIncShift = 30;        // 23 + 7
     static constexpr uint64_t kIncMask = 0x1F;  // 5 bits
 
     uint64_t word0_;

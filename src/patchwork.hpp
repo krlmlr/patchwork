@@ -3,4 +3,4 @@
 
 // Patchwork engine — placeholder header
 
-#endif // PATCHWORK_PATCHWORK_HPP
+#endif  // PATCHWORK_PATCHWORK_HPP
