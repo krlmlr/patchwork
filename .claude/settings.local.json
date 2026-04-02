@@ -3,7 +3,8 @@
     "allow": [
       "Bash(openspec list:*)",
       "Bash(openspec status:*)",
-      "Bash(openspec instructions:*)"
+      "Bash(openspec instructions:*)",
+      "WebSearch"
     ]
   }
 }
