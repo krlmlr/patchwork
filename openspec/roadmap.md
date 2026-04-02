@@ -15,7 +15,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ## Phases
 
-### Phase 1 — Foundation *(current)*
+### Foundation *(current)*
 
 > Change: `project-foundation`
 
@@ -28,7 +28,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Phase 2 — Game Setup & Rules
+### Game Setup & Rules
 
 - `GameSetup`: initial patch circle arrangement (`std::array<uint8_t, 33>`), seeded RNG for reproducibility
 - R scripts to generate, store, and version game setups (`data/setups/`)
@@ -38,7 +38,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Phase 3 — Heuristic & Search Agents
+### Heuristic & Search Agents
 
 - Heuristic agent (hand-crafted evaluation function)
 - Minimax with alpha-beta pruning
@@ -47,7 +47,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Phase 4 — Monte Carlo Tree Search
+### Monte Carlo Tree Search
 
 - MCTS with UCB1
 - MCTS + simple rollout policy
@@ -56,7 +56,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Phase 5 — Reinforcement Learning
+### Reinforcement Learning
 
 - Self-play infrastructure (game loop, data collection)
 - Value network + policy network (likely small MLP, no GPU required for Patchwork's state space)
@@ -65,7 +65,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Phase 6 — Rust (Optional)
+### Rust (Optional)
 
 - Reimplementation of the game engine and state types in Rust
 - Benchmark against C++ implementation
