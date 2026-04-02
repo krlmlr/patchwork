@@ -9,15 +9,15 @@
 
 ## 2. Patch Catalog
 
-- [ ] 2.1 Create `data/patches.yaml` with all 33 Patchwork patches, each with `id`, `buttons`, `time`, `income`, and ASCII art `shape` field (`.` / `X` grid)
-- [ ] 2.2 Validate catalog: confirm exactly 33 entries, each shape row has equal length, and `X` cell counts match expected patch sizes
+- [x] 2.1 Create `data/patches.yaml` with all 33 Patchwork patches, each with `id`, `buttons`, `time`, `income`, and ASCII art `shape` field (`.` / `X` grid)
+- [x] 2.2 Validate catalog: confirm exactly 33 entries, each shape row has equal length, and `X` cell counts match expected patch sizes
 
 ## 3. R Codegen
 
-- [ ] 3.1 Create `codegen/generate_patches.R` that reads `data/patches.yaml`, parses ASCII art shapes into `(row, col)` offset lists, and writes `src/generated/patches.hpp`
-- [ ] 3.2 Define the output format: a `PatchData` struct and a `constexpr std::array<PatchData, 33> kPatches` in the generated header, with all cell offsets embedded as `constexpr` initialiser lists
-- [ ] 3.3 Run `codegen/generate_patches.R` and commit the resulting `src/generated/patches.hpp`
-- [ ] 3.4 Add a compile-time check (`static_assert`) in the generated header that `kPatches.size() == 33`
+- [x] 3.1 Create `codegen/generate_patches.R` that reads `data/patches.yaml`, parses ASCII art shapes into `(row, col)` offset lists, and writes `src/generated/patches.hpp`
+- [x] 3.2 Define the output format: a `PatchData` struct and a `constexpr std::array<PatchData, 33> kPatches` in the generated header, with all cell offsets embedded as `constexpr` initialiser lists
+- [x] 3.3 Run `codegen/generate_patches.R` and commit the resulting `src/generated/patches.hpp`
+- [x] 3.4 Add a compile-time check (`static_assert`) in the generated header that `kPatches.size() == 33`
 
 ## 4. Game State Types
 
