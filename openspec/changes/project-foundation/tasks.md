@@ -25,9 +25,9 @@
 - [ ] 4.2 Implement `PlayerState` default constructor initialising board empty, position 0, buttons 5, income 0
 - [ ] 4.3 Implement cell accessors: `bool cell(int row, int col) const` and `void set_cell(int row, int col, bool v)` with bounds assertions
 - [ ] 4.4 Add a `static_assert(sizeof(PlayerState) <= 16)` to enforce the 128-bit layout budget
-- [ ] 4.5 Create `src/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum), leather claimed (5-bit mask, one bit per fixed time track position)
-- [ ] 4.6 Implement `GameState` default constructor: both players default-constructed, all 33 patches available, circle marker 0, bonus unclaimed, all leather positions unclaimed
-- [ ] 4.7 Implement `GameState` accessors: `patch_available(int idx)`, `set_patch_available(int idx, bool)`, `circle_marker()`, `set_circle_marker(int)`, `bonus_status()`, `set_bonus_status(...)`, `leather_claimed(int pos)`, `set_leather_claimed(int pos, bool)`
+- [ ] 4.5 Create `src/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum)
+- [ ] 4.6 Implement `GameState` default constructor: both players default-constructed, all 33 patches available, circle marker 0, bonus unclaimed
+- [ ] 4.7 Implement `GameState` accessors: `patch_available(int idx)`, `set_patch_available(int idx, bool)`, `circle_marker()`, `set_circle_marker(int)`, `bonus_status()`, `set_bonus_status(...)`
 
 ## 5. Unit Tests
 

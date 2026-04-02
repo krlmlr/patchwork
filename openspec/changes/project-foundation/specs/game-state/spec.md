@@ -49,12 +49,12 @@ All scalar fields of `PlayerState` (position, buttons, income) SHALL store and r
 
 ### Requirement: GameState combines player and shared state
 
-`GameState` SHALL contain two `PlayerState` instances (player 0 and player 1) and shared game state: patch availability bitmask (33 bits), circle marker position (6 bits, 0–32), 7×7 bonus status (2 bits: unclaimed/player0/player1), leather claimed mask (5 bits, one per fixed time track position).
+`GameState` SHALL contain two `PlayerState` instances (player 0 and player 1) and shared game state: patch availability bitmask (33 bits), circle marker position (6 bits, 0–32), 7×7 bonus status (2 bits: unclaimed/player0/player1).
 
 #### Scenario: GameState default construction
 
 - **WHEN** a `GameState` is default-constructed
-- **THEN** both players have default `PlayerState`, all 33 patches are available, circle marker is 0, bonus is unclaimed, all 5 leather positions are unclaimed
+- **THEN** both players have default `PlayerState`, all 33 patches are available, circle marker is 0, bonus is unclaimed
 
 #### Scenario: Patch availability round-trip
 
@@ -65,11 +65,6 @@ All scalar fields of `PlayerState` (position, buttons, income) SHALL store and r
 
 - **WHEN** circle marker is set to any value in 0–32
 - **THEN** reading it returns the same value
-
-#### Scenario: Leather claimed round-trip
-
-- **WHEN** a leather position (0–4) is marked claimed
-- **THEN** querying that position returns claimed, and all other positions remain unclaimed
 
 ### Requirement: Game state types are unit tested
 

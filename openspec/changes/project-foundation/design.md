@@ -80,8 +80,7 @@ Shared `GameState` wraps two `PlayerState` instances plus:
 | Patch availability | 33     | one bit per patch                     |
 | Circle marker      | 6      | 0–32                                  |
 | 7×7 bonus          | 2      | unclaimed / P1 / P2                   |
-| Leather claimed    | 5      | one bit per fixed time track position |
-| **Total**          | **46** | fits in 64 bits                       |
+| **Total**          | **41** | fits in 64 bits                       |
 
 Full game state: 2×128 + 64 = 320 bits = 40 bytes.
 
