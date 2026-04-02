@@ -1,282 +1,290 @@
 # Patchwork Patch Catalog
 # All 33 patches from Uwe Rosenberg's Patchwork board game
+# Source: https://github.com/SnarkAttack/patchwork/blob/main/src/patchwork/patch.py
 # Shape encoding: '.' = empty cell, 'X' = occupied cell
 # Shapes are normalised to their minimal bounding box
 
 - id: 1
-  buttons: 0
+  buttons: 1
   time: 3
   income: 0
   shape: |
+    X.
     XX
 
 - id: 2
+  buttons: 5
+  time: 4
+  income: 2
+  shape: |
+    .X.
+    XXX
+    .X.
+
+- id: 3
   buttons: 2
   time: 1
   income: 0
   shape: |
-    XX
-
-- id: 3
-  buttons: 1
-  time: 2
-  income: 0
-  shape: |
-    XX
-    X.
+    .X.
+    .XX
+    XX.
+    .X.
 
 - id: 4
-  buttons: 2
-  time: 2
+  buttons: 7
+  time: 1
+  income: 1
+  shape: |
+    XXXXX
+
+- id: 5
+  buttons: 8
+  time: 6
+  income: 3
+  shape: |
+    .XX
+    .XX
+    XX.
+
+- id: 6
+  buttons: 3
+  time: 1
   income: 0
   shape: |
     .X
     XX
 
-- id: 5
-  buttons: 3
-  time: 2
-  income: 1
-  shape: |
-    XX
-    XX
-
-- id: 6
+- id: 7
   buttons: 1
   time: 2
   income: 0
   shape: |
-    XXX
+    ...X
+    XXXX
+    X...
 
-- id: 7
+- id: 8
   buttons: 2
   time: 2
   income: 0
   shape: |
     .X
-    XX
-    X.
-
-- id: 8
-  buttons: 3
-  time: 3
-  income: 1
-  shape: |
-    X.
     XX
     .X
 
 - id: 9
-  buttons: 1
-  time: 5
-  income: 1
-  shape: |
-    XXX
-    X..
-
-- id: 10
   buttons: 2
-  time: 3
+  time: 2
   income: 0
   shape: |
     X.
+    XX
+    XX
+
+- id: 10
+  buttons: 4
+  time: 2
+  income: 0
+  shape: |
+    .X
+    XX
     XX
     X.
 
 - id: 11
-  buttons: 3
+  buttons: 10
   time: 4
-  income: 1
+  income: 3
   shape: |
     ..X
-    XXX
-    X..
+    .XX
+    XX.
 
 - id: 12
+  buttons: 7
+  time: 4
+  income: 2
+  shape: |
+    .XX.
+    XXXX
+
+- id: 13
+  buttons: 2
+  time: 3
+  income: 1
+  shape: |
+    .XXX
+    XX..
+
+- id: 14
   buttons: 10
   time: 5
   income: 3
   shape: |
-    .X
-    XX
-    .X
-    .X
+    XXXX
+    XX..
 
-- id: 13
-  buttons: 1
-  time: 2
-  income: 0
+- id: 15
+  buttons: 6
+  time: 5
+  income: 2
   shape: |
-    XXX
-    .X.
+    XX
+    XX
 
-- id: 14
+- id: 16
   buttons: 0
   time: 3
   income: 1
   shape: |
-    XXX
-    X.X
+    .X..
+    XXXX
+    .X..
 
-- id: 15
-  buttons: 7
-  time: 1
-  income: 1
-  shape: |
-    .X
-    XX
-
-- id: 16
+- id: 17
   buttons: 2
   time: 3
   income: 0
   shape: |
+    X.X
+    XXX
+    X.X
+
+- id: 18
+  buttons: 1
+  time: 5
+  income: 1
+  shape: |
+    X..X
     XXXX
 
-- id: 17
+- id: 19
+  buttons: 7
+  time: 6
+  income: 3
+  shape: |
+    .X
+    XX
+    X.
+
+- id: 20
+  buttons: 3
+  time: 4
+  income: 1
+  shape: |
+    .X
+    .X
+    XX
+    .X
+
+- id: 21
+  buttons: 3
+  time: 3
+  income: 1
+  shape: |
+    XXXX
+
+- id: 22
   buttons: 7
   time: 2
   income: 2
   shape: |
-    XX
-    .X
-    .X
+    .X.
+    .X.
+    .X.
+    XXX
 
-- id: 18
+- id: 23
+  buttons: 3
+  time: 2
+  income: 1
+  shape: |
+    .X
+    XX
+    X.
+
+- id: 24
+  buttons: 4
+  time: 6
+  income: 2
+  shape: |
+    .X
+    .X
+    XX
+
+- id: 25
+  buttons: 10
+  time: 3
+  income: 2
+  shape: |
+    .X
+    .X
+    .X
+    XX
+
+- id: 26
   buttons: 5
   time: 3
   income: 1
   shape: |
-    X.
-    XX
-    XX
+    .XX.
+    XXXX
+    .XX.
 
-- id: 19
-  buttons: 10
-  time: 4
-  income: 3
-  shape: |
-    XX
-    .X
-    XX
-
-- id: 20
+- id: 27
   buttons: 1
   time: 4
   income: 1
   shape: |
-    XXX
-    ..X
-    ..X
+    ..X..
+    XXXXX
+    ..X..
 
-- id: 21
+- id: 28
   buttons: 3
   time: 6
   income: 2
   shape: |
     .X.
     XXX
-    .X.
+    X.X
 
-- id: 22
-  buttons: 4
+- id: 29
+  buttons: 1
   time: 2
   income: 0
-  shape: |
-    X.
-    XX
-    .X
-    .X
-
-- id: 23
-  buttons: 2
-  time: 3
-  income: 1
-  shape: |
-    XXX
-    X..
-    X..
-
-- id: 24
-  buttons: 1
-  time: 4
-  income: 0
-  shape: |
-    .XX
-    XX.
-
-- id: 25
-  buttons: 5
-  time: 4
-  income: 2
   shape: |
     X.X
     XXX
 
-- id: 26
+- id: 30
+  buttons: 2
+  time: 2
+  income: 0
+  shape: |
+    XXX
+
+- id: 31
+  buttons: 4
+  time: 2
+  income: 1
+  shape: |
+    ..X
+    XXX
+
+- id: 32
   buttons: 5
   time: 5
   income: 2
   shape: |
-    XX.
-    .XX
-    ..X
-
-- id: 27
-  buttons: 3
-  time: 6
-  income: 2
-  shape: |
-    XXXX
-    X...
-
-- id: 28
-  buttons: 2
-  time: 2
-  income: 0
-  shape: |
-    .X
-    XX
-    X.
-    X.
-
-- id: 29
-  buttons: 7
-  time: 6
-  income: 3
-  shape: |
-    .XX
-    XX.
-    X..
-
-- id: 30
-  buttons: 1
-  time: 3
-  income: 0
-  shape: |
-    XXXXX
-
-- id: 31
-  buttons: 10
-  time: 3
-  income: 2
-  shape: |
-    XX
-    X.
-
-- id: 32
-  buttons: 4
-  time: 6
-  income: 2
-  shape: |
-    X..
+    .X.
+    .X.
     XXX
-    ..X
 
 - id: 33
   buttons: 2
-  time: 2
-  income: 1
+  time: 1
+  income: 0
   shape: |
-    X.
     XX
