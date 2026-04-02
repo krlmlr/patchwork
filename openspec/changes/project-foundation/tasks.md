@@ -1,11 +1,11 @@
 ## 1. Meson Build System
 
-- [ ] 1.1 Create `meson.build` at the project root with project name, C++23 standard, and default warning flags
-- [ ] 1.2 Add `subprojects/` directory and fetch Catch2 v3 wrap (`meson wrap install catch2`)
-- [ ] 1.3 Create `src/meson.build` declaring the engine library target (initially empty or with a placeholder header)
-- [ ] 1.4 Create `tests/meson.build` declaring a Catch2 test executable linked against the engine library
-- [ ] 1.5 Add a trivial baseline test in `tests/test_main.cpp` that asserts `true` — verify `meson setup build && meson test -C build` passes
-- [ ] 1.6 Create `logs/` directory with a `.gitkeep` and add `logs/*.ndjson` to `.gitignore`
+- [x] 1.1 Create `meson.build` at the project root with project name, C++23 standard, and default warning flags
+- [x] 1.2 Add `subprojects/` directory and fetch Catch2 v3 wrap (`meson wrap install catch2`)
+- [x] 1.3 Create `src/meson.build` declaring the engine library target (initially empty or with a placeholder header)
+- [x] 1.4 Create `tests/meson.build` declaring a Catch2 test executable linked against the engine library
+- [x] 1.5 Add a trivial baseline test in `tests/test_main.cpp` that asserts `true` — verify `meson setup build && meson test -C build` passes
+- [x] 1.6 Create `logs/` directory with a `.gitkeep` and add `logs/*.ndjson` to `.gitignore`
 
 ## 2. Patch Catalog
 
