@@ -12,3 +12,7 @@ run = "ninja -C build"
 [tasks.test]
 description = "Run tests"
 run = "meson test -C build"
+
+[tasks.codegen]
+description = "Regenerate committed C++ headers from data files"
+run = "Rscript codegen/generate_patches.R"
