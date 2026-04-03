@@ -1,10 +1,11 @@
-## 1. Extend SimplifiedGameState with new fields
+## 1. Extend SimplifiedGameState with next_player field
 
-- [ ] 1.1 Add `leather_patch_26_claimed` and `leather_patch_53_claimed` bit flags to `SimplifiedGameState::shared_` (bits 41–42); update layout comment and constants
-- [ ] 1.2 Expose getter/setter accessors for both threshold flags
-- [ ] 1.3 Verify default construction leaves both flags false
-- [ ] 1.4 Add `active_player()` const member function (or free function) with tie-break logic
-- [ ] 1.5 Add Catch2 tests covering flag round-trips, flag independence, and `active_player` tie-break scenarios
+- [ ] 1.1 Add `next_player` bit flag to `SimplifiedGameState::shared_` (bit 41); update layout comment and constants
+- [ ] 1.2 Expose `set_next_player(int)` setter and `active_player()` getter
+- [ ] 1.3 Verify default construction leaves `next_player` = 0
+- [ ] 1.4 Add Catch2 tests: round-trip, active-on-tie scenario, switch-on-overtake scenario
+- [ ] 1.5 Remove cap on `SimplifiedPlayerState::set_position` — allow values 0–63 (full 6-bit range); update the assert from `v <= 53` to `v <= 63`
+- [ ] 1.6 Add Catch2 test: position values 54–63 round-trip correctly
 
 ## 2. Move type
 
@@ -16,24 +17,24 @@
 
 - [ ] 3.1 Create `src/move_generation.hpp` / `.cpp` with `legal_moves(const SimplifiedGameState&) → std::vector<Move>`
 - [ ] 3.2 Implement circular scan from circle marker to find up to three available patches
-- [ ] 3.3 Filter patches by affordability (buttons) and reachability (position + time ≤ 53)
-- [ ] 3.4 Always include `Advance` for non-terminal states; return empty for terminal states
+- [ ] 3.3 Filter patches by affordability (buttons only; no position cap — positions > 53 are valid)
+- [ ] 3.4 Always include `Advance` for non-terminal states; return empty for terminal states (both players ≥ 54)
 - [ ] 3.5 Add Catch2 tests: three available patches, fewer than three, unaffordable patches, terminal state, advance always present
 
 ## 4. Move application
 
 - [ ] 4.1 Create `src/move_application.hpp` / `.cpp` with `apply_move(SimplifiedGameState, Move) → SimplifiedGameState`
-- [ ] 4.2 Implement `BuyPatch` path: deduct buttons, advance position, add income, reduce free_spaces, mark patch unavailable, advance circle marker
-- [ ] 4.3 Implement `Advance` path: advance to opponent position + 1, credit buttons from income
-- [ ] 4.4 Implement button income space payout (positions 5, 11, 17, 23, 29, 35, 41, 47): for each threshold crossed by the move, add `income` to buttons
-- [ ] 4.5 Implement leather patch award: check thresholds 26 and 53 after position update; award and mark claimed if unclaimed
+- [ ] 4.2 Implement `BuyPatch` path: deduct buttons, advance position (no cap), add income, reduce free_spaces, mark patch unavailable, advance circle marker; update `next_player`
+- [ ] 4.3 Implement `Advance` path: advance to opponent position + 1 (no cap), credit buttons from income; update `next_player`
+- [ ] 4.4 Implement button income space payout (positions 5, 11, 17, 23, 29, 35, 41, 47, 53): for each threshold crossed by the move, add `income` to buttons
+- [ ] 4.5 Implement leather patch award: for each of the five thresholds (26, 32, 38, 44, 50) crossed by the moving player's position, check whether either player's pre-move position was already ≥ threshold; if not, decrement `free_spaces` by 1 (mandatory placement); no new state flags required
 - [ ] 4.6 Implement 7×7 bonus check after `BuyPatch`: if bonus unclaimed and occupied cells ≥ 56, set bonus to active player
 - [ ] 4.7 Add Catch2 tests for each requirement scenario in `specs/move-application/spec.md`, including inactive player unchanged, multiple income spaces crossed, leather patch not re-awarded
 
 ## 5. Terminal detection and scoring
 
 - [ ] 5.1 Create `src/terminal_and_scoring.hpp` with `is_terminal`, `score`, and `winner` free functions
-- [ ] 5.2 Implement `is_terminal`: both players at position ≥ 53
+- [ ] 5.2 Implement `is_terminal`: both players at position ≥ 54
 - [ ] 5.3 Implement `score(state, player)`: buttons − 2 × free_spaces + 7 if bonus held
 - [ ] 5.4 Implement `winner(state)`: compare scores, return -1 on draw
 - [ ] 5.5 Add Catch2 tests covering all scenarios in `specs/terminal-and-scoring/spec.md`

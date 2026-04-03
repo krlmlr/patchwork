@@ -1,39 +1,34 @@
 ## ADDED Requirements
 
-### Requirement: SimplifiedGameState exposes active-player query
+### Requirement: SimplifiedGameState tracks which player acts next
 
-`SimplifiedGameState` SHALL provide an `active_player()` const member function (or a free function `active_player(const SimplifiedGameState&)`) that returns 0 or 1 per the tie-breaking rule (lower position → active; tie → player 0).
+`SimplifiedGameState` SHALL store a 1-bit `next_player` field (0 or 1) in the existing shared `uint64_t` word (bit 41, currently unused). It SHALL default to 0 (player 0 goes first). `active_player()` SHALL return this field. `apply_move` SHALL update it: if the moved player's new position strictly exceeds the opponent's position, the opponent becomes `next_player`; otherwise the moved player remains `next_player`.
 
-#### Scenario: Active player query returns correct index
-
-- **WHEN** player 0 has position 2 and player 1 has position 5
-- **THEN** `active_player()` returns 0
-
-#### Scenario: Active player query tie-breaks to player 0
-
-- **WHEN** both players have position 10
-- **THEN** `active_player()` returns 0
-
-### Requirement: SimplifiedGameState tracks two leather-patch threshold flags
-
-`SimplifiedGameState`'s shared state SHALL include two boolean flags: `leather_patch_26_claimed` and `leather_patch_53_claimed`, each defaulting to false. These SHALL be stored in the existing shared `uint64_t` word without changing the total struct size.
-
-#### Scenario: Threshold flags default to false
+#### Scenario: next_player defaults to 0
 
 - **WHEN** a `SimplifiedGameState` is default-constructed
-- **THEN** both `leather_patch_26_claimed` and `leather_patch_53_claimed` are false
+- **THEN** `active_player()` returns 0
 
-#### Scenario: Threshold-26 flag round-trips
+#### Scenario: next_player round-trips
 
-- **WHEN** `leather_patch_26_claimed` is set to true
-- **THEN** reading the flag returns true
+- **WHEN** `next_player` is set to 1
+- **THEN** `active_player()` returns 1
 
-#### Scenario: Threshold-53 flag round-trips
+#### Scenario: Active player remains active on tie
 
-- **WHEN** `leather_patch_53_claimed` is set to true
-- **THEN** reading the flag returns true
+- **WHEN** player 0 is active, moves from position 4 to position 8, and player 1 is at position 8
+- **THEN** `active_player()` returns 0 in the successor state
 
-#### Scenario: Setting one flag does not affect the other
+#### Scenario: Active player switches when overtaking opponent
 
-- **WHEN** `leather_patch_26_claimed` is set to true
-- **THEN** `leather_patch_53_claimed` remains false
+- **WHEN** player 0 is active, moves from position 4 to position 9, and player 1 is at position 8
+- **THEN** `active_player()` returns 1 in the successor state
+
+### Requirement: SimplifiedPlayerState position field supports values up to 63
+
+The position field of `SimplifiedPlayerState` SHALL accept and store any value in 0–63 (full 6-bit range). Values above 53 represent a player who has moved past the last active time square. The existing `SimplifiedPlayerState` 6-bit field already has this capacity; the implementation SHALL NOT cap positions at 53.
+
+#### Scenario: Position stores values above 53
+
+- **WHEN** position is set to any value in 54–63
+- **THEN** reading position returns the same value

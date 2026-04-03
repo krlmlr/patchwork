@@ -2,21 +2,16 @@
 
 ### Requirement: Terminal detection identifies end of game
 
-`is_terminal(state)` SHALL return true if and only if both players have a time-track position of 53 or greater.
+`is_terminal(state)` SHALL return true if and only if both players have a time-track position of 54 or greater. Position 54 represents "done" — the player has moved past the last active square on the time track.
 
-#### Scenario: Game not terminal while a player is below 53
+#### Scenario: Game not terminal while a player is below 54
 
-- **WHEN** player 0 has position 52 and player 1 has position 53
+- **WHEN** player 0 has position 53 and player 1 has position 54
 - **THEN** `is_terminal` returns false
 
-#### Scenario: Game is terminal when both players are at 53
+#### Scenario: Game is terminal when both players are done
 
-- **WHEN** both players have position 53
-- **THEN** `is_terminal` returns true
-
-#### Scenario: Game is terminal when both players exceed 53
-
-- **WHEN** player 0 has position 53 and player 1 has position 53 (max position enforced at 53)
+- **WHEN** both players have position ≥ 54
 - **THEN** `is_terminal` returns true
 
 ### Requirement: Score computed as buttons minus twice free spaces plus bonus
@@ -45,7 +40,7 @@
 
 ### Requirement: Winner is the player with the higher score
 
-`winner(state)` SHALL return 0 if player 0's score is strictly greater than player 1's score, 1 if player 1's score is strictly greater, and -1 for a draw. `winner` SHALL only be called on a terminal state.
+`winner(state)` SHALL return 0 if player 0's score is strictly greater than player 1's score, 1 if player 1's score is strictly greater, and -1 for a draw. `winner` SHALL only be called on a terminal state. Draws are theoretically possible when both players achieve equal scores; no authoritative source confirms they are structurally impossible.
 
 #### Scenario: Higher score wins
 

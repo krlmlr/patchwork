@@ -14,24 +14,24 @@ A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch b
 - **WHEN** two moves are constructed — one `Advance` and one `BuyPatch{0}`
 - **THEN** they compare as not equal
 
-### Requirement: Active player is determined by time-track position
+### Requirement: Active player is determined by a tracked `next_player` field
 
-`active_player(state)` SHALL return the index (0 or 1) of the player whose time-track position is strictly less than the other player's. When both positions are equal, player 0 SHALL be returned.
+`active_player(state)` SHALL return the value of the `next_player` field stored in `SimplifiedGameState`. The active player changes only when the moved player's new position strictly exceeds the inactive player's position, at which point the other player becomes `next_player`. When positions are equal after a move, the moved player remains `next_player` (they have not yet overtaken the opponent). At game start, player 0 is `next_player`.
 
 #### Scenario: Player with lower position is active
 
-- **WHEN** player 0 has position 3 and player 1 has position 7
+- **WHEN** player 0 has position 3 and player 1 has position 7 and next_player is 0
 - **THEN** `active_player` returns 0
 
 #### Scenario: Player with higher position is not active
 
-- **WHEN** player 0 has position 10 and player 1 has position 4
+- **WHEN** next_player field records player 1 as active
 - **THEN** `active_player` returns 1
 
-#### Scenario: Tie is broken in favour of player 0
+#### Scenario: Active player remains active when landing on opponent's square
 
-- **WHEN** both players have the same time-track position
-- **THEN** `active_player` returns 0
+- **WHEN** player 0 (active) buys a patch that moves them from position 3 to position 8, and player 1 is at position 8
+- **THEN** player 0 remains the active player (has not overtaken player 1)
 
 ### Requirement: Legal moves include up to three patches ahead of the circle marker
 
@@ -54,8 +54,8 @@ A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch b
 
 #### Scenario: Active player cannot reach any patch in time
 
-- **WHEN** buying any visible patch would advance the player's position beyond 53
-- **THEN** those patches are excluded from `legal_moves`
+- **WHEN** the active player's position plus any visible patch's time cost would still be a valid position (no cap; all patches are reachable in time)
+- **THEN** all affordable visible patches are included in `legal_moves` regardless of resulting position
 
 ### Requirement: Advance move is always legal
 
@@ -73,9 +73,9 @@ A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch b
 
 ### Requirement: Legal moves returns empty list for a terminal state
 
-`legal_moves(state)` SHALL return an empty collection when the game is terminal (both players at position ≥ 53).
+`legal_moves(state)` SHALL return an empty collection when the game is terminal (both players at position ≥ 54).
 
 #### Scenario: No moves when game is over
 
-- **WHEN** both players have position 53
+- **WHEN** both players have position ≥ 54
 - **THEN** `legal_moves` returns an empty collection

@@ -2,7 +2,7 @@
 
 The previous phase ("Start Without Piece Placement") introduced `SimplifiedGameState`: a compact 32-bit-per-player representation that replaces the 81-bit quilt board with a `free_spaces` counter. The state struct is complete and tested, but there is no logic to actually play a game. This change adds the rule layer on top of that state.
 
-The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (and earns buttons proportional to income). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 53). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
+The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (and earns buttons proportional to income). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 54). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
 
 The `kPatches` array (generated from `data/patches.yaml`) is the single source of truth for patch costs, time, income, and cell count. The rule layer reads it directly.
 
@@ -11,7 +11,8 @@ The `kPatches` array (generated from `data/patches.yaml`) is the single source o
 **Goals:**
 - Legal move enumeration for the active player (buy patch or advance)
 - Move application: new state after buying a patch or advancing
-- Leather patch award at time thresholds (positions 26 and 53 on the time track)
+- Leather patch award at five time thresholds (positions 26, 32, 38, 44, 50 on the time track); mandatory placement
+- Button income payout at nine income spaces (positions 5, 11, 17, 23, 29, 35, 41, 47, 53)
 - 7×7 bonus: claimed by first player to reach 56+ occupied cells (81 − free_spaces ≥ 56)
 - Terminal detection and final score calculation
 - NDJSON game logging: game-start, move, game-end events
@@ -33,13 +34,23 @@ A move is either `BuyPatch{patch_index}` (index into `kPatches`, 0-based) or `Ad
 
 `apply_move(SimplifiedGameState state, Move move) → SimplifiedGameState` takes by value and returns a new state. This matches the MCTS use-case (build a search tree) and avoids surprising aliasing bugs. The state is only 80 bytes; copies are cheap. Alternative: mutate in place. Rejected because future MCTS phases will hold many states simultaneously.
 
-### 3. Active-player rule: lower time position goes first; ties → player 0
+### 3. Active-player rule: tracked in state via a 1-bit `next_player` field
 
-The active player is determined by `player(0).position() < player(1).position()` with ties broken in favour of player 0. This is a documented Patchwork rule. Encoding it in a free function `active_player(const SimplifiedGameState&) → int` keeps it testable and avoids duplicating the logic across move generation and application.
+The Patchwork rule is: the active player stays active until their position *strictly exceeds* the inactive player's position. When positions are equal the active player has not yet overtaken and therefore remains active. This rule cannot be derived from positions alone at a tie — a 1-bit `next_player` field is added to `SimplifiedGameState`'s shared word (bit 41, currently unused). It stores which player acts next and is updated by `apply_move` as follows: after a move the moved player's new position is compared to the opponent's position. If strictly greater, the opponent becomes `next_player`; otherwise the moved player remains `next_player`. At game start, player 0 is `next_player`.
 
-### 4. Leather patches via threshold crossing
+A free function `active_player(const SimplifiedGameState&) → int` reads this field.
 
-The time track has two special squares (26 and 53) where a 1×1 leather patch is awarded to the first player to reach or pass that position. The rule: if a player's new position crosses a threshold AND the threshold patch has not yet been claimed, award it (decrement `free_spaces` by 1, mark threshold as claimed in shared state). Two threshold flags are added to `SimplifiedGameState`'s shared 64-bit word (2 bits, currently unused). Alternative: derive claim state from positions — rejected because two players can both pass a threshold in the same game without either having claimed it (if they both jump over it).
+### 4. Leather patches: five thresholds, no new state, derived from positions
+
+The time track has five 1×1 leather patch squares at positions 26, 32, 38, 44, and 50. The first player to reach or pass each threshold claims the leather patch for that square (mandatory placement: `free_spaces` is decremented by 1). No new state flags are needed: whether a threshold has been claimed is derived from the players' current positions at the time of the move — if either player's *pre-move* position is already ≥ the threshold, the patch was already taken; otherwise the first player to cross it now claims it. This derivation is evaluated inside `apply_move` for each threshold the moving player crosses, so claim status is never stale.
+
+### 5. Positions may exceed 53
+
+Position 53 is the last active square; positions up to 63 are representable in the existing 6-bit field. Allowing positions greater than 53 avoids a cap branch in `Advance` (the moving player can land at `opponent.position + 1` even when that exceeds 53). A player is "done" when their position ≥ 54; the game is terminal when both players are done. This simplifies move application and reduces branching in the game loop.
+
+### 6. Draws
+
+Equal final scores are theoretically possible in Patchwork (both players could end with identical `buttons − 2 × free_spaces` when neither holds the bonus). No authoritative source was found confirming draws are ruled out by the game's structure. The `winner` function returns −1 for draws; this case should be handled by any analysis code even if empirically rare.
 
 ### 5. NDJSON logging via `<fstream>` + nlohmann/json or hand-rolled
 
@@ -55,7 +66,8 @@ A small `play_driver.cpp` with its own `main` entry point, compiled as a separat
 
 ## Risks / Trade-offs
 
-- **Threshold flag bits in shared word** — Adding 2 bits to `SimplifiedGameState::shared_` requires checking that the existing bit layout has room. The shared word is `uint64_t`; bits 0–40 are currently used (33 patch + 6 circle + 2 bonus), leaving 23 bits free. Two threshold bits at positions 41–42 fit comfortably. [Risk: bit-layout regression] → Mitigation: static_assert on field positions, existing round-trip tests catch regressions.
+- **next_player bit in shared word** — Adding 1 bit to `SimplifiedGameState::shared_` (bit 41) requires checking the existing bit layout. Bits 0–40 are used (33 patch + 6 circle + 2 bonus), leaving 23 bits free. [Risk: bit-layout regression] → Mitigation: static_assert on field positions; existing round-trip tests catch regressions.
+- **Derived leather-patch claim state** — Leather patch availability is derived from pre-move positions rather than stored flags. This is always correct for sequential single-move play (the only supported mode now), but must be re-evaluated if batch state mutations are ever added. [Risk: none practical for this phase]
 - **Score overflow** — `free_spaces` max is 81, so worst-case score penalty is 162. `buttons` max visible in the test is 127. Using `int` throughout is safe. [Risk: none practical]
 - **NDJSON log size** — Each move line is ~200 bytes; a full game is ~50–100 moves → ~20 KB per game. Not a concern.
 - **Simplified vs. full rules divergence** — This implementation intentionally ignores spatial placement. The 7×7 bonus uses `free_spaces` as a proxy (56+ cells occupied), which is correct under the simplification. When spatial rules are added later, the bonus check will need to inspect the actual board, not `free_spaces`. [Risk: confusion] → Mitigation: document the simplification in the spec and in code comments.

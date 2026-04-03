@@ -55,7 +55,7 @@
 
 ### Requirement: Button income is paid when a player crosses a button income space
 
-The time track has button income spaces at positions 5, 11, 17, 23, 29, 35, 41, and 47 (every 6 squares from 5). When a player's position crosses any of these squares (old position < threshold ≤ new position) as a result of any move, that player SHALL receive buttons equal to their current income.
+The time track has button income spaces at positions 5, 11, 17, 23, 29, 35, 41, 47, and 53 (every 6 squares from 5, inclusive of 53). When a player's position crosses any of these squares (old position < threshold ≤ new position) as a result of any move, that player SHALL receive buttons equal to their current income.
 
 #### Scenario: Income paid on crossing an income space while buying a patch
 
@@ -72,24 +72,29 @@ The time track has button income spaces at positions 5, 11, 17, 23, 29, 35, 41, 
 - **WHEN** a player at position 4 buys a patch with time cost 14 (moving to position 18)
 - **THEN** the player's buttons are increased by 2 × income (crossing positions 5 and 11)
 
-### Requirement: Leather patches are awarded at time thresholds
+#### Scenario: Income paid on crossing position 53
 
-The time track has two 1×1 leather patch squares at positions 26 and 53. The first player to reach or pass position 26 SHALL receive a leather patch (free_spaces decremented by 1, threshold marked claimed). The first player to reach or pass position 53 SHALL likewise receive a leather patch. If both players cross a threshold in the same move (impossible in a two-player turn-based game) the active player receives the patch.
+- **WHEN** a player at position 50 advances to position 54
+- **THEN** the player's buttons are increased by their income (crossing position 53)
 
-#### Scenario: Leather patch awarded at threshold 26
+### Requirement: Leather patches are awarded when a player is the first to cross each of five time thresholds
 
-- **WHEN** a player's position crosses 26 and the threshold-26 leather patch has not been claimed
-- **THEN** that player's free_spaces is decremented by 1 and the threshold-26 flag is set
+The time track has five 1×1 leather patch squares at positions 26, 32, 38, 44, and 50. When the active player's new position first crosses any of these thresholds (old position < threshold ≤ new position), and neither player's pre-move position was already ≥ that threshold, the active player SHALL receive a leather patch: `free_spaces` is decremented by 1. Placement is mandatory. No new state field is required: whether a threshold has been claimed is derived from the players' pre-move positions — if either player was already at or past the threshold before this move, the patch is already taken.
 
-#### Scenario: Leather patch not awarded again at same threshold
+#### Scenario: Leather patch awarded at first crossing of threshold 26
 
-- **WHEN** the threshold-26 leather patch has already been claimed and a second player crosses position 26
-- **THEN** the second player does NOT receive a leather patch
+- **WHEN** a player's position crosses 26 and neither player's pre-move position was ≥ 26
+- **THEN** that player's free_spaces is decremented by 1
 
-#### Scenario: Leather patch awarded at threshold 53
+#### Scenario: Leather patch not awarded when threshold already passed by either player
 
-- **WHEN** a player's position reaches 53 and the threshold-53 leather patch has not been claimed
-- **THEN** that player's free_spaces is decremented by 1 and the threshold-53 flag is set
+- **WHEN** the other player's position is already ≥ 26 and the active player crosses 26
+- **THEN** the active player does NOT receive a leather patch for threshold 26
+
+#### Scenario: All five leather thresholds are checked independently
+
+- **WHEN** a player at position 25 buys a patch that moves them to position 39
+- **THEN** the player's free_spaces is decremented by 2 (crossing thresholds 26 and 32, assuming neither was yet claimed)
 
 ### Requirement: 7×7 bonus is claimed when a player reaches 56 occupied cells
 
