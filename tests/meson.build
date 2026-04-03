@@ -20,3 +20,10 @@ test_game_state = executable(
   dependencies : [patchwork_dep, catch2_dep],
 )
 test('game_state', test_game_state)
+
+test_simplified_game_state = executable(
+  'test_simplified_game_state',
+  'test_simplified_game_state.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('simplified_game_state', test_simplified_game_state)
