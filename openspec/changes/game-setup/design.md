@@ -27,11 +27,11 @@ For MCTS, `GameState` is copied millions of times per second. Adding 33 bytes fo
 
 **Alternative considered:** Store the circle in `GameState` — simpler API but unacceptable memory cost at MCTS scale.
 
-### Circle stored as `std::array<uint8_t, 33>`
+### Circle stored as a 33-char string of patch names
 
-Patch IDs are 0–32 (fit in `uint8_t`). A fixed-size array avoids heap allocation and has `constexpr`-friendly semantics. The array index is the position around the circle (0 = start, 32 = last); the value is the patch ID at that position.
+Patch names are single ASCII characters (`[A-Za-z0-9]`, defined in `data/patches.yaml`). Encoding the circle as a `std::array<char, 33>` (or a `std::string_view` into the generated table) preserves the compactness of the array approach while making the circle human-readable at a glance — `"eV1q…"` is instantly scannable in logs and debugger output without a catalog lookup. It also aligns with the `char name` field already present in `PatchData`.
 
-**Alternative considered:** `std::vector<uint8_t>` — dynamic allocation, no `constexpr`, no advantage for a fixed-size collection.
+**Alternative considered:** `std::array<uint8_t, 33>` of patch IDs — compact but opaque; requires a catalog lookup to interpret any element.
 
 ### Seeded RNG: `std::mt19937_64` + `std::shuffle`
 
@@ -39,40 +39,41 @@ Patch IDs are 0–32 (fit in `uint8_t`). A fixed-size array avoids heap allocati
 
 **Alternative considered:** `std::default_random_engine` — implementation-defined; not reproducible across platforms or compiler versions.
 
-### Canonical setups stored as YAML in `data/setups/`
+### Canonical setups as `constexpr` string literals in `src/generated/game_setups.hpp`
 
-Consistency with `data/patches.yaml`. YAML is human-readable, diff-friendly, and trivially parsed by R. Each file is named `setup-NNNNN.yaml` (zero-padded five-digit sequential ID) and contains:
+R reads `data/patches.yaml` to obtain the ordered single-char patch names, generates 100 random permutations via `sample()`, and writes `src/generated/game_setups.hpp`. The header exposes a `constexpr std::array` of 100 `GameSetupEntry` values — each pairing a 33-char `std::string_view` with its seed. Including this file costs zero runtime I/O and the entire setup table is available as a compile-time constant.
 
-```yaml
-id: 1
-seed: 3735928559
-circle: [5, 22, 1, 17, 30, 8, 13, 2, 28, 19, 6, 25, 11, 0, 31, 16, 7, 24, 14, 3, 27, 20, 9, 29, 18, 12, 4, 26, 23, 10, 15, 21, 32]
+```cpp
+// src/generated/game_setups.hpp
+namespace patchwork {
+struct GameSetupEntry { std::string_view circle; uint64_t seed; };
+constexpr std::array<GameSetupEntry, 100> kGameSetups = {{
+    {"eV1q...", 1},   // 33 chars
+    ...
+}};
+}
 ```
 
-The `id` field is informational; the file name is canonical.
+**Alternative considered:** YAML files in `data/setups/` — file-per-setup approach is diff-friendly and incremental, but requires a C++ YAML parser at runtime and makes setups unavailable without disk access (a problem for MCTS, tests, and constexpr evaluation).
 
-**Alternative considered:** JSON — easier to parse in C++ but inconsistent with the rest of `data/`; the YAML format here is simple enough that a C++ hand-parser is trivial.
+### No runtime I/O: setups are `constexpr` string literals
 
-### C++ loader: hand-rolled line parser (no new dependency)
+Because setups are embedded in `src/generated/game_setups.hpp`, no file loading is required at runtime. `GameSetup` has no `load()` method. Any function that needs a canonical setup indexes into `kGameSetups` directly. This eliminates a whole class of failure modes (missing files, path configuration, file format drift) and makes setup access zero-cost.
 
-The YAML format for setups is deliberately minimal — one `id:` line, one `seed:` line, one `circle: [...]` line. A 20-line C++ parser handles this without adding a YAML library dependency. The parsed result is a `GameSetup` value.
+**Alternative considered:** A C++ YAML parser (hand-rolled or via `yaml-cpp`) — adds complexity and a runtime dependency for data that never changes between compilations.
 
-**Alternative considered:** `nlohmann/json` with JSON files — would require a new Meson wrap and a format change; unjustified for this scope.
+### NDJSON log record: single-line JSON with circle as a string
 
-**Alternative considered:** `libyaml` or `yaml-cpp` — heavyweight; the format doesn't require it.
+The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but should be designed for from day one. `GameSetup::to_ndjson(std::ostream&)` emits one JSON line: `{"type":"setup","seed":<seed>,"circle":"<33chars>"}`. The circle is now a string rather than a JSON array, making log lines shorter and directly grep-able by patch name character. This integrates naturally with the planned logging pipeline.
 
-### NDJSON log record: single-line JSON emitted to `std::ostream`
+**Alternative considered:** Emit the circle as a JSON array of integers (patch IDs) — bulkier, less human-readable, inconsistent with the char-based representation in the rest of the codebase.
 
-The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but should be designed for from day one. `GameSetup::to_ndjson(std::ostream&)` emits one JSON line: `{"type":"setup","id":1,"seed":3735928559,"circle":[…]}`. This integrates naturally with the planned logging pipeline.
+### Initial batch: 100 canonical setups in `src/generated/game_setups.hpp`
 
-**Alternative considered:** Defer logging entirely — the log helper is trivial to add now and avoids a second pass over this struct later.
-
-### Initial batch: 10 canonical setups committed to `data/setups/`
-
-Ten setups are enough for unit tests and early analysis without bloating the repository. More can be generated on demand with `mise run codegen:setups`. The batch is R-generated with seeds `[1, 2, …, 10]` for simplicity and reproducibility.
+100 setups are sufficient for unit tests, early game-tree analysis, and RL training warm-up without significantly increasing build times or binary size (`constexpr` data is essentially free). The batch is R-generated with seeds `[1, 2, …, 100]` for simplicity and reproducibility. More can be re-generated on demand with `mise run codegen:setups`.
 
 ## Risks / Trade-offs
 
-- **Hand-rolled YAML parser brittleness** → Mitigation: format is locked to the R generator's output; a round-trip test in C++ (generate via R, load in C++) catches any mismatch.
-- **Sequential seeds for canonical setups** → Mitigation: seeds are stored in each file, so analysis can always identify which permutation is being studied; monotone seeds are not a security concern for a board game.
+- **Generated header size** → Mitigation: 100 × 33 chars of `constexpr` data is ~3 KB; negligible impact on compile time or binary size.
+- **Sequential seeds for canonical setups** → Mitigation: seeds are stored alongside each entry, so analysis can always identify which permutation is being studied; monotone seeds are not a security concern for a board game.
 - **`GameSetup` not in `GameState` increases function-signature complexity** → Mitigation: the next-phase legal move functions will consistently take `(const GameSetup&, GameState&)` — documented as the project's calling convention.
