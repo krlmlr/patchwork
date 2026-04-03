@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo bash scripts/install-tools.sh
+
+      - name: Configure build
+        run: meson setup build
+
+      - name: Build
+        run: ninja -C build
+
+      - name: Run tests
+        run: meson test -C build -v
+
+      - name: Regenerate codegen (smoke test)
+        run: Rscript codegen/generate_patches.R
