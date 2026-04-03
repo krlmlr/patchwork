@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: GameSetup encodes the initial patch circle arrangement
 
 `GameSetup` SHALL hold the initial circular arrangement of all 33 patches as a `std::array<uint8_t, 33>` of integer patch IDs (0–32). The constructor SHALL accept a 33-character `std::string_view` of single-char patch names and convert each character to its integer ID by looking up the patch catalog.
@@ -11,6 +13,15 @@
 
 - **WHEN** any canonical setup string from `patchwork::kGameSetups` is examined
 - **THEN** the last character (position 32) is `'2'` — the name of the two-square tile
+
+## REMOVED Requirements
+
+### Requirement: GameSetup can be loaded from a YAML setup file
+
+**Reason**: Setups are now embedded as `constexpr` string literals in `src/generated/game_setups.hpp`; runtime file loading is no longer needed or provided.
+**Migration**: Access canonical setups via `patchwork::kGameSetups[i]` from the generated header instead of calling `GameSetup::load(path)`.
+
+## MODIFIED Requirements
 
 ### Requirement: GameSetup serialises to an NDJSON record
 
