@@ -1,5 +1,9 @@
 # Patchwork Engine — Roadmap
 
+> **Maintenance note:** This file is human-maintained and AI-read.
+> Humans update phases, priorities, and open questions here.
+> AI reads this file to understand current project state before proposing or implementing changes.
+
 Uwe Rosenberg's Patchwork as a case study for game engine development, modern C++, and AI techniques from scratch to reinforcement learning.
 
 ## Principles

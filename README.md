@@ -43,6 +43,7 @@ sudo bash scripts/install-tools.sh
 | `.devcontainer/` | Devcontainer configuration for Codespaces / Copilot |
 | `.github/workflows/` | GitHub Actions CI and Copilot agent setup |
 | `openspec/` | OpenSpec change artifacts (proposals, designs, tasks) |
+| `openspec/roadmap.md` | Human-maintained project roadmap (read by AI for context) |
 
 ## Code formatting
 
@@ -63,7 +64,9 @@ mise run lint
 
 This project uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for
 structured change management. Change proposals, designs, and task lists live
-under `openspec/changes/`. To interact with them:
+under `openspec/changes/`. The project roadmap lives at `openspec/roadmap.md`
+and is human-maintained — AI reads it automatically to align proposals and
+designs with current priorities. To interact with changes:
 
 ```sh
 openspec status          # list all changes and their progress
