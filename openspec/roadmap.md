@@ -28,13 +28,44 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Game Setup & Rules
+### Game Setup
 
 - `GameSetup`: initial patch circle arrangement (`std::array<uint8_t, 33>`), seeded RNG for reproducibility
 - R scripts to generate, store, and version game setups (`data/setups/`)
-- Complete game rules: legal move generation, move application, terminal detection
+- C++ code to load and log setups
+- Tests
+
+---
+
+### Piece Placement
+
+- Assumption: economy matters more than placement of pieces
+- Move to a simplified game state that only tracks patch availability, player positions, buttons, and income — quilt board is reduced to a single integer counting free spaces (0–81)
+- Think and decide variants: hard-coded rules or template argument?
+
+---
+
+### Simplified Rules
+
+- Complete game rules under the simple ruleset: legal move generation, move application, terminal detection
 - NDJSON game logging (all moves, state transitions, outcomes)
 - Random agent (baseline for benchmarking)
+
+---
+
+### Random Sampling Agents
+
+- Uniform random agent (baseline)
+- Biased random agent (e.g. prefer cheaper patches, or those with more buttons, or with a better time-per-game-point ratio)
+
+---
+
+### Monte Carlo Tree Search
+
+- MCTS with UCB1
+- MCTS + simple rollout policy
+- Benchmarking MCTS vs minimax at various time budgets
+- R analysis: MCTS convergence, node visit distributions
 
 ---
 
@@ -47,12 +78,11 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Monte Carlo Tree Search
+### Piece Placement Agent
 
-- MCTS with UCB1
-- MCTS + simple rollout policy
-- Benchmarking MCTS vs minimax at various time budgets
-- R analysis: MCTS convergence, node visit distributions
+- Deterministic piece placement agent that chooses the best patch to place based on a heuristic evaluation of the quilt board state
+- Expand search to consider piece placement options for the best n positions according to the heuristic for each patch choice, not just patch selection
+- For placing multiple pieces, try out all combinations of orderings and placements of the pieces, and pick the best one according to the heuristic evaluation
 
 ---
 
