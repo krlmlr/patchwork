@@ -50,6 +50,7 @@ add("};")
 add("")
 add("struct PatchData {")
 add("    int id;")
+add("    char name;")
 add("    int buttons;")
 add("    int time;")
 add("    int income;")
@@ -72,8 +73,8 @@ for (i in seq_along(catalog)) {
   cells_init <- paste(cell_strs, collapse = ", ")
 
   comma <- if (i < length(catalog)) "," else ""
-  add(sprintf("    {%d, %d, %d, %d, %d, {{%s}}}%s",
-              p$id, p$buttons, p$time, p$income, n, cells_init, comma))
+  add(sprintf("    {%d, '%s', %d, %d, %d, %d, {{%s}}}%s",
+              p$id, p$name, p$buttons, p$time, p$income, n, cells_init, comma))
 }
 
 add("}};")
