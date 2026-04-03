@@ -41,7 +41,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Piece Placement
+### Start Without Piece Placement
 
 - Assumption: economy matters more than placement of pieces
 - Move to a simplified game state that only tracks patch availability, player positions, buttons, and income — quilt board is reduced to a single integer counting free spaces (0–81)
