@@ -6,7 +6,7 @@
 # Entries are ordered by: cell count (asc), button cost (asc), income (desc)
 
 - id: 1
-  name: 2
+  name: '2'
   buttons: 2
   time: 1
   income: 0
@@ -23,7 +23,7 @@
     X.
 
 - id: 3
-  name: 3
+  name: '3'
   buttons: 2
   time: 2
   income: 0
@@ -49,7 +49,7 @@
     .X.
 
 - id: 6
-  name: 4
+  name: '4'
   buttons: 3
   time: 3
   income: 1
@@ -158,7 +158,7 @@
     .X.
 
 - id: 18
-  name: 5
+  name: '5'
   buttons: 7
   time: 1
   income: 1
@@ -253,7 +253,7 @@
     .XX.
 
 - id: 28
-  name: 1
+  name: '1'
   buttons: 7
   time: 2
   income: 2
