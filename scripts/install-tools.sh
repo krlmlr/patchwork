@@ -37,6 +37,9 @@ npm install -g @fission-ai/openspec@latest markdownlint-cli2
 # ---------------------------------------------------------------------------
 echo ""
 echo "=== Tool versions ==="
+
+set -x
+
 meson --version
 ninja --version
 Rscript --version
