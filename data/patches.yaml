@@ -129,7 +129,7 @@
     XX.
 
 - id: 15
-  name: y
+  name: 'y'
   buttons: 3
   time: 4
   income: 1
@@ -204,7 +204,7 @@
     X..X
 
 - id: 23
-  name: N
+  name: 'N'
   buttons: 1
   time: 2
   income: 0
