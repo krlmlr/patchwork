@@ -2,17 +2,143 @@
 # All 33 patches from Uwe Rosenberg's Patchwork board game
 # Source: https://github.com/SnarkAttack/patchwork/blob/main/src/patchwork/patch.py
 # Shape encoding: '.' = empty cell, 'X' = occupied cell
-# Shapes are normalised to their minimal bounding box
+# Shapes are in canonical form (lexicographically minimal across all rotations/reflections)
+# Entries are ordered by: cell count (asc), button cost (asc), income (desc)
 
 - id: 1
+  name: '2'
+  buttons: 2
+  time: 1
+  income: 0
+  shape: |
+    XX
+
+- id: 2
+  name: v
   buttons: 1
   time: 3
   income: 0
   shape: |
+    XX
     X.
+
+- id: 3
+  name: '3'
+  buttons: 2
+  time: 2
+  income: 0
+  shape: |
+    XXX
+
+- id: 4
+  name: j
+  buttons: 3
+  time: 1
+  income: 0
+  shape: |
+    XX
+    X.
+
+- id: 5
+  name: t
+  buttons: 2
+  time: 2
+  income: 0
+  shape: |
+    XXX
+    .X.
+
+- id: 6
+  name: '4'
+  buttons: 3
+  time: 3
+  income: 1
+  shape: |
+    XXXX
+
+- id: 7
+  name: s
+  buttons: 3
+  time: 2
+  income: 1
+  shape: |
+    XX.
+    .XX
+
+- id: 8
+  name: L
+  buttons: 4
+  time: 6
+  income: 2
+  shape: |
+    XXX
+    X..
+
+- id: 9
+  name: l
+  buttons: 4
+  time: 2
+  income: 1
+  shape: |
+    XXX
+    X..
+
+- id: 10
+  name: o
+  buttons: 6
+  time: 5
+  income: 2
+  shape: |
+    XX
     XX
 
-- id: 2
+- id: 11
+  name: S
+  buttons: 7
+  time: 6
+  income: 3
+  shape: |
+    XX.
+    .XX
+
+- id: 12
+  name: u
+  buttons: 1
+  time: 2
+  income: 0
+  shape: |
+    XXX
+    X.X
+
+- id: 13
+  name: z
+  buttons: 2
+  time: 3
+  income: 1
+  shape: |
+    XXX.
+    ..XX
+
+- id: 14
+  name: p
+  buttons: 2
+  time: 2
+  income: 0
+  shape: |
+    XXX
+    XX.
+
+- id: 15
+  name: 'y'
+  buttons: 3
+  time: 4
+  income: 1
+  shape: |
+    XXXX
+    .X..
+
+- id: 16
+  name: x
   buttons: 5
   time: 4
   income: 2
@@ -21,119 +147,45 @@
     XXX
     .X.
 
-- id: 3
-  buttons: 2
-  time: 1
-  income: 0
+- id: 17
+  name: T
+  buttons: 5
+  time: 5
+  income: 2
   shape: |
+    XXX
     .X.
-    .XX
-    XX.
     .X.
 
-- id: 4
+- id: 18
+  name: '5'
   buttons: 7
   time: 1
   income: 1
   shape: |
     XXXXX
 
-- id: 5
-  buttons: 8
-  time: 6
+- id: 19
+  name: w
+  buttons: 10
+  time: 4
   income: 3
   shape: |
-    .XX
-    .XX
     XX.
+    .XX
+    ..X
 
-- id: 6
-  buttons: 3
-  time: 1
-  income: 0
+- id: 20
+  name: J
+  buttons: 10
+  time: 3
+  income: 2
   shape: |
-    .X
-    XX
-
-- id: 7
-  buttons: 1
-  time: 2
-  income: 0
-  shape: |
-    ...X
     XXXX
     X...
 
-- id: 8
-  buttons: 2
-  time: 2
-  income: 0
-  shape: |
-    .X
-    XX
-    .X
-
-- id: 9
-  buttons: 2
-  time: 2
-  income: 0
-  shape: |
-    X.
-    XX
-    XX
-
-- id: 10
-  buttons: 4
-  time: 2
-  income: 0
-  shape: |
-    .X
-    XX
-    XX
-    X.
-
-- id: 11
-  buttons: 10
-  time: 4
-  income: 3
-  shape: |
-    ..X
-    .XX
-    XX.
-
-- id: 12
-  buttons: 7
-  time: 4
-  income: 2
-  shape: |
-    .XX.
-    XXXX
-
-- id: 13
-  buttons: 2
-  time: 3
-  income: 1
-  shape: |
-    .XXX
-    XX..
-
-- id: 14
-  buttons: 10
-  time: 5
-  income: 3
-  shape: |
-    XXXX
-    XX..
-
-- id: 15
-  buttons: 6
-  time: 5
-  income: 2
-  shape: |
-    XX
-    XX
-
-- id: 16
+- id: 21
+  name: A
   buttons: 0
   time: 3
   income: 1
@@ -142,149 +194,122 @@
     XXXX
     .X..
 
-- id: 17
-  buttons: 2
-  time: 3
-  income: 0
-  shape: |
-    X.X
-    XXX
-    X.X
-
-- id: 18
+- id: 22
+  name: U
   buttons: 1
   time: 5
   income: 1
   shape: |
+    XXXX
     X..X
-    XXXX
-
-- id: 19
-  buttons: 7
-  time: 6
-  income: 3
-  shape: |
-    .X
-    XX
-    X.
-
-- id: 20
-  buttons: 3
-  time: 4
-  income: 1
-  shape: |
-    .X
-    .X
-    XX
-    .X
-
-- id: 21
-  buttons: 3
-  time: 3
-  income: 1
-  shape: |
-    XXXX
-
-- id: 22
-  buttons: 7
-  time: 2
-  income: 2
-  shape: |
-    .X.
-    .X.
-    .X.
-    XXX
 
 - id: 23
-  buttons: 3
+  name: 'N'
+  buttons: 1
   time: 2
-  income: 1
+  income: 0
   shape: |
-    .X
-    XX
-    X.
+    XX.
+    .X.
+    .X.
+    .XX
 
 - id: 24
-  buttons: 4
-  time: 6
-  income: 2
-  shape: |
-    .X
-    .X
-    XX
-
-- id: 25
-  buttons: 10
-  time: 3
-  income: 2
-  shape: |
-    .X
-    .X
-    .X
-    XX
-
-- id: 26
-  buttons: 5
-  time: 3
-  income: 1
-  shape: |
-    .XX.
-    XXXX
-    .XX.
-
-- id: 27
-  buttons: 1
-  time: 4
-  income: 1
-  shape: |
-    ..X..
-    XXXXX
-    ..X..
-
-- id: 28
-  buttons: 3
-  time: 6
-  income: 2
-  shape: |
-    .X.
-    XXX
-    X.X
-
-- id: 29
-  buttons: 1
-  time: 2
-  income: 0
-  shape: |
-    X.X
-    XXX
-
-- id: 30
-  buttons: 2
-  time: 2
-  income: 0
-  shape: |
-    XXX
-
-- id: 31
-  buttons: 4
-  time: 2
-  income: 1
-  shape: |
-    ..X
-    XXX
-
-- id: 32
-  buttons: 5
-  time: 5
-  income: 2
-  shape: |
-    .X.
-    .X.
-    XXX
-
-- id: 33
+  name: k
   buttons: 2
   time: 1
   income: 0
   shape: |
-    XX
+    .X..
+    XXXX
+    ..X.
+
+- id: 25
+  name: e
+  buttons: 3
+  time: 6
+  income: 2
+  shape: |
+    XX.
+    .XX
+    XX.
+
+- id: 26
+  name: Z
+  buttons: 4
+  time: 2
+  income: 0
+  shape: |
+    XXX.
+    .XXX
+
+- id: 27
+  name: m
+  buttons: 7
+  time: 4
+  income: 2
+  shape: |
+    XXXX
+    .XX.
+
+- id: 28
+  name: '1'
+  buttons: 7
+  time: 2
+  income: 2
+  shape: |
+    XXX
+    .X.
+    .X.
+    .X.
+
+- id: 29
+  name: d
+  buttons: 8
+  time: 6
+  income: 3
+  shape: |
+    XX.
+    XXX
+    ..X
+
+- id: 30
+  name: q
+  buttons: 10
+  time: 5
+  income: 3
+  shape: |
+    XXXX
+    XX..
+
+- id: 31
+  name: X
+  buttons: 1
+  time: 4
+  income: 1
+  shape: |
+    .X.
+    .X.
+    XXX
+    .X.
+    .X.
+
+- id: 32
+  name: H
+  buttons: 2
+  time: 3
+  income: 0
+  shape: |
+    XXX
+    .X.
+    XXX
+
+- id: 33
+  name: O
+  buttons: 5
+  time: 3
+  income: 1
+  shape: |
+    .XX.
+    XXXX
+    .XX.
