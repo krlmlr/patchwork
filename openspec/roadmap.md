@@ -15,7 +15,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ## Phases
 
-### Foundation *(current)*
+### Foundation *(done)*
 
 > Change: `project-foundation`
 
