@@ -3,11 +3,21 @@ schema: spec-driven
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+
+context: |
+  Tech stack: C++23, Meson build system, Catch2 tests, R for codegen and analysis, YAML data files.
+  Domain: board game engine — Uwe Rosenberg's Patchwork, implemented from scratch with AI techniques.
+
+  Roadmap: read openspec/roadmap.md before proposing or implementing any change.
+  The roadmap is human-maintained. It records completed phases, the current in-progress phase,
+  upcoming phases, and open questions. Always align proposals and designs with roadmap priorities.
+
+  Conventions:
+  - AI owns code, human owns design (each change is proposed and reviewed before implementation).
+  - Single source of truth: canonical data lives in data/ files; C++ code is generated and committed.
+  - Tests from day one — no change ships without tests.
+  - R scripts live in codegen/ and produce committed headers under src/generated/.
+  - Game logs use NDJSON format (future phases).
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
