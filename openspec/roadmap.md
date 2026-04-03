@@ -32,7 +32,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Game Setup *(in progress)*
+### Game Setup *(done)*
 
 - `GameSetup`: initial patch circle arrangement (`std::array<uint8_t, 33>`), seeded RNG for reproducibility
 - R scripts to generate, store, and version game setups (`data/setups/`)
@@ -41,7 +41,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Start Without Piece Placement
+### Start Without Piece Placement *(done)*
 
 - Assumption: economy matters more than placement of pieces
 - Move to a simplified game state that only tracks patch availability, player positions, buttons, and income — quilt board is reduced to a single integer counting free spaces (0–81)
@@ -52,8 +52,12 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 ### Simplified Rules
 
 - Complete game rules under the simple ruleset: legal move generation, move application, terminal detection
+- Distinguish between phases: tile picking + advance + payout while allowed, then tile placement; tile picking is legal as long as buttons and time allows, tile placement may still be impossible due to board state
+- Award 1x1 leather patches at the correct thresholds
+- Implement the 7×7 bonus scoring rules (simple version: bonus is claimed by the first player to reach 7×8 = 56 occupied tiles)
 - NDJSON game logging (all moves, state transitions, outcomes)
 - Random agent (baseline for benchmarking)
+- Reproducible random play with logging, random seed and starting position as input
 
 ---
 
