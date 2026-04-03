@@ -64,10 +64,10 @@ Each row lists a **Recommended** letter and two **Alternatives**. The alternativ
 |  7 |  23 |  4    |  3  |  1  | `XX. / .XX` †                         | `s`         | `z`   | `Z`   | S/Z-tetromino, cheaper                           |
 |  8 |  24 |  4    |  4  |  2  | `XXX / X..` †                         | `L`         | `l`   | `J`   | L/J-tetromino, higher income                     |
 |  9 |  31 |  4    |  4  |  1  | `XXX / X..` †                         | `l`         | `j`   | `r`   | L/J-tetromino, lower income; same canon as ID 8  |
-| 10 |  15 |  4    |  6  |  2  | `XX / XX`                             | `O`         | `o`   | `0`   | O-tetromino (2×2 square)                         |
+| 10 |  15 |  4    |  6  |  2  | `XX / XX`                             | `o`         | `0`   | `q`   | O-tetromino (2×2 square); lowercase o frees O for the octomino |
 | 11 |  19 |  4    |  7  |  3  | `XX. / .XX` †                         | `S`         | `Z`   | `z`   | S/Z-tetromino, costlier; same canon as ID 7      |
 | 12 |  29 |  5    |  1  |  0  | `XXX / X.X`                           | `u`         | `U`   | `c`   | U-pentomino                                      |
-| 13 |  13 |  5    |  2  |  1  | `XXX. / ..XX`                         | `n`         | `N`   | `f`   | N-pentomino                                      |
+| 13 |  13 |  5    |  2  |  1  | `XXX. / ..XX`                         | `z`         | `n`   | `f`   | N-pentomino; `z` pairs with Z-hexomino (ID 26) by shape family |
 | 14 |   9 |  5    |  2  |  0  | `XXX / XX.`                           | `p`         | `P`   | `b`   | P-pentomino                                      |
 | 15 |  20 |  5    |  3  |  1  | `XXXX / .X..`                         | `y`         | `Y`   | `q`   | Y-pentomino                                      |
 | 16 |   2 |  5    |  5  |  2  | `.X. / XXX / .X.`                     | `x`         | `X`   | `+`   | X-pentomino (small plus/cross)                   |
@@ -78,7 +78,7 @@ Each row lists a **Recommended** letter and two **Alternatives**. The alternativ
 | 21 |  16 |  6    |  0  |  1  | `.X.. / XXXX / .X..`                  | `A`         | `G`   | `g`   | Asymmetric T-hexomino (offset cross)             |
 | 22 |  18 |  6    |  1  |  1  | `XXXX / X..X`                         | `U`         | `u`   | `c`   | U-hexomino (open-top U)                          |
 | 23 |   7 |  6    |  1  |  0  | `XX. / .X. / .X. / .XX`               | `N`         | `Z`   | `n`   | N/Z-hexomino (diagonal N-shape)                  |
-| 24 |   3 |  6    |  2  |  0  | `.X.. / XXXX / ..X.`                  | `z`         | `Z`   | `s`   | Z-hexomino (diagonal zigzag)                     |
+| 24 |   3 |  6    |  2  |  0  | `.X.. / XXXX / ..X.`                  | `k`         | `Z`   | `s`   | Asymmetric zigzag hexomino (unique shape; `k` is unambiguous) |
 | 25 |  28 |  6    |  3  |  2  | `XX. / .XX / XX.`                     | `e`         | `E`   | `k`   | Weaving/interlocked hexomino                     |
 | 26 |  10 |  6    |  4  |  0  | `XXX. / .XXX`                         | `Z`         | `S`   | `k`   | S/Z-hexomino (elongated S)                       |
 | 27 |  12 |  6    |  7  |  2  | `XXXX / .XX.`                         | `m`         | `M`   | `a`   | Arch/bridge hexomino (two bumps = two m-humps)   |
@@ -87,11 +87,11 @@ Each row lists a **Recommended** letter and two **Alternatives**. The alternativ
 | 30 |  14 |  6    | 10  |  3  | `XXXX / XX..`                         | `q`         | `Q`   | `r`   | Hockey-stick hexomino                            |
 | 31 |  27 |  7    |  1  |  1  | `.X. / .X. / XXX / .X. / .X.`        | `X`         | `x`   | `+`   | X-heptomino (large plus/cross)                   |
 | 32 |  17 |  7    |  2  |  0  | `XXX / .X. / XXX`                     | `H`         | `h`   | `#`   | H-heptomino                                      |
-| 33 |  26 |  8    |  5  |  1  | `.XX. / XXXX / .XX.`                  | `I`         | `8`   | `a`   | I-octomino (serif I-beam)                        |
+| 33 |  26 |  8    |  5  |  1  | `.XX. / XXXX / .XX.`                  | `O`         | `8`   | `a`   | I-octomino (serif I-beam, visually a thick O/oval shape) |
 
 The **Recommended** column is a conflict-free set of 33 unique characters:
 
-`1`, `2`, `3`, `4`, `5`, `A`, `d`, `e`, `H`, `I`, `J`, `j`, `l`, `L`, `m`, `n`, `N`, `O`, `p`, `q`, `s`, `S`, `t`, `T`, `u`, `U`, `v`, `w`, `x`, `X`, `y`, `z`, `Z`
+`1`, `2`, `3`, `4`, `5`, `A`, `d`, `e`, `H`, `J`, `j`, `k`, `l`, `L`, `m`, `N`, `o`, `O`, `p`, `q`, `s`, `S`, `t`, `T`, `u`, `U`, `v`, `w`, `x`, `X`, `y`, `z`, `Z`
 
 ## Impact
 

@@ -7,12 +7,12 @@
   - New IDs 8 & 9 (old 24 & 31): both get `XXX\nX..`
 - [ ] 1.3 Add a `name` field immediately after `id` to each entry using the recommended assignments from the proposal:
   - id 1 → `2`, id 2 → `v`, id 3 → `3`, id 4 → `j`, id 5 → `t`
-  - id 6 → `4`, id 7 → `s`, id 8 → `L`, id 9 → `l`, id 10 → `O`
-  - id 11 → `S`, id 12 → `u`, id 13 → `n`, id 14 → `p`, id 15 → `y`
+  - id 6 → `4`, id 7 → `s`, id 8 → `L`, id 9 → `l`, id 10 → `o`
+  - id 11 → `S`, id 12 → `u`, id 13 → `z`, id 14 → `p`, id 15 → `y`
   - id 16 → `x`, id 17 → `T`, id 18 → `5`, id 19 → `w`, id 20 → `J`
-  - id 21 → `A`, id 22 → `U`, id 23 → `N`, id 24 → `z`, id 25 → `e`
+  - id 21 → `A`, id 22 → `U`, id 23 → `N`, id 24 → `k`, id 25 → `e`
   - id 26 → `Z`, id 27 → `m`, id 28 → `1`, id 29 → `d`, id 30 → `q`
-  - id 31 → `X`, id 32 → `H`, id 33 → `I`
+  - id 31 → `X`, id 32 → `H`, id 33 → `O`
 - [ ] 1.4 Verify that all 33 `name` values are unique and each is a single ASCII letter or digit
 
 ## 2. Update `codegen/generate_patches.R`

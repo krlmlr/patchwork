@@ -38,24 +38,26 @@ Ordering by (cell count, button cost, −income) groups logically similar tiles 
 
 **I-polyominoes use the digit matching their cell count:** 2-cell domino → `2`, 3-cell straight tromino → `3`, 4-cell straight tetromino → `4`, 5-cell straight pentomino → `5`. This makes line-pieces immediately recognisable and reserves digits for cases where cell count is the defining feature.
 
-**Well-known polyomino families use their standard letter:** `t`/`T` (T-tetromino / T-pentomino), `s`/`S` (S/Z-tetromino cheap / costly), `L`/`l` (L-tetromino high-income / low-income), `O` (O-tetromino), `u`/`U` (U-pentomino / U-hexomino), `n`/`N` (N-pentomino / N-hexomino), `w` (W-pentomino), `x`/`X` (X-pentomino small plus / X-heptomino large plus), `H` (H-heptomino), `p` (P-pentomino), `y` (Y-pentomino), `J`/`j` (J-pentomino / J-tromino mirror).
+**Well-known polyomino families use their standard letter:** `t`/`T` (T-tetromino / T-pentomino), `s`/`S` (S/Z-tetromino cheap / costly), `L`/`l` (L-tetromino high-income / low-income), `o` (O-tetromino), `u`/`U` (U-pentomino / U-hexomino), `z`/`Z` (N-pentomino / Z-hexomino family), `N` (N/Z-hexomino diagonal), `w` (W-pentomino), `x`/`X` (X-pentomino small plus / X-heptomino large plus), `H` (H-heptomino), `p` (P-pentomino), `y` (Y-pentomino), `J`/`j` (J-pentomino / J-tromino mirror).
 
 **Remaining patches use shape-inspired characters:**
 - `v` — the cheaper L/J-tromino seen as a bent line resembling v
 - `m` — arch/bridge hexomino (two humps match the two bumps of m)
 - `1` — tall-stick hexomino (looks like the numeral 1 with a serif base)
 - `A` — asymmetric T-hexomino (offset cross; no standard letter matches precisely)
-- `e`/`z`/`Z`/`d`/`q` — hexominoes with elongated or step shapes
-- `I` — serif I-beam octomino
+- `k` — asymmetric zigzag hexomino (unique shape with no standard name; `k` is unambiguous)
+- `e`/`d`/`q` — hexominoes with elongated or step shapes
+- `O` — serif I-beam octomino (uppercase O evokes the closed, blocky silhouette of the piece)
 
 **Upper/lower-case pairing is used deliberately** to distinguish same-canonical-shape pairs and to pair polyomino family members by size:
 - `s`/`S`: S/Z-tetromino cheap vs costly
 - `l`/`L`: L/J-tetromino low-income vs high-income
 - `j`/`J`: J-tromino mirror vs J-pentomino
 - `u`/`U`: U-pentomino vs U-hexomino
-- `n`/`N`: N-pentomino vs N-hexomino
+- `z`/`Z`: N-pentomino (small, N-family) vs Z-hexomino (larger, elongated S/Z)
 - `t`/`T`: T-tetromino vs T-pentomino
 - `x`/`X`: X-pentomino (small plus) vs X-heptomino (large plus)
+- `o`/`O`: O-tetromino (small 2×2 square) vs I-octomino (largest piece)
 
 **Alternative considered:** Use only lowercase letters — simpler, but provides fewer intuitive size-pairing signals.
 
