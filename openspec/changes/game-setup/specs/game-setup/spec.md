@@ -2,22 +2,17 @@
 
 ### Requirement: GameSetup encodes the initial patch circle arrangement
 
-`GameSetup` SHALL hold the initial circular arrangement of all 33 patches as a `std::array<char, 33>` of single-character patch names (as defined in `data/patches.yaml`) and the `uint64_t` seed used to generate it.
+`GameSetup` SHALL hold the initial circular arrangement of all 33 patches as a `std::array<uint8_t, 33>` of integer patch IDs (0–32). The constructor SHALL accept a 33-character `std::string_view` of single-char patch names and convert each character to its integer ID by looking up the patch catalog.
 
-#### Scenario: from_seed produces a valid permutation
+#### Scenario: Construction from string produces a valid permutation
 
-- **WHEN** `GameSetup::from_seed(s, patch_names)` is called for any seed `s` and ordered array of 33 single-char patch names
-- **THEN** the resulting circle contains each of the 33 distinct patch name characters exactly once
+- **WHEN** `GameSetup` is constructed from a 33-char string of patch names
+- **THEN** the internal circle contains each of the integer IDs `0` through `32` exactly once
 
-#### Scenario: from_seed is deterministic
+#### Scenario: Last tile in every canonical setup is the two-square patch
 
-- **WHEN** `GameSetup::from_seed(s, patch_names)` is called twice with the same seed `s`
-- **THEN** both results have identical circle arrays
-
-#### Scenario: from_seed produces distinct permutations for different seeds
-
-- **WHEN** `GameSetup::from_seed(s1, patch_names)` and `GameSetup::from_seed(s2, patch_names)` are called with `s1 ≠ s2`
-- **THEN** the two circle arrays are not equal (with overwhelming probability)
+- **WHEN** any canonical setup string from `patchwork::kGameSetups` is examined
+- **THEN** the last character (position 32) is `'2'` — the name of the two-square tile
 
 ## REMOVED Requirements
 
@@ -30,17 +25,17 @@
 
 ### Requirement: GameSetup serialises to an NDJSON record
 
-`GameSetup::to_ndjson` SHALL emit exactly one JSON line to the provided `std::ostream` containing the type tag, seed, and circle as a 33-character string.
+`GameSetup::to_ndjson` SHALL emit exactly one JSON line to the provided `std::ostream` containing the type tag and circle as a 33-character string.
 
 #### Scenario: NDJSON output is a single line with correct fields
 
 - **WHEN** `to_ndjson(out)` is called on a `GameSetup`
 - **THEN** the output contains a single newline-terminated JSON object
-- **AND** the object has `"type": "setup"`, `"seed": <value>`, and `"circle": "<33-char-string>"`
+- **AND** the object has `"type": "setup"` and `"circle": "<33-char-string>"`
 
 ### Requirement: Canonical setups are embedded in `src/generated/game_setups.hpp`
 
-The repository SHALL contain a committed generated header `src/generated/game_setups.hpp` produced by `codegen/generate_setups.R`, defining a `constexpr std::array<GameSetupEntry, 100>` named `kGameSetups` in namespace `patchwork`. Each `GameSetupEntry` pairs a `std::string_view circle` (exactly 33 characters) with a `uint64_t seed`.
+The repository SHALL contain a committed generated header `src/generated/game_setups.hpp` produced by `codegen/generate_setups.R`, defining a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` in namespace `patchwork`, where `kNumGameSetups` is a named constant matching the value hard-coded in the R script (initially `100`). Generating more setups in future SHALL leave the first 100 entries unchanged.
 
 #### Scenario: Generated header is present and contains 100 entries
 
@@ -49,13 +44,13 @@ The repository SHALL contain a committed generated header `src/generated/game_se
 
 #### Scenario: Each entry is a valid permutation of patch names
 
-- **WHEN** any entry `e` in `patchwork::kGameSetups` is examined
-- **THEN** `e.circle` is exactly 33 characters
-- **AND** `e.circle` contains each of the 33 single-char patch names exactly once
+- **WHEN** any entry in `patchwork::kGameSetups` is examined
+- **THEN** it is exactly 33 characters
+- **AND** it contains each of the 33 single-char patch names exactly once
 
 ### Requirement: GameSetup is unit tested
 
-All `GameSetup` behaviours SHALL have Catch2 unit tests covering `from_seed`, access via `kGameSetups`, and `to_ndjson`.
+All `GameSetup` behaviours SHALL have Catch2 unit tests covering construction from string, access via `kGameSetups`, and `to_ndjson`.
 
 #### Scenario: Tests exist and pass
 

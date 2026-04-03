@@ -8,8 +8,7 @@ The project's Foundation phase established `GameState` (two `PlayerState` instan
 
 - Define `GameSetup` as a lightweight, immutable value type suitable for sharing across MCTS tree nodes without copying
 - Establish R as the authority for generating and versioning canonical setups
-- Keep C++ parsing simple — no new heavy dependencies
-- Make setups reproducible: given a seed, the same circle is always produced
+- Keep C++ simple — no seed tracking, no RNG, no file I/O
 - Ensure the new type is fully unit-tested
 
 **Non-Goals:**
@@ -27,28 +26,28 @@ For MCTS, `GameState` is copied millions of times per second. Adding 33 bytes fo
 
 **Alternative considered:** Store the circle in `GameState` — simpler API but unacceptable memory cost at MCTS scale.
 
-### Circle stored as a 33-char string of patch names
+### Circle stored as `uint8_t` integer IDs; constructed from a string
 
-Patch names are single ASCII characters (`[A-Za-z0-9]`, defined in `data/patches.yaml`). Encoding the circle as a `std::array<char, 33>` (or a `std::string_view` into the generated table) preserves the compactness of the array approach while making the circle human-readable at a glance — `"eV1q…"` is instantly scannable in logs and debugger output without a catalog lookup. It also aligns with the `char name` field already present in `PatchData`.
+Patch IDs are 0–32 (fit in `uint8_t`). `GameSetup` stores a `std::array<uint8_t, 33>` internally to keep the hot lookup path index-based and allocation-free. The constructor accepts a 33-char `std::string_view` of single-char patch names and converts each character to its integer ID via the patch catalog — so callers write `GameSetup{"eV1q…"}` without needing to know the ID mapping.
 
-**Alternative considered:** `std::array<uint8_t, 33>` of patch IDs — compact but opaque; requires a catalog lookup to interpret any element.
+**Alternative considered:** Store characters directly (`std::array<char, 33>`) — readable but requires a catalog lookup on every access to obtain the ID for game logic; shifts the per-use cost from construction to usage.
 
-### Seeded RNG: `std::mt19937_64` + `std::shuffle`
+### Seeds are an R-only concern; not exposed in C++
 
-`std::mt19937_64` is the standard, portable, reproducible PRNG. `std::shuffle` over the identity permutation `[0, 1, …, 32]` produces a uniformly random permutation. The seed is stored alongside the circle so that logs and analysis can always reproduce the exact setup.
+`codegen/generate_setups.R` uses a named constant `N_SETUPS <- 100L` and generates each permutation deterministically from `set.seed(i); sample(33)`. The seeds are internal bookkeeping for the R script. Once the header is generated, C++ has no use for them — the permutations are already fixed as `constexpr` string literals. Omitting seeds from `GameSetup` and from the generated header keeps the type simple and the NDJSON log compact.
 
-**Alternative considered:** `std::default_random_engine` — implementation-defined; not reproducible across platforms or compiler versions.
+**Alternative considered:** Store the seed in `GameSetup` alongside the circle — would allow C++ to reproduce any setup independently, but that reproducing is already done by R and the result is committed; adding seed storage to C++ would be redundant and wasted bytes in the struct.
 
 ### Canonical setups as `constexpr` string literals in `src/generated/game_setups.hpp`
 
-R reads `data/patches.yaml` to obtain the ordered single-char patch names, generates 100 random permutations via `sample()`, and writes `src/generated/game_setups.hpp`. The header exposes a `constexpr std::array` of 100 `GameSetupEntry` values — each pairing a 33-char `std::string_view` with its seed. Including this file costs zero runtime I/O and the entire setup table is available as a compile-time constant.
+R reads `data/patches.yaml` to obtain the ordered single-char patch names, generates 100 random permutations via `sample()`, and writes `src/generated/game_setups.hpp`. The header exposes a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` where `kNumGameSetups` is a named constant set to `100`. Generating additional setups later uses a larger `N_SETUPS` value in R but leaves the first 100 entries bit-for-bit identical. Including this file costs zero runtime I/O and the entire setup table is available as a compile-time constant.
 
 ```cpp
 // src/generated/game_setups.hpp
 namespace patchwork {
-struct GameSetupEntry { std::string_view circle; uint64_t seed; };
-constexpr std::array<GameSetupEntry, 100> kGameSetups = {{
-    {"eV1q...", 1},   // 33 chars
+inline constexpr std::size_t kNumGameSetups = 100;
+constexpr std::array<std::string_view, kNumGameSetups> kGameSetups = {{
+    "eV1q...",   // 33 chars
     ...
 }};
 }
@@ -64,9 +63,9 @@ Because setups are embedded in `src/generated/game_setups.hpp`, no file loading 
 
 ### NDJSON log record: single-line JSON with circle as a string
 
-The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but should be designed for from day one. `GameSetup::to_ndjson(std::ostream&)` emits one JSON line: `{"type":"setup","seed":<seed>,"circle":"<33chars>"}`. The circle is now a string rather than a JSON array, making log lines shorter and directly grep-able by patch name character. This integrates naturally with the planned logging pipeline.
+The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but should be designed for from day one. `GameSetup::to_ndjson(std::ostream&)` emits one JSON line: `{"type":"setup","circle":"<33chars>"}`. The circle is a string of single-char patch names, making log lines short and directly grep-able by patch name character. Seeds are not included — they are R metadata, not game state.
 
-**Alternative considered:** Emit the circle as a JSON array of integers (patch IDs) — bulkier, less human-readable, inconsistent with the char-based representation in the rest of the codebase.
+**Alternative considered:** Include the seed in the NDJSON record for traceability — unnecessary since canonical setup index (position in `kGameSetups`) is the stable identifier, and seeds are available in the R script.
 
 ### Initial batch: 100 canonical setups in `src/generated/game_setups.hpp`
 
@@ -75,5 +74,5 @@ The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but shou
 ## Risks / Trade-offs
 
 - **Generated header size** → Mitigation: 100 × 33 chars of `constexpr` data is ~3 KB; negligible impact on compile time or binary size.
-- **Sequential seeds for canonical setups** → Mitigation: seeds are stored alongside each entry, so analysis can always identify which permutation is being studied; monotone seeds are not a security concern for a board game.
+- **First-100 stability depends on R PRNG reproducibility** → Mitigation: `set.seed(i); sample(33)` is deterministic in any R version; the generated header is committed and only updated by an intentional re-run of `codegen/generate_setups.R`.
 - **`GameSetup` not in `GameState` increases function-signature complexity** → Mitigation: the next-phase legal move functions will consistently take `(const GameSetup&, GameState&)` — documented as the project's calling convention.

@@ -4,17 +4,17 @@
 
 ## What Changes
 
-- Introduce a **`GameSetup` struct** in `src/game_setup.hpp`: a 33-char string recording the starting circle order as single-character patch names (as defined in `data/patches.yaml`), plus the `uint64_t` seed used to generate that permutation
+- Introduce a **`GameSetup` struct** in `src/game_setup.hpp`: stores the starting circle order as a `std::array<uint8_t, 33>` of integer patch IDs; constructor accepts a 33-char string of single-char patch names (as defined in `data/patches.yaml`) and converts to IDs
 - Add an **R script** (`codegen/generate_setups.R`) that generates 100 canonical game setups and emits them as `constexpr` string literals into `src/generated/game_setups.hpp`; no YAML files and no runtime I/O are required
 - Commit the **initial generated header** (`src/generated/game_setups.hpp`) containing exactly 100 `constexpr` setup entries as a versioned reference for tests and future analysis
-- Add a **log helper** that serialises a `GameSetup` to an NDJSON record (seed + 33-char circle string), ready for the logging pipeline introduced in a later phase
+- Add a **log helper** that serialises a `GameSetup` to an NDJSON record (33-char circle string), ready for the logging pipeline introduced in a later phase
 - Add **unit tests** covering construction, `constexpr` access, and serialisation
 
 ## Capabilities
 
 ### New Capabilities
 
-- `game-setup`: `GameSetup` struct with seeded-RNG construction and NDJSON serialisation; R script that generates `constexpr` string literals in `src/generated/game_setups.hpp`; committed initial header with 100 setups
+- `game-setup`: `GameSetup` struct with string-to-ID constructor and NDJSON serialisation; R script that generates `constexpr` string literals in `src/generated/game_setups.hpp`; committed initial header with 100 setups
 
 ### Modified Capabilities
 
