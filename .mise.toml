@@ -1,0 +1,26 @@
+[env]
+_.path = ["{{config_root}}/build"]
+
+[tasks.setup]
+description = "Configure the build directory"
+run = "meson setup build"
+
+[tasks.build]
+description = "Build the project"
+run = "ninja -C build"
+
+[tasks.test]
+description = "Run tests"
+run = "meson test -C build"
+
+[tasks.codegen]
+description = "Regenerate committed C++ headers from data files"
+run = "Rscript codegen/generate_patches.R"
+
+[tasks.format]
+description = "Format C++ source files with clang-format"
+run = "find src \\( -name '*.cpp' -o -name '*.hpp' \\) -print0 | xargs -0 clang-format -i"
+
+[tasks.lint]
+description = "Lint Markdown files with markdownlint-cli2"
+run = "markdownlint-cli2 '**/*.md'"
