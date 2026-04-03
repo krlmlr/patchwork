@@ -11,6 +11,14 @@ The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork 
 - **WHEN** the `name` field of all 33 patch entries is read
 - **THEN** every value is a single ASCII letter or digit (`[A-Za-z0-9]`), and no two entries share the same value
 
+#### Scenario: Patch shapes are in canonical form *(new)*
+- **WHEN** any `shape` value is read from the catalog
+- **THEN** it equals the lexicographically minimal grid string obtainable by any rotation (0°/90°/180°/270°) or reflection of that tile; equivalently, no other orientation of the same tile would produce a smaller string under lexicographic comparison of the newline-joined rows
+
+#### Scenario: Catalog entries are sorted by size and cost *(new)*
+- **WHEN** all 33 entries are read in ID order
+- **THEN** they appear in non-decreasing order of cell count, and within each cell-count group in non-decreasing order of button cost, and within each button-cost group in non-increasing order of income
+
 ### Requirement: Generated header exposes patch array
 `src/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
 

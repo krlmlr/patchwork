@@ -1,14 +1,19 @@
-## 1. Update `data/patches.yaml`
+## 1. Re-order, renumber, and canonicalise `data/patches.yaml`
 
-- [ ] 1.1 Add a `name` field to each of the 33 patch entries, placed immediately after `id`, using the assignments from the proposal:
-  - id 1 → `l`, id 2 → `x`, id 3 → `n`, id 4 → `5`, id 5 → `z`
-  - id 6 → `j`, id 7 → `N`, id 8 → `t`, id 9 → `P`, id 10 → `Z`
-  - id 11 → `w`, id 12 → `m`, id 13 → `F`, id 14 → `q`, id 15 → `O`
-  - id 16 → `T`, id 17 → `H`, id 18 → `U`, id 19 → `S`, id 20 → `y`
-  - id 21 → `4`, id 22 → `1`, id 23 → `s`, id 24 → `L`, id 25 → `J`
-  - id 26 → `I`, id 27 → `X`, id 28 → `Y`, id 29 → `u`, id 30 → `3`
-  - id 31 → `r`, id 32 → `b`, id 33 → `2`
-- [ ] 1.2 Verify that all 33 `name` values are unique and each is a single ASCII letter or digit
+- [ ] 1.1 Sort all 33 patch entries by (cell count ASC, buttons ASC, income DESC) and renumber `id` fields 1–33 to match the new order
+- [ ] 1.2 Normalise each `shape` value to its canonical form (lexicographically minimal grid string across all 8 orientations); the three same-shape pairs that need new canonical shapes are:
+  - New IDs 2 & 4 (old 1 & 6): both get `XX\nX.`
+  - New IDs 7 & 11 (old 23 & 19): both get `XX.\n.XX`
+  - New IDs 8 & 9 (old 24 & 31): both get `XXX\nX..`
+- [ ] 1.3 Add a `name` field immediately after `id` to each entry using the recommended assignments from the proposal:
+  - id 1 → `2`, id 2 → `v`, id 3 → `3`, id 4 → `j`, id 5 → `t`
+  - id 6 → `4`, id 7 → `s`, id 8 → `L`, id 9 → `l`, id 10 → `O`
+  - id 11 → `S`, id 12 → `u`, id 13 → `n`, id 14 → `p`, id 15 → `y`
+  - id 16 → `x`, id 17 → `T`, id 18 → `5`, id 19 → `w`, id 20 → `J`
+  - id 21 → `A`, id 22 → `U`, id 23 → `N`, id 24 → `z`, id 25 → `e`
+  - id 26 → `Z`, id 27 → `m`, id 28 → `1`, id 29 → `d`, id 30 → `q`
+  - id 31 → `X`, id 32 → `H`, id 33 → `I`
+- [ ] 1.4 Verify that all 33 `name` values are unique and each is a single ASCII letter or digit
 
 ## 2. Update `codegen/generate_patches.R`
 
@@ -25,5 +30,6 @@
 ## 4. Update `openspec/specs/patch-catalog/spec.md`
 
 - [ ] 4.1 Add `name` to the list of required fields in the "Each patch has required fields" scenario
-- [ ] 4.2 Add a new scenario: **All patch names are unique single characters** — when all patch `name` fields are read, each is a single ASCII letter or digit and no two patches share the same name
-- [ ] 4.3 Add a new scenario: **Generated header exposes patch name** — when a `PatchData` entry is accessed, its `name` field contains the single character specified in the catalog
+- [ ] 4.2 Add scenario: **All patch names are unique single characters** — when all patch `name` fields are read, each is a single ASCII letter or digit and no two patches share the same value
+- [ ] 4.3 Add scenario: **Generated header exposes patch name** — when a `PatchData` entry is accessed, its `name` field contains the single character specified in the corresponding catalog entry
+- [ ] 4.4 Add scenario: **Catalog entries are in canonical-shape order** — when the catalog is read, entries appear in ascending order of (cell count, button cost, −income) and each `shape` value is the canonical (lexicographically minimal) form for that tile
