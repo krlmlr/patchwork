@@ -1,0 +1,18 @@
+[env]
+_.path = ["{{config_root}}/build"]
+
+[tasks.setup]
+description = "Configure the build directory"
+run = "meson setup build"
+
+[tasks.build]
+description = "Build the project"
+run = "ninja -C build"
+
+[tasks.test]
+description = "Run tests"
+run = "meson test -C build"
+
+[tasks.codegen]
+description = "Regenerate committed C++ headers from data files"
+run = "Rscript codegen/generate_patches.R"
