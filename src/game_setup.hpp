@@ -23,6 +23,7 @@ public:
         assert(sv.size() == 33);
         for (int i = 0; i < 33; ++i) {
             circle_[i] = name_to_id(sv[i]);
+            assert(circle_[i] < 33);  // catches invalid patch name characters
         }
     }
 
