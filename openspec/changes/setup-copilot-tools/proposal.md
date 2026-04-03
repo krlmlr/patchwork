@@ -6,22 +6,33 @@ A companion change will add GitHub Actions CI (running the same build and tests 
 
 ## What Changes
 
-- Add **`.devcontainer/devcontainer.json`** declaring the project's build environment: Ubuntu base, Meson, Ninja, GCC (C++23), and R with the `yaml` package
-- **Remove duplication** with the forthcoming GitHub Actions spec: the CI workflow will reference the same container image or reproduce its install steps from one place (the devcontainer image or a shared install script), so the toolchain is not defined twice
+- Add **`scripts/install-tools.sh`** — single source of truth for all prerequisites: apt packages (C++23 compiler via the base image, R, r-cran-yaml, clang-format, nodejs, npm), Meson and Ninja via pipx, and OpenSpec CLI plus markdownlint-cli2 via npm; ends with version smoke-tests
+- Add **`.devcontainer/devcontainer.json`** — Microsoft C++ devcontainer base image (Ubuntu 24.04 LTS), `postCreateCommand` runs `scripts/install-tools.sh`
+- Add **`.github/workflows/ci.yml`** — build + Catch2 tests + R codegen smoke-test on every push and PR; toolchain installed via `scripts/install-tools.sh`
+- Add **`.github/workflows/copilot-setup-steps.yml`** — provisions the full toolchain for Copilot agent sessions
+- Add **`README.md`** — quick-start (devcontainer and manual paths), project-structure table, formatting commands, OpenSpec usage
+- Add **`.clang-format`** — Google style, 4-space indent, 100-column limit
+- Add **`.markdownlint.yml`** — standard rules, 100-char line length, code blocks and tables exempt
+- Update **`BUILD.md`** — add "Zero-effort setup" section at the top; reference `scripts/install-tools.sh` as the direct Ubuntu install path
 
 ## Capabilities
 
 ### New Capabilities
 
 - `devcontainer`: `.devcontainer/devcontainer.json` that gives any cloud agent (Copilot, Codespaces, devcontainer CLI) a ready-to-build environment for this project
+- `ci`: `.github/workflows/ci.yml` running build, tests, and R codegen smoke-test on every push and PR
+- `copilot-setup-steps`: `.github/workflows/copilot-setup-steps.yml` provisioning the full toolchain for Copilot agent sessions
+- `readme`: `README.md` with quick-start, project structure, and tooling documentation
+- `formatting`: `.clang-format` and `.markdownlint.yml` configuration files; both formatters installed by `scripts/install-tools.sh`
 
 ### Modified Capabilities
 
-- (none in this change; GitHub Actions integration is handled by the companion spec and updated here only to reduce duplication)
+- `build-docs`: `BUILD.md` updated to present the devcontainer as the zero-effort path
 
 ## Impact
 
 - GitHub Copilot coding agents will be able to run `meson setup build && meson test -C build` immediately after checkout
 - R-based codegen (`Rscript codegen/generate_patches.R`) will work inside the container
-- No changes to `src/`, `tests/`, `data/`, or `codegen/` — this is purely environment scaffolding
-- `BUILD.md` prerequisites section will be updated to reflect that the devcontainer satisfies all prerequisites automatically
+- CI will catch regressions on every push and pull request
+- `clang-format` and `markdownlint-cli2` are available in the devcontainer for consistent formatting
+- No changes to `src/`, `tests/`, `data/`, or `codegen/` — this is purely environment scaffolding and documentation
