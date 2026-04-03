@@ -28,7 +28,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Game Setup
+### Game Setup *(in progress)*
 
 - `GameSetup`: initial patch circle arrangement (`std::array<uint8_t, 33>`), seeded RNG for reproducibility
 - R scripts to generate, store, and version game setups (`data/setups/`)
