@@ -30,3 +30,14 @@
 - [x] 5.1 Create `README.md` with quick-start (devcontainer and manual paths), project-structure table, formatting commands, and OpenSpec usage
 - [x] 5.2 Create `.clang-format` (Google style, 4-space indent, 100-column limit)
 - [x] 5.3 Create `.markdownlint.yml` (standard rules, 100-char line length, code blocks and tables exempt)
+
+## 6. Align with mise spec
+
+- [x] 6.1 Add `[tasks.format]` to `.mise.toml` running `clang-format` on all C++ files in `src/`
+- [x] 6.2 Add `[tasks.lint]` to `.mise.toml` running `markdownlint-cli2` on all Markdown files
+- [x] 6.3 Update `README.md` to reference `mise run setup`, `mise run test`, `mise run format`, `mise run lint` as the primary invocations
+- [x] 6.4 Update `BUILD.md` to reference `mise run <task>` as the primary invocation for every documented action (raw commands moved to `<details>` blocks)
+
+## 7. Fix CI
+
+- [x] 7.1 Add `catch2` to the `apt-get install` list in `scripts/install-tools.sh` so the Meson build can resolve the `catch2-with-main` dependency

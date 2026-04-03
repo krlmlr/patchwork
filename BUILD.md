@@ -32,40 +32,64 @@ brew install meson ninja catch2
 Configure the build directory (only needed once):
 
 ```sh
+mise run setup
+```
+
+<details><summary>Without mise</summary>
+
+```sh
 meson setup build
 ```
 
-To reconfigure an existing build directory:
+To reconfigure an existing build directory: `meson setup build --reconfigure`
 
-```sh
-meson setup build --reconfigure
-```
+</details>
 
 ## Build
+
+```sh
+mise run build
+```
+
+<details><summary>Without mise</summary>
 
 ```sh
 ninja -C build
 ```
 
+</details>
+
 ## Run Tests
+
+```sh
+mise run test
+```
+
+<details><summary>Without mise</summary>
 
 ```sh
 meson test -C build
 ```
 
-For verbose output:
+For verbose output: `meson test -C build -v`
 
-```sh
-meson test -C build -v
-```
+</details>
 
 ## Code Generation
 
 Patch data in `src/generated/patches.hpp` is auto-generated from `data/patches.yaml`.
-To regenerate it, run the R script:
+To regenerate it:
+
+```sh
+mise run codegen
+```
+
+<details><summary>Without mise</summary>
 
 ```sh
 Rscript codegen/generate_patches.R
 ```
 
 Requires R with the `yaml` package (`install.packages("yaml")`).
+
+</details>

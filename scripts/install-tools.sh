@@ -13,6 +13,7 @@ apt-get update -y
 apt-get install -y --no-install-recommends \
     git \
     ca-certificates \
+    catch2 \
     clang-format \
     r-base \
     r-cran-yaml \

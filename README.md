@@ -12,9 +12,12 @@ every prerequisite — compiler, build tools, R, OpenSpec, and formatters —
 so you can build and test immediately:
 
 ```sh
-meson setup build
-meson test -C build
+mise run setup
+mise run test
 ```
+
+If you don't have [mise](https://mise.jdx.dev/) installed, use the underlying
+commands directly (see [BUILD.md](BUILD.md)).
 
 ## Manual setup
 
@@ -46,14 +49,14 @@ sudo bash scripts/install-tools.sh
 **C++**: clang-format is configured in `.clang-format`. Run it with:
 
 ```sh
-find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
+mise run format
 ```
 
 **Markdown**: markdownlint-cli2 is configured in `.markdownlint.yml`. Run it
 with:
 
 ```sh
-markdownlint-cli2 "**/*.md"
+mise run lint
 ```
 
 ## OpenSpec

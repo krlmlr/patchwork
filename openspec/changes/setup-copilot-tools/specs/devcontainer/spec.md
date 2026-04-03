@@ -14,7 +14,10 @@ The repository SHALL contain a `.devcontainer/devcontainer.json` that, when used
 - **THEN** the script completes without errors and `src/generated/patches.hpp` is produced
 
 ### Requirement: Toolchain is defined once
-The set of tools required to build and test the project (Meson, Ninja, GCC/C++23, R, yaml package, clang-format, OpenSpec CLI, markdownlint-cli2) SHALL be listed in exactly one place (`scripts/install-tools.sh`). The devcontainer configuration and all GitHub Actions workflows SHALL invoke this script rather than restating the install commands.
+The set of tools required to build and test the project (Meson, Ninja, GCC/C++23, R, yaml package,
+clang-format, OpenSpec CLI, markdownlint-cli2) SHALL be listed in exactly one place
+(`scripts/install-tools.sh`). The devcontainer configuration and all GitHub Actions workflows SHALL
+invoke this script rather than restating the install commands.
 
 #### Scenario: Adding a new tool requires one change
 - **GIVEN** a new build dependency is added to the project
@@ -37,15 +40,28 @@ The repository SHALL contain a `README.md` at the root that explains zero-effort
 - **WHEN** they follow the quick-start in `README.md`
 - **THEN** they can build and test the project without consulting any other document
 
-### Requirement: Formatting tools are configured and installed
-The repository SHALL contain `.clang-format` for C++ formatting and `.markdownlint.yml` for Markdown linting. Both tools SHALL be installed by `scripts/install-tools.sh`.
+### Requirement: Formatting and linting available as mise tasks
+The repository SHALL expose `mise run format` (clang-format on all `src/` C++ files) and `mise run lint` (markdownlint-cli2 on all Markdown files) as named tasks in `.mise.toml`, so that formatting and linting are discoverable and invokable without memorizing the raw commands. Both tools SHALL be installed by `scripts/install-tools.sh` and their configuration committed to the repository (`.clang-format`, `.markdownlint.yml`).
 
-#### Scenario: C++ files are formatted consistently
-- **GIVEN** the devcontainer environment is active
-- **WHEN** a developer runs `clang-format -i` on any C++ file
-- **THEN** the file is formatted according to the project style defined in `.clang-format`
+#### Scenario: Developer formats C++ files via mise
+- **GIVEN** the devcontainer environment is active and `mise` is available
+- **WHEN** a developer runs `mise run format`
+- **THEN** all C++ files in `src/` are formatted in place according to `.clang-format`
 
-#### Scenario: Markdown files pass the linter
-- **GIVEN** the devcontainer environment is active
-- **WHEN** a developer runs `markdownlint-cli2 "**/*.md"`
-- **THEN** any violations are reported according to the rules in `.markdownlint.yml`
+#### Scenario: Developer lints Markdown files via mise
+- **GIVEN** the devcontainer environment is active and `mise` is available
+- **WHEN** a developer runs `mise run lint`
+- **THEN** markdownlint-cli2 reports any violations according to `.markdownlint.yml`
+
+### Requirement: Project documentation references mise as primary invocation
+The `README.md` and `BUILD.md` files SHALL reference `mise run <task>` as the canonical way to invoke every documented project action, in compliance with the globally merged `mise-tasks` spec. The underlying raw commands MAY appear as secondary details.
+
+#### Scenario: README quick-start uses mise
+- **GIVEN** a developer opens `README.md`
+- **WHEN** they follow the quick-start section
+- **THEN** the commands shown are `mise run setup` and `mise run test`
+
+#### Scenario: BUILD.md sections use mise as primary
+- **GIVEN** a developer opens `BUILD.md` for the Setup, Build, Test, or Code Generation section
+- **WHEN** they look for the command to run
+- **THEN** the primary command shown is `mise run <task>` and the raw command is in a secondary detail block

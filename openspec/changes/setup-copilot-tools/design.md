@@ -10,8 +10,8 @@ This change also delivers GitHub Actions CI (`.github/workflows/ci.yml`) and a C
 
 - Provide a devcontainer that makes the project immediately buildable and testable in any container-based environment (Copilot cloud agent, GitHub Codespaces, local devcontainer CLI)
 - Deliver GitHub Actions CI and Copilot setup-steps workflow, sharing one toolchain definition
-- Keep `BUILD.md` and `README.md` accurate — the devcontainer is the zero-effort path, with manual installation as the alternative
-- Configure formatters (clang-format, markdownlint-cli2) consistently for all contributors
+- Keep `BUILD.md` and `README.md` accurate — the devcontainer is the zero-effort path, `mise run <task>` is the primary invocation for every documented action
+- Configure formatters (clang-format, markdownlint-cli2) consistently for all contributors, exposed as `mise run format` and `mise run lint`
 
 **Non-Goals:**
 
@@ -23,7 +23,10 @@ This change also delivers GitHub Actions CI (`.github/workflows/ci.yml`) and a C
 
 ### Base image: `mcr.microsoft.com/devcontainers/cpp`
 
-Microsoft's official C++ devcontainer image ships with `gcc`, `g++`, `clang`, `cmake`, `make`, and common build utilities pre-installed on an Ubuntu LTS base. Meson and Ninja are added via `pipx` (latest versions in isolated environments). This avoids a custom Dockerfile while still giving the agent a production-quality toolchain.
+Microsoft's official C++ devcontainer image ships with `gcc`, `g++`, `clang`, `cmake`, `make`, and
+common build utilities pre-installed on an Ubuntu LTS base. Meson and Ninja are added via `pipx`
+(latest versions in isolated environments). This avoids a custom Dockerfile while still giving the
+agent a production-quality toolchain.
 
 **Alternative considered:** Plain `ubuntu:24.04` with `apt` for everything — requires a custom Dockerfile and loses the pre-configured VS Code / Codespaces conveniences without saving meaningful complexity.
 
@@ -62,6 +65,20 @@ Node.js and npm are installed from Ubuntu's apt repos to satisfy the `npm instal
 ### CI and Copilot setup-steps in the same PR
 
 Rather than waiting for a separate `github-actions-ci` companion change, both `.github/workflows/ci.yml` and `.github/workflows/copilot-setup-steps.yml` were delivered together with the devcontainer. This avoids a window where the devcontainer exists but CI does not, keeping the two environments in sync from the first commit.
+
+### mise tasks for formatting: `format` and `lint`
+
+Two new tasks are added to `.mise.toml` to satisfy the `mise-tasks` spec invariant (every useful action is runnable through mise): `format` runs clang-format on all C++ files in `src/`; `lint` runs markdownlint-cli2 on all Markdown files. Both tools are installed by `scripts/install-tools.sh`. README.md and BUILD.md reference `mise run format` / `mise run lint` as the canonical invocations.
+
+### Catch2 installed via apt for CI
+
+The Meson test suite depends on `catch2-with-main`. Ubuntu 24.04's `catch2` package (v3.5.2) provides the cmake config that Meson's cmake dependency detection uses. Adding `catch2` to `scripts/install-tools.sh` fixes the CI build failure while keeping the toolchain definition in one place.
+
+**Alternative considered:** Using Meson's WrapDB fallback (`meson wrap install catch2`) — requires internet access during the build and a `subprojects/` directory; the apt package is simpler and reproducible in all environments.
+
+### Documentation alignment with mise-tasks spec
+
+The globally merged `mise-tasks` spec requires that `README.md` and `BUILD.md` reference `mise run <task>` as the canonical invocation. BUILD.md presents the raw commands in collapsible `<details>` blocks as secondary documentation. README.md shows only `mise run` commands in the quick-start.
 
 ## Risks / Trade-offs
 
