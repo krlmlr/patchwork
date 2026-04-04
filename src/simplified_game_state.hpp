@@ -17,7 +17,7 @@ namespace patchwork {
 ///
 /// Layout (bits, LSB-first within the uint32_t):
 ///   bits  0– 6 : free_spaces (7 bits, 0–81)
-///   bits  7–12 : position    (6 bits, 0–53)
+///   bits  7–12 : position    (6 bits, 0–63)
 ///   bits 13–19 : buttons     (7 bits, 0–127)
 ///   bits 20–24 : income      (5 bits, 0–31)
 ///   bits 25–31 : [unused]
@@ -39,14 +39,14 @@ public:
               | (static_cast<uint32_t>(v) & kFreeSpacesMask);
     }
 
-    // ── Position (6 bits, range 0–53) ──
+    // ── Position (6 bits, range 0–63) ──
 
     [[nodiscard]] constexpr int position() const noexcept {
         return static_cast<int>((data_ >> kPosShift) & kPosMask);
     }
 
     constexpr void set_position(int v) noexcept {
-        assert(v >= 0 && v <= 53);
+        assert(v >= 0 && v <= 63);
         data_ = (data_ & ~(kPosMask << kPosShift))
               | (static_cast<uint32_t>(v) << kPosShift);
     }
@@ -107,6 +107,8 @@ static_assert(!std::is_same_v<SimplifiedPlayerState, PlayerState>,
 ///   bits  0–32 : patch availability (33 bits, one per patch)
 ///   bits 33–38 : circle marker position (6 bits, 0–32)
 ///   bits 39–40 : 7×7 bonus status (2 bits)
+///   bit  41    : next_player (0 = player 0, 1 = player 1)
+///   bit  42    : first_to_finish (player who first reached position ≥ 53)
 class SimplifiedGameState {
 public:
     constexpr SimplifiedGameState() noexcept
@@ -162,6 +164,30 @@ public:
                 | (static_cast<uint64_t>(s) << kBonusShift);
     }
 
+    // ── Active player / next_player (bit 41) ──
+
+    [[nodiscard]] constexpr int active_player() const noexcept {
+        return static_cast<int>((shared_ >> kNextPlayerShift) & 1U);
+    }
+
+    constexpr void set_next_player(int v) noexcept {
+        assert(v == 0 || v == 1);
+        shared_ = (shared_ & ~(uint64_t{1} << kNextPlayerShift))
+                | (static_cast<uint64_t>(v) << kNextPlayerShift);
+    }
+
+    // ── First to finish (bit 42) ──
+
+    [[nodiscard]] constexpr int first_to_finish() const noexcept {
+        return static_cast<int>((shared_ >> kFirstToFinishShift) & 1U);
+    }
+
+    constexpr void set_first_to_finish(int v) noexcept {
+        assert(v == 0 || v == 1);
+        shared_ = (shared_ & ~(uint64_t{1} << kFirstToFinishShift))
+                | (static_cast<uint64_t>(v) << kFirstToFinishShift);
+    }
+
 private:
     static constexpr uint64_t kAllPatchesMask = (uint64_t{1} << 33) - 1;
 
@@ -170,6 +196,9 @@ private:
 
     static constexpr int kBonusShift = 39;
     static constexpr uint64_t kBonusMask = 0x03;  // 2 bits
+
+    static constexpr int kNextPlayerShift    = 41;
+    static constexpr int kFirstToFinishShift = 42;
 
     SimplifiedPlayerState players_[2];
     uint64_t shared_;

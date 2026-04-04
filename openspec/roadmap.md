@@ -49,7 +49,9 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Simplified Rules
+### Simplified Rules *(done)*
+
+> Change: `simplified-rules`
 
 - Complete game rules under the simple ruleset: legal move generation, move application, terminal detection
 - Distinguish between phases: tile picking + advance + payout while allowed, then tile placement; tile picking is legal as long as buttons and time allows, tile placement may still be impossible due to board state
