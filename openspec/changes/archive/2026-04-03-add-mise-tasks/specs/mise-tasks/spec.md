@@ -30,7 +30,7 @@ The `.mise.toml` SHALL define tasks for every action documented in `BUILD.md`:
 - **THEN** the R codegen script runs (`Rscript codegen/generate_patches.R`) and `src/generated/patches.hpp` is produced
 
 ### Requirement: build directory is on PATH in mise-managed shells
-The `.mise.toml` SHALL configure `[env] _.path` to include `{{config_root}}/build` so that compiled binaries in the `build/` directory are accessible by name without a full path.
+The `.mise.toml` SHALL configure `[env] _.path` to include `{{config_root}}/build/src` so that compiled binaries in the `build/src/` directory are accessible by name without a full path.
 
 #### Scenario: compiled binary is reachable by name
 - **GIVEN** a developer has run `mise run build` and is in a mise-managed shell

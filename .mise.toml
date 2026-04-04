@@ -1,5 +1,5 @@
 [env]
-_.path = ["{{config_root}}/build"]
+_.path = ["{{config_root}}/build/src"]
 
 [tasks.setup]
 description = "Configure the build directory"
