@@ -124,3 +124,55 @@ TEST_CASE("SimplifiedGameState shared state does not interfere with patch bits",
     REQUIRE(gs.circle_marker() == 32);
     REQUIRE(gs.bonus_status() == BonusStatus::kPlayer1);
 }
+
+// ── New fields: next_player and first_to_finish ────────────────────────────
+
+TEST_CASE("SimplifiedGameState next_player defaults to 0", "[simplified_game_state]") {
+    SimplifiedGameState gs;
+    REQUIRE(gs.active_player() == 0);
+}
+
+TEST_CASE("SimplifiedGameState next_player round-trip", "[simplified_game_state]") {
+    SimplifiedGameState gs;
+    gs.set_next_player(1);
+    REQUIRE(gs.active_player() == 1);
+    gs.set_next_player(0);
+    REQUIRE(gs.active_player() == 0);
+}
+
+TEST_CASE("SimplifiedGameState first_to_finish defaults to 0", "[simplified_game_state]") {
+    SimplifiedGameState gs;
+    REQUIRE(gs.first_to_finish() == 0);
+}
+
+TEST_CASE("SimplifiedGameState first_to_finish round-trip", "[simplified_game_state]") {
+    SimplifiedGameState gs;
+    gs.set_first_to_finish(1);
+    REQUIRE(gs.first_to_finish() == 1);
+    gs.set_first_to_finish(0);
+    REQUIRE(gs.first_to_finish() == 0);
+}
+
+TEST_CASE("SimplifiedGameState next_player and first_to_finish do not interfere",
+          "[simplified_game_state]") {
+    SimplifiedGameState gs;
+    gs.set_next_player(1);
+    gs.set_first_to_finish(1);
+    REQUIRE(gs.active_player() == 1);
+    REQUIRE(gs.first_to_finish() == 1);
+    // Patch bits and other fields still intact
+    for (int i = 0; i < 33; ++i)
+        REQUIRE(gs.patch_available(i) == true);
+    REQUIRE(gs.circle_marker() == 0);
+    REQUIRE(gs.bonus_status() == BonusStatus::kUnclaimed);
+}
+
+// ── Extended position range (0–63) ──────────────────────────────────────────
+
+TEST_CASE("SimplifiedPlayerState position round-trip 0-63", "[simplified_player_state]") {
+    SimplifiedPlayerState ps;
+    for (int v = 53; v <= 63; ++v) {
+        ps.set_position(v);
+        REQUIRE(ps.position() == v);
+    }
+}
