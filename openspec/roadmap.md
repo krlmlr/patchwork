@@ -63,6 +63,35 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
+### Tile Analysis
+
+- R analysis of tile value and time cost distributions from the patch catalog
+- Model for gain-per-time of each patch, also depending on shape (circumference vs. area or other shape features)
+- Total gain depending on current time-track position (early-game vs late-game value)
+- Plots and tables to inform heuristic design and future agent development
+
+---
+
+### Richer Logging
+
+- Add full game setup to logs (initial patch circle arrangement, seed)
+- Add more post-move state summaries to move logs (income, free spaces, total board value, patch circle)
+
+---
+
+### TUI / Interactive Mode
+
+- Simple text-based UI for playing against a human
+- Display game state in ASCII art (buttons, income, free spaces, time track with player positions, patch circle)
+- Display scrolling log of moves and events
+- Input handling for move selection (buy patch by index, or advance) and other commands, single keypress preferred
+- Unlimited undo/redo for testing and exploration
+- Extensible for full quilt board display in the future
+- Choose game engine, configuration and seed from the TUI
+- Show a preview for the TUI as part of the design
+
+---
+
 ### Random Sampling Agents
 
 - Uniform random agent (baseline)
