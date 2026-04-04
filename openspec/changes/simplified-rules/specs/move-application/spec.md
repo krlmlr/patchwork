@@ -74,7 +74,7 @@ The time track has button income spaces at positions 5, 11, 17, 23, 29, 35, 41, 
 
 #### Scenario: Income paid on crossing position 53
 
-- **WHEN** a player at position 50 advances to position 54
+- **WHEN** a player at position 50 advances to position 53
 - **THEN** the player's buttons are increased by their income (crossing position 53)
 
 ### Requirement: Leather patches are awarded when a player is the first to cross each of five time thresholds

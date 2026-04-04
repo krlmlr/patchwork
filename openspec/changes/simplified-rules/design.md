@@ -2,7 +2,7 @@
 
 The previous phase ("Start Without Piece Placement") introduced `SimplifiedGameState`: a compact 32-bit-per-player representation that replaces the 81-bit quilt board with a `free_spaces` counter. The state struct is complete and tested, but there is no logic to actually play a game. This change adds the rule layer on top of that state.
 
-The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (and earns buttons proportional to income). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 54). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
+The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (and earns buttons proportional to income). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 53). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
 
 The `kPatches` array (generated from `data/patches.yaml`) is the single source of truth for patch costs, time, income, and cell count. The rule layer reads it directly.
 
@@ -46,7 +46,7 @@ The time track has five 1×1 leather patch squares at positions 26, 32, 38, 44, 
 
 ### 5. Positions may exceed 53
 
-Position 53 is the last active square; positions up to 63 are representable in the existing 6-bit field. Allowing positions greater than 53 avoids a cap branch in `Advance` (the moving player can land at `opponent.position + 1` even when that exceeds 53). A player is "done" when their position ≥ 54; the game is terminal when both players are done. This simplifies move application and reduces branching in the game loop.
+Position 53 is the last active square; positions up to 63 are representable in the existing 6-bit field. Allowing positions greater than 53 avoids a cap branch in `Advance` (the moving player can land at `opponent.position + 1` even when that exceeds 53). A player is "done" when their position ≥ 53; the game is terminal when both players are done. This simplifies move application and reduces branching in the game loop.
 
 ### 6. Draws
 

@@ -73,9 +73,9 @@ A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch b
 
 ### Requirement: Legal moves returns empty list for a terminal state
 
-`legal_moves(state)` SHALL return an empty collection when the game is terminal (both players at position ≥ 54).
+`legal_moves(state)` SHALL return an empty collection when the game is terminal (both players at position ≥ 53).
 
 #### Scenario: No moves when game is over
 
-- **WHEN** both players have position ≥ 54
+- **WHEN** both players have position ≥ 53
 - **THEN** `legal_moves` returns an empty collection

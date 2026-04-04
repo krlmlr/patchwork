@@ -30,5 +30,5 @@ The position field of `SimplifiedPlayerState` SHALL accept and store any value i
 
 #### Scenario: Position stores values above 53
 
-- **WHEN** position is set to any value in 54–63
+- **WHEN** position is set to any value in 53–63
 - **THEN** reading position returns the same value

@@ -5,7 +5,7 @@
 - [ ] 1.3 Verify default construction leaves `next_player` = 0
 - [ ] 1.4 Add Catch2 tests: round-trip, active-on-tie scenario, switch-on-overtake scenario
 - [ ] 1.5 Remove cap on `SimplifiedPlayerState::set_position` — allow values 0–63 (full 6-bit range); update the assert from `v <= 53` to `v <= 63`
-- [ ] 1.6 Add Catch2 test: position values 54–63 round-trip correctly
+- [ ] 1.6 Add Catch2 test: position values 53–63 round-trip correctly
 
 ## 2. Move type
 
@@ -18,7 +18,7 @@
 - [ ] 3.1 Create `src/move_generation.hpp` / `.cpp` with `legal_moves(const SimplifiedGameState&) → std::vector<Move>`
 - [ ] 3.2 Implement circular scan from circle marker to find up to three available patches
 - [ ] 3.3 Filter patches by affordability (buttons only; no position cap — positions > 53 are valid)
-- [ ] 3.4 Always include `Advance` for non-terminal states; return empty for terminal states (both players ≥ 54)
+- [ ] 3.4 Always include `Advance` for non-terminal states; return empty for terminal states (both players ≥ 53)
 - [ ] 3.5 Add Catch2 tests: three available patches, fewer than three, unaffordable patches, terminal state, advance always present
 
 ## 4. Move application
@@ -34,7 +34,7 @@
 ## 5. Terminal detection and scoring
 
 - [ ] 5.1 Create `src/terminal_and_scoring.hpp` with `is_terminal`, `score`, and `winner` free functions
-- [ ] 5.2 Implement `is_terminal`: both players at position ≥ 54
+- [ ] 5.2 Implement `is_terminal`: both players at position ≥ 53
 - [ ] 5.3 Implement `score(state, player)`: buttons − 2 × free_spaces + 7 if bonus held
 - [ ] 5.4 Implement `winner(state)`: compare scores, return -1 on draw
 - [ ] 5.5 Add Catch2 tests covering all scenarios in `specs/terminal-and-scoring/spec.md`
