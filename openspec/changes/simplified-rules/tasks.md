@@ -1,9 +1,9 @@
-## 1. Extend SimplifiedGameState with next_player field
+## 1. Extend SimplifiedGameState with next_player and first_to_finish fields
 
-- [ ] 1.1 Add `next_player` bit flag to `SimplifiedGameState::shared_` (bit 41); update layout comment and constants
-- [ ] 1.2 Expose `set_next_player(int)` setter and `active_player()` getter
-- [ ] 1.3 Verify default construction leaves `next_player` = 0
-- [ ] 1.4 Add Catch2 tests: round-trip, active-on-tie scenario, switch-on-overtake scenario
+- [ ] 1.1 Add `next_player` bit flag to `SimplifiedGameState::shared_` (bit 41) and `first_to_finish` bit flag (bit 42); update layout comment and constants
+- [ ] 1.2 Expose `set_next_player(int)` setter and `active_player()` getter; expose `first_to_finish()` getter
+- [ ] 1.3 Verify default construction leaves `next_player` = 0 and `first_to_finish` = 0
+- [ ] 1.4 Add Catch2 tests: round-trip for both bits, active-on-tie scenario, switch-on-overtake scenario, first_to_finish set-once semantics
 - [ ] 1.5 Remove cap on `SimplifiedPlayerState::set_position` — allow values 0–63 (full 6-bit range); update the assert from `v <= 53` to `v <= 63`
 - [ ] 1.6 Add Catch2 test: position values 53–63 round-trip correctly
 
@@ -24,8 +24,8 @@
 ## 4. Move application
 
 - [ ] 4.1 Create `src/move_application.hpp` / `.cpp` with `apply_move(SimplifiedGameState, Move) → SimplifiedGameState`
-- [ ] 4.2 Implement `BuyPatch` path: deduct buttons, advance position (no cap), add income, reduce free_spaces, mark patch unavailable, advance circle marker; update `next_player`
-- [ ] 4.3 Implement `Advance` path: advance to opponent position + 1 (no cap), credit buttons from income; update `next_player`
+- [ ] 4.2 Implement `BuyPatch` path: deduct buttons, advance position (no cap), add income, reduce free_spaces, mark patch unavailable, advance circle marker; update `next_player`; if this is the first move crossing ≥ 53, set `first_to_finish`
+- [ ] 4.3 Implement `Advance` path: advance to opponent position + 1 (no cap), credit 1 button per space advanced; update `next_player`; if this is the first move crossing ≥ 53, set `first_to_finish`
 - [ ] 4.4 Implement button income space payout (positions 5, 11, 17, 23, 29, 35, 41, 47, 53): for each threshold crossed by the move, add `income` to buttons
 - [ ] 4.5 Implement leather patch award: for each of the five thresholds (26, 32, 38, 44, 50) crossed by the moving player's position, check whether either player's pre-move position was already ≥ threshold; if not, decrement `free_spaces` by 1 (mandatory placement); no new state flags required
 - [ ] 4.6 Implement 7×7 bonus check after `BuyPatch`: if bonus unclaimed and occupied cells ≥ 56, set bonus to active player
@@ -36,7 +36,7 @@
 - [ ] 5.1 Create `src/terminal_and_scoring.hpp` with `is_terminal`, `score`, and `winner` free functions
 - [ ] 5.2 Implement `is_terminal`: both players at position ≥ 53
 - [ ] 5.3 Implement `score(state, player)`: buttons − 2 × free_spaces + 7 if bonus held
-- [ ] 5.4 Implement `winner(state)`: compare scores, return -1 on draw
+- [ ] 5.4 Implement `winner(state)`: compare scores; on equal scores use `first_to_finish` as tiebreaker (never returns -1)
 - [ ] 5.5 Add Catch2 tests covering all scenarios in `specs/terminal-and-scoring/spec.md`
 
 ## 6. NDJSON game logger

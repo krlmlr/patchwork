@@ -2,7 +2,7 @@
 
 ### Requirement: Move type represents all legal actions
 
-A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch by its index in `kPatches`) and `Advance` (advancing past the leading player and earning buttons). No other move variants are valid in the simplified ruleset.
+A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch by its index in `kPatches`) and `Advance` (advancing past the leading player and earning 1 button per space moved). No other move variants are valid in the simplified ruleset.
 
 #### Scenario: BuyPatch variant carries patch index
 

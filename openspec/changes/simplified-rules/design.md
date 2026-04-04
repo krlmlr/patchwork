@@ -2,7 +2,7 @@
 
 The previous phase ("Start Without Piece Placement") introduced `SimplifiedGameState`: a compact 32-bit-per-player representation that replaces the 81-bit quilt board with a `free_spaces` counter. The state struct is complete and tested, but there is no logic to actually play a game. This change adds the rule layer on top of that state.
 
-The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (and earns buttons proportional to income). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 53). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
+The Patchwork "simplified" ruleset is the full game minus spatial quilt-board reasoning. Each turn the active player either buys one of up to three patches visible ahead of the circle marker, or advances (earning 1 button per space advanced). Patches cost buttons and time; time position determines who moves next (the player further back goes first). The game ends when both players have exhausted the time track (position ≥ 53). Score = buttons − 2 × free_spaces + 7×7 bonus if held.
 
 The `kPatches` array (generated from `data/patches.yaml`) is the single source of truth for patch costs, time, income, and cell count. The rule layer reads it directly.
 
@@ -48,25 +48,27 @@ The time track has five 1×1 leather patch squares at positions 26, 32, 38, 44, 
 
 Position 53 is the last active square; positions up to 63 are representable in the existing 6-bit field. Allowing positions greater than 53 avoids a cap branch in `Advance` (the moving player can land at `opponent.position + 1` even when that exceeds 53). A player is "done" when their position ≥ 53; the game is terminal when both players are done. This simplifies move application and reduces branching in the game loop.
 
-### 6. Draws
+### 6. No draws: first-to-finish tiebreaker
 
-Equal final scores are theoretically possible in Patchwork (both players could end with identical `buttons − 2 × free_spaces` when neither holds the bonus). No authoritative source was found confirming draws are ruled out by the game's structure. The `winner` function returns −1 for draws; this case should be handled by any analysis code even if empirically rare.
+The rulebooks (both original and anniversary edition) explicitly state: "In case of a tie, the player who reached the final space of the time board first wins." This makes draws structurally impossible — on equal scores there is always a winner. No `-1` sentinel is needed.
 
-### 5. NDJSON logging via `<fstream>` + nlohmann/json or hand-rolled
+To implement the tiebreaker, `SimplifiedGameState`'s shared word gains a 1-bit `first_to_finish` field at bit 42 (currently unused). `apply_move` sets it exactly once: the first time a player's position transitions from < 53 to ≥ 53 while the other player is still < 53. `winner` reads this bit when scores are equal and returns the player recorded there.
+
+### 7. NDJSON logging via `<fstream>` + nlohmann/json or hand-rolled
 
 The codebase has no JSON dependency. Two options: (a) add `nlohmann/json` as a Meson subproject, (b) hand-roll the small fixed-schema log lines. The log schema is simple and stable (four event types, fixed fields). Hand-rolled formatting keeps the dependency graph minimal and is consistent with the existing codebase style. If the schema grows, a proper JSON library can be added then.
 
-### 6. Random agent as a free function, not a class
+### 8. Random agent as a free function, not a class
 
 `random_move(const SimplifiedGameState&, std::mt19937&) → Move` is a pure function parameterised by an rng. This is simpler than a class hierarchy at this stage; a polymorphic `Agent` interface can be introduced when a second agent type is added.
 
-### 7. Play driver as a standalone `main` in `src/`
+### 9. Play driver as a standalone `main` in `src/`
 
 A small `play_driver.cpp` with its own `main` entry point, compiled as a separate Meson executable target. Input: `--seed <n> --setup <file>` (or positional). Output: NDJSON log to stdout or `--output <file>`. This matches the roadmap's "reproducible random play" goal without coupling game logic to I/O.
 
 ## Risks / Trade-offs
 
-- **next_player bit in shared word** — Adding 1 bit to `SimplifiedGameState::shared_` (bit 41) requires checking the existing bit layout. Bits 0–40 are used (33 patch + 6 circle + 2 bonus), leaving 23 bits free. [Risk: bit-layout regression] → Mitigation: static_assert on field positions; existing round-trip tests catch regressions.
+- **first_to_finish bit in shared word** — Adding 1 bit (bit 42) requires the shared word to have room. Bits 0–41 are used (33 patch + 6 circle + 2 bonus + 1 next_player), leaving 22 bits free. [Risk: bit-layout regression] → Mitigation: static_assert on field positions; existing round-trip tests catch regressions.
 - **Derived leather-patch claim state** — Leather patch availability is derived from pre-move positions rather than stored flags. This is always correct for sequential single-move play (the only supported mode now), but must be re-evaluated if batch state mutations are ever added. [Risk: none practical for this phase]
 - **Score overflow** — `free_spaces` max is 81, so worst-case score penalty is 162. `buttons` max visible in the test is 127. Using `int` throughout is safe. [Risk: none practical]
 - **NDJSON log size** — Each move line is ~200 bytes; a full game is ~50–100 moves → ~20 KB per game. Not a concern.

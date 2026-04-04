@@ -6,7 +6,7 @@
 
 #### Scenario: Game not terminal while a player is below 53
 
-- **WHEN** player 0 has position 53 and player 1 has position 53
+- **WHEN** player 0 has position 52 and player 1 has position 53
 - **THEN** `is_terminal` returns false
 
 #### Scenario: Game is terminal when both players are done
@@ -38,16 +38,16 @@
 - **WHEN** player 0 holds the 7×7 bonus
 - **THEN** `score(state, 1)` does not include the bonus 7 points
 
-### Requirement: Winner is the player with the higher score
+### Requirement: Winner is determined by score; equal scores resolved by first-to-finish
 
-`winner(state)` SHALL return 0 if player 0's score is strictly greater than player 1's score, 1 if player 1's score is strictly greater, and -1 for a draw. `winner` SHALL only be called on a terminal state. Draws are theoretically possible when both players achieve equal scores; no authoritative source confirms they are structurally impossible.
+`winner(state)` SHALL return 0 if player 0's score is strictly greater than player 1's score, and 1 if player 1's score is strictly greater. When scores are equal, `winner` SHALL return the value of the `first_to_finish` field (0 or 1) — the player who first reached position ≥ 53 in that game. `winner` SHALL only be called on a terminal state. Both rulebooks state: "In case of a tie, the player who reached the final space of the time board first wins." This tiebreaker makes draws structurally impossible.
 
 #### Scenario: Higher score wins
 
 - **WHEN** player 0's score is 15 and player 1's score is 12
 - **THEN** `winner` returns 0
 
-#### Scenario: Draw returns -1
+#### Scenario: Equal scores resolved by first-to-finish
 
-- **WHEN** both players have the same score
-- **THEN** `winner` returns -1
+- **WHEN** both players have the same score and `first_to_finish` records player 1
+- **THEN** `winner` returns 1

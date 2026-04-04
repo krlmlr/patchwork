@@ -4,7 +4,7 @@ The `SimplifiedGameState` type established in the previous phase captures per-pl
 
 ## What Changes
 
-- **Legal move generation** — given a `SimplifiedGameState`, enumerate which patches (up to 3 ahead of the circle marker) each player may legally buy, plus the "advance and earn buttons" move
+- **Legal move generation** — given a `SimplifiedGameState`, enumerate which patches (up to 3 ahead of the circle marker) each player may legally buy, plus the "advance and earn 1 button per space" move
 - **Move application** — mutate or return a new `SimplifiedGameState` after a move: deduct buttons, advance time, update income, decrement free spaces, remove taken patch from availability, advance circle marker, award 1×1 leather patches at correct time thresholds, check 7×7 bonus after each patch placement
 - **Terminal detection** — determine when both players have reached or passed position 53
 - **Scoring** — compute final score: buttons minus 2× free spaces, plus bonus tile if claimed

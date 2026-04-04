@@ -24,7 +24,24 @@
 - **WHEN** player 0 is active, moves from position 4 to position 9, and player 1 is at position 8
 - **THEN** `active_player()` returns 1 in the successor state
 
-### Requirement: SimplifiedPlayerState position field supports values up to 63
+### Requirement: SimplifiedGameState tracks which player first reached the terminal position
+
+`SimplifiedGameState` SHALL store a 1-bit `first_to_finish` field (0 or 1) in the existing shared `uint64_t` word (bit 42, currently unused). It SHALL default to 0. `apply_move` SHALL set it exactly once: the first time a player's position transitions from < 53 to ≥ 53 while the other player's position is still < 53. Once set, it SHALL NOT be changed. `winner` reads this field to resolve equal scores.
+
+#### Scenario: first_to_finish defaults to 0
+
+- **WHEN** a `SimplifiedGameState` is default-constructed
+- **THEN** `first_to_finish` is 0
+
+#### Scenario: first_to_finish set when first player reaches 53
+
+- **WHEN** player 0 is at position 52 and player 1 is at position 40, and a move advances player 0 to position 53
+- **THEN** `first_to_finish` is set to 0
+
+#### Scenario: first_to_finish not overwritten when second player reaches 53
+
+- **WHEN** `first_to_finish` is already set to 0 and a subsequent move advances player 1 to position 53
+- **THEN** `first_to_finish` remains 0
 
 The position field of `SimplifiedPlayerState` SHALL accept and store any value in 0–63 (full 6-bit range). Values above 53 represent a player who has moved past the last active time square. The existing `SimplifiedPlayerState` 6-bit field already has this capacity; the implementation SHALL NOT cap positions at 53.
 

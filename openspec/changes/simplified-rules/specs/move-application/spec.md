@@ -36,17 +36,17 @@
 
 ### Requirement: Advance move updates active player's state correctly
 
-`apply_move(state, Advance{})` SHALL advance the active player to the square exactly one ahead of the inactive player's position, credit buttons equal to the active player's income, and leave all other state unchanged. The circle marker and patch availability SHALL NOT change.
+`apply_move(state, Advance{})` SHALL advance the active player to the square exactly one ahead of the inactive player's position, credit 1 button per space advanced, and leave all other state unchanged. The circle marker and patch availability SHALL NOT change. Button income from any income spaces crossed during the advance is applied in addition (per the "Button income is paid when crossing an income space" requirement).
 
 #### Scenario: Position advances to one ahead of opponent
 
 - **WHEN** active player is at position 3 and inactive player is at position 8
 - **THEN** the active player's position in the successor state equals 9
 
-#### Scenario: Buttons are credited from income
+#### Scenario: Buttons credited at 1 per space advanced
 
-- **WHEN** active player has income 4 and 6 buttons, and advances
-- **THEN** the active player's buttons in the successor state equals 10
+- **WHEN** active player at position 3 advances to position 9 (6 spaces)
+- **THEN** the active player's buttons in the successor state are increased by 6
 
 #### Scenario: Circle marker unchanged after advance
 
