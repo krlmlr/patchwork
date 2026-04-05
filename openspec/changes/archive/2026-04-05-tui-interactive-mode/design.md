@@ -30,63 +30,63 @@ The engine has complete game logic (move generation, application, terminal detec
 
 ### Narrow layout — 80 columns (minimum)
 
-Extra columns beyond 80 widen the event-log pane and the time-track bar.
+Extra columns beyond 80 widen the event-log pane.
 
 ```txt
-┌─ PATCHWORK ── seed 42 / setup 0 ───────────────────────────────────── ▶ P1 ─┐
-│ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                   │
-│                  ^                                                          │
-│  [0] A  cost  3  time 2  inc 1     [123]buy  [a]adv      [q]quit            │
-│  [1] B  cost  5  time 3  inc 2     [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │
-│  [2] C  cost 10  time 1  inc 0     [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │
-│                                    [,]decrLines  [.]incrLines               │
-├──────────────────────────────────────┬──────────────────────────────────────┤
-│ P1  btn 14  inc 3  pos 12  fr 74     │ P2  btn 11  inc 2  pos 20  fr 81     │
-├───────────┬───────────┬──────────────┴──────────────────────────────────────┤
+┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────── ▶ P1 ─┐
+│ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
+│         ^                                                                    │
+│ [0] 2  cost  2  time  1  inc 0       [0-x]buy  [a]adv      [q]quit           │
+│ [1] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [2] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │
+├───────────────────────────────────────┬──────────────────────────────────────┤
+│ P1  btn   5  inc  0  pos  0  fr 81   │ P2  btn   5  inc  0  pos  0  fr 81   │
+├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
 │ P1 quilt  │ P2 quilt  │ Event log                                           │
-│ ????????? │ ????????? │ > P1 bought [1] (+1 income)                         │
-│ ????????? │ ????????? │ > P2 advanced (+4 buttons)                          │
-│ ????????? │ ????????? │ > P1 earned leather patch                           │
-│ ????????? │ ????????? │ > P2 bought [0]                                     │
-│ ????????? │ ????????? │ >                                                   │
-│ ????????? │ ????????? │                                                     │
-│ ????????? │ ????????? │                                                     │
-│ ????????? │ ????????? │                                                     │
-│ ????????? │ ????????? │                                                     │
-├───────────┴───────────┴─ ndjson log (2 lines) ───── [m]↕ [f]⤢ [h]½↕ [,.] ───┤
-│ {"type":"move","player":0,"patch":1}                                        │
-│ {"type":"move","player":1,"action":"advance","buttons_gained":4}            │
-└─────────────────────────────────────────────────────────────────────────────┘
+│ ????????? │ ????????? │ > P1 bought [0]                                      │
+│ ????????? │ ????????? │ > P2 advanced                                        │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+├───────────┴───────────┴─ ndjson log (5 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
+│ {"event":"move","ply":1,"player":0,"move_type":"buy_patch","patch_index":0 │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Wide layout — 160 columns
 
-At ≥160 columns a two-column layout is used: the left column holds the patch circle, adaptive detail, stats, time track, and controls; the right column holds the two quilts side by side and the event log. The NDJSON pane spans the full width at the bottom and gains proportionally more lines.
+At ≥160 columns a four-column layout is used: the left column holds the patch circle, adaptive detail, and stats; three peer columns hold Q1 quilt, Q2 quilt, and event log. The NDJSON pane spans the full width at the bottom.
 
 ```txt
-┌─ PATCHWORK ── seed 42 / setup 0 ────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────────── ▶ P1 ─┐
-│ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                   │ P1 quilt  │ P2 quilt  │ Event log                                             │
-│                  ^                                                          │ ????????? │ ????????? │ > P1 bought [1] (+1 income)                           │
-│  [0] A  cost  3  time 2  inc 1     [123]buy  [a]adv      [q]quit            │ ????????? │ ????????? │ > P2 advanced (+4 buttons)                            │
-│  [1] B  cost  5  time 3  inc 2     [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │ ????????? │ ????????? │ > P1 earned leather patch                             │
-│  [2] C  cost  2  time 1  inc 0     [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │ ????????? │ ????????? │ > P2 bought [0]                                       │
-│  [3] D  cost  1  time 1  inc 0                                              │ ????????? │ ????????? │ >                                                     │
-│  [4] E  cost  4  time 2  inc 1                                              │ ????????? │ ????????? │                                                       │
-│  [4] F  cost 10  time 6  inc 3                                              │ ????????? │ ????????? │                                                       │
-├──────────────────────────────────────┬──────────────────────────────────────┤ ????????? │ ????????? │                                                       │
-│ P1  btn 14  inc 3  pos 12  fr 74     │ P2  btn 11  inc 2  pos 20  fr 81     │ ????????? │ ????????? │                                                       │
-├──────────────────────────────────────┴──────────────────────────────────────┴───────────┴───────────┴─ ndjson log (2 lines) ─────── [m]↕ [f]⤢ [h]½↕ [,.] ───┤
-│ {"type":"move","player":0,"patch":1,"cost":3,"time_cost":2,"income_gain":1}                                                                                 │
-│ {"type":"move","player":1,"action":"advance","buttons_gained":4,"new_position":20}                                                                          │
-│ {"type":"income","player":0,"amount":3,"new_total":14}                                                                                                      │
-│ {"type":"leather_patch","player":0,"position":26}                                                                                                           │
-│ {...}                                                                                                                                                       │
-│ {...}                                                                                                                                                       │
-│ {...}                                                                                                                                                       │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌ PATCHWORK -- seed ? / setup 0 ───────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────── ▶ P1 ─┐
+│ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │ P1 quilt  │ P2 quilt  │ Event log                                             │
+│         ^                                                                    │ ????????? │ ????????? │ > P1 bought [0]                                       │
+│ [0] 2  cost  2  time  1  inc 0       [0-x]buy  [a]adv      [q]quit           │ ????????? │ ????????? │ > P2 advanced                                         │
+│ [1] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
+│ [2] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │ ????????? │ ????????? │                                                       │
+│ [3] j  cost  3  time  1  inc 0                                               │ ????????? │ ????????? │                                                       │
+│ [4] t  cost  2  time  2  inc 0                                               │ ????????? │ ????????? │                                                       │
+│ [5] 4  cost  3  time  3  inc 1                                               │ ????????? │ ????????? │                                                       │
+├───────────────────────────────────────┬──────────────────────────────────────┤ ????????? │ ????????? │                                                       │
+│ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │ ????????? │ ????????? │                                                       │
+├───────────────────────────────────────┴──────────────────────────────────────┴───────────┴───────────┴─ ndjson log (5 lines) ──────────[m]v [f]^ [h]^/2 [,.]─┤
+│ {"event":"move","ply":1,"player":0,"move_type":"buy_patch","patch_index":0,"position":3,"buttons":2}                                                         │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+│                                                                                                                                                              │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Column budget at 80: quilt section ~30 cols, event log ~46 cols, ndjson 5 lines (default). At 120 cols the log pane gains ~40 columns. At ≥160 cols the two-column layout activates.
+Column budget at 80: each quilt col 11 wide, event log ~54 cols, ndjson 5 lines (default). At 120 cols the log pane gains ~40 columns. At ≥160 cols the four-column layout activates with explicit Q1/Q2/event columns and the stats sub-separator inside the left panel.
 
 ## Decisions
 

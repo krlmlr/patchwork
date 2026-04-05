@@ -7,7 +7,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <string>
+#include <vector>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -57,18 +59,68 @@ static std::string hline_t(const char* left, const char* fill,
     return out;
 }
 
-/// Build a horizontal separator with two T-junctions (left and right of mid).
-static std::string hline_2t(const char* left, const char* fill,
-                             const char* juncL, const char* juncR,
+/// Build a horizontal separator with three T-junctions.
+static std::string hline_3t(const char* left, const char* fill,
+                             const char* jA, const char* jB, const char* jC,
                              const char* right,
-                             int inner, int posL, int posR) {
+                             int inner, int posA, int posB, int posC) {
     std::string out = left;
     for (int i = 0; i < inner; ++i) {
-        if (i == posL) out += juncL;
-        else if (i == posR) out += juncR;
+        if (i == posA) out += jA;
+        else if (i == posB) out += jB;
+        else if (i == posC) out += jC;
         else out += fill;
     }
     out += right;
+    return out;
+}
+
+/// Build the NDJSON separator line that embeds the label and shortcuts inside
+/// the fill.  `junctions` are ┴ positions (in IW inner space, 0-indexed);
+/// the label+shortcuts text fills the space after the last junction.
+static std::string ndjson_sep_line(int iw,
+                                   std::initializer_list<int> junctions,
+                                   int height) {
+    // Build label and shortcuts (ASCII so 1 byte = 1 display col).
+    char label[60];
+    std::snprintf(label, sizeof(label), " ndjson log (%d lines) ", height);
+    const char* shortcuts = "[m]v [f]^ [h]^/2 [,.]";
+    int label_len   = static_cast<int>(std::strlen(label));
+    int short_len   = static_cast<int>(std::strlen(shortcuts));
+
+    // Find last junction position; text goes after it.
+    int last_j = -1;
+    for (int j : junctions) if (j > last_j) last_j = j;
+
+    // Chars available after last_j (exclusive): iw - last_j - 1.
+    int after = iw - last_j - 1;
+    // Layout: ─ label fill shortcuts ─  (2 flanking dashes)
+    int fill = after - 2 - label_len - short_len;
+    if (fill < 0) fill = 0;
+
+    std::string out = kBdr_LT;
+    int ji = 0;  // current junction index
+    std::vector<int> jvec(junctions);
+    std::sort(jvec.begin(), jvec.end());
+    for (int i = 0; i < iw; ++i) {
+        if (ji < static_cast<int>(jvec.size()) && i == jvec[ji]) {
+            out += kBdr_BT;
+            ++ji;
+        } else if (i == last_j + 1) {
+            // Start embedded text region.
+            out += kBdr_H;
+            out += label;
+            out += rep(kBdr_H, fill);
+            out += shortcuts;
+            out += kBdr_H;
+            // Skip: we already output 1+label+fill+shortcuts+1 chars in this
+            // iteration; advance i by the total minus 1 (the loop adds 1).
+            i += label_len + fill + short_len + 1;
+        } else {
+            out += kBdr_H;
+        }
+    }
+    out += kBdr_RT;
     return out;
 }
 
@@ -93,32 +145,6 @@ static std::string circle_line(const SimplifiedGameState& state,
         out += state.patch_available(static_cast<int>(id)) ? kPatches[id].name : '.';
     }
     return out;
-}
-
-/// Time-track bar, `bar_width` ASCII characters.
-static std::string time_track(int pos0, int pos1, int bar_width) {
-    if (bar_width < 6) return "";
-    std::string bar(static_cast<std::size_t>(bar_width), '-');
-    bar[0] = '0';
-    bar[static_cast<std::size_t>(bar_width - 2)] = '5';
-    bar[static_cast<std::size_t>(bar_width - 1)] = '3';
-
-    auto map_pos = [&](int p) -> int {
-        int usable = bar_width - 3;
-        if (usable <= 0) return 1;
-        int c = std::clamp(p, 0, 52);
-        return 1 + static_cast<int>(std::round(c / 52.0 * usable));
-    };
-    int ip1 = map_pos(pos0);
-    int ip2 = map_pos(pos1);
-
-    auto place = [&](int pos, const char* tag) {
-        for (int j = 0; tag[j] && pos + j < bar_width - 2; ++j)
-            bar[static_cast<std::size_t>(pos + j)] = tag[j];
-    };
-    if (ip1 <= ip2) { place(ip2, "P2"); place(ip1, "P1"); }
-    else             { place(ip1, "P1"); place(ip2, "P2"); }
-    return bar;
 }
 
 /// Colorize a raw NDJSON line with concept colors.
@@ -182,22 +208,9 @@ static std::string colorize_ndjson(const std::string& raw) {
     return out;
 }
 
-/// Print the NDJSON pane (header bar + content lines).
+/// Print the NDJSON pane content lines (no header -- the header is embedded in
+/// the separator line produced by ndjson_sep_line()).
 static void print_ndjson_pane(const NdjsonState& ndjson, bool color, int iw) {
-    // Header bar.
-    char hdr_buf[80];
-    std::snprintf(hdr_buf, sizeof(hdr_buf),
-                  " ndjson log (%d lines) ", ndjson.height);
-    const char* shortcuts = "[m]v [f]^ [h]^/2 [,.]";
-    int hdr_len = static_cast<int>(std::strlen(hdr_buf))
-                + static_cast<int>(std::strlen(shortcuts));
-    int fill = iw - 2 - hdr_len;
-    if (fill < 0) fill = 0;
-    std::string hdr_line = hdr_buf;
-    hdr_line.append(static_cast<std::size_t>(fill), '-');
-    hdr_line += shortcuts;
-    print_row(hdr_line, static_cast<int>(hdr_line.size()), iw);
-
     int ndj_count = static_cast<int>(ndjson.lines.size());
     int start = std::max(0, ndj_count - ndjson.height);
     for (int k = 0; k < ndjson.height; ++k) {
@@ -362,28 +375,33 @@ static void render_narrow(const SimplifiedGameState& state,
     std::printf("%s%s%s%s%s\n",
                 kBdr_V, p0col.c_str(), kBdr_V, p1col.c_str(), kBdr_V);
 
-    // ── Quilt+log section separator  ├──────────┬──────────┴──...──┤
-    constexpr int Q_INNER = 11;  // "?????????" (9) + 2 spaces = 11 col
-    constexpr int Q_OUTER = Q_INNER + 2;  // include border │
-    int quilt_sep_L = Q_OUTER;
-    int quilt_sep_R = Q_OUTER * 2;
-    // ├─────────────────┬─────────────────┴──...──┤
-    // posL = quilt_sep_L - 1, posR = quilt_sep_R - 1 (0-based inner offsets)
+    // ── Quilt+log section separator  ├──Q──┬──Q──┬──────┴──────┤
+    // Q_INNER = 11: each quilt col is " ????????? " = 11 display cols.
+    // Junction positions (0-indexed in IW inner space):
+    //   pos_q1 = Q_INNER      (┬: divides Q1 from Q2)
+    //   pos_q2 = Q_INNER*2+1  (┬: divides Q2 from event log)
+    //   mid_col                (┴: aligns with the stats ┬ above)
+    constexpr int Q_INNER = 11;
+    const int pos_q1 = Q_INNER;
+    const int pos_q2 = Q_INNER * 2 + 1;
     std::printf("%s\n",
-        hline_2t(kBdr_LT, kBdr_H, kBdr_TT, kBdr_BT, kBdr_RT,
-                 IW, quilt_sep_L - 1, quilt_sep_R - 1).c_str());
+        hline_3t(kBdr_LT, kBdr_H, kBdr_TT, kBdr_TT, kBdr_BT, kBdr_RT,
+                 IW, pos_q1, pos_q2, mid_col).c_str());
 
     // ── Quilt + log body (header row + 9 data rows).
-    int log_start_col = quilt_sep_R + 1;  // character after the right quilt separator
-    int log_pane_width = IW - log_start_col;  // visible chars in log pane
+    // event log column inner width = IW - Q_INNER - 1 - Q_INNER - 1 = IW-24
+    const int EVENT_INNER = IW - Q_INNER - 1 - Q_INNER - 1;
+    // usable log content = EVENT_INNER - 2 (leading/trailing space absorbed by format)
+    const int log_pane_width = EVENT_INNER;
 
-    // Header row.
-    auto log_header = [&]() {
-        std::printf("%s P1 quilt (9%s9) %s P2 quilt (9%s9)  %-*s%s\n",
-                    kBdr_V, kMult, kBdr_V, kMult,
-                    log_pane_width - 1, "Event log", kBdr_V);
-    };
-    log_header();
+    // Header row: │ P1 quilt  │ P2 quilt  │ Event log ... │
+    {
+        char hdr[200];
+        std::snprintf(hdr, sizeof(hdr), " P1 quilt  %s P2 quilt  %s %-*s",
+                      kBdr_V, kBdr_V, log_pane_width - 2, "Event log");
+        // visible = 11 + 1 + 11 + 1 + log_pane_width = 24 + log_pane_width = IW
+        std::printf("%s%s%s\n", kBdr_V, hdr, kBdr_V);
+    }
 
     int log_total = static_cast<int>(log.entries.size());
     int log_visible = std::min(9, log_total);
@@ -391,48 +409,54 @@ static void render_narrow(const SimplifiedGameState& state,
 
     for (int row = 0; row < 9; ++row) {
         std::string log_cell;
+        int log_cell_vis = 0;
         if (row < log_visible) {
             const std::string& e = log.entries[static_cast<std::size_t>(log_offset + row)];
             std::string display;
+            int usable = log_pane_width - 4;  // space + "> " + space before │
+            if (usable < 1) usable = 1;
             if (log.wrap_mode) {
-                display = e.substr(0, static_cast<std::size_t>(log_pane_width - 3));
+                display = e.substr(0, static_cast<std::size_t>(usable));
             } else {
                 int off = log.scroll_offset;
                 if (off < static_cast<int>(e.size()))
                     display = e.substr(static_cast<std::size_t>(off),
-                                       static_cast<std::size_t>(log_pane_width - 3));
+                                       static_cast<std::size_t>(usable));
             }
             const char* pc = C ? kColorGreen : "";
             const char* pr = C ? kReset : "";
             log_cell = std::string(pc) + "> " + pr + display;
+            log_cell_vis = 2 + static_cast<int>(display.size());
         }
-        int log_cell_visible = row < log_visible
-            ? 2 + static_cast<int>(
-                  log.entries[static_cast<std::size_t>(log_offset + row)].size())
-            : 0;
-        // Clamp.
-        int pad = log_pane_width - 2 - std::min(log_cell_visible, log_pane_width - 2);
+        // Pad event column: total EVENT_INNER = 1(space)+log_cell+pad+1(space)
+        int pad = EVENT_INNER - 2 - log_cell_vis;
         if (pad < 0) pad = 0;
-        std::printf("%s ????????? %s ?????????  %s%s %s\n",
-                    kBdr_V, kBdr_V,
+        // Print: │ ????????? │ ????????? │ [space][log_cell][pad][space] │
+        std::printf("%s ????????? %s ????????? %s %s%s %s\n",
+                    kBdr_V, kBdr_V, kBdr_V,
                     log_cell.c_str(),
                     std::string(static_cast<std::size_t>(pad), ' ').c_str(),
                     kBdr_V);
     }
 
-    // ── NDJSON separator  ├──────────┴──────────┴──...──┤
+    // ── NDJSON separator with embedded label: ├──┴──┴─ ndjson ... ─┤
     std::printf("%s\n",
-        hline_2t(kBdr_LT, kBdr_H, kBdr_BT, kBdr_BT, kBdr_RT,
-                 IW, quilt_sep_L - 1, quilt_sep_R - 1).c_str());
+        ndjson_sep_line(IW, {pos_q1, pos_q2}, ndjson.height).c_str());
 
-    // ── NDJSON pane.
-    print_ndjson_pane(ndjson, C, IW + 2);
+    // ── NDJSON pane content rows.
+    print_ndjson_pane(ndjson, C, IW);
 
     // ── Bottom border.
     std::printf("%s\n", hline(kBdr_BL, kBdr_H, kBdr_BR, IW).c_str());
 }
 
 // ── Wide layout (≥160 cols) ───────────────────────────────────────────────
+//
+// Column structure:  │ LEFT(78) │ Q1(11) │ Q2(11) │ EVENT(IW-102) │
+//
+// The left section uses the same format as the narrow layout (IW_NARROW=78).
+// Two quilt columns (Q1, Q2) and the event log are explicit peer columns.
+// Stats row is shown at the bottom of the left section via a sub-separator.
 
 static void render_wide(const SimplifiedGameState& state,
                          const GameSetup& setup,
@@ -443,164 +467,240 @@ static void render_wide(const SimplifiedGameState& state,
     const int IW = W - 2;
     const bool C = cfg.color_enabled;
     const int active = state.active_player();
-    const int LEFT = 65;  // left column inner width (excl. border │ on right)
-    const int RIGHT = IW - LEFT - 1;
 
-    // ── Top border with mid divider.
+    // Column constants (display cols).
+    constexpr int LEFT = 78;    // inner width of left section
+    constexpr int Q_INNER = 11; // each quilt column (space+9×?+space)
+    const int EVENT = IW - LEFT - 1 - Q_INNER - 1 - Q_INNER - 1;
+
+    // T-junction positions (0-indexed in IW inner space).
+    const int pos_lq  = LEFT;                          // left / Q1
+    const int pos_q1q2 = LEFT + Q_INNER + 1;           // Q1  / Q2
+    const int pos_q2ev = LEFT + Q_INNER + 1 + Q_INNER + 1; // Q2 / event
+    // Stats mid within left section.
+    const int stats_mid = LEFT / 2;
+
+    // ── Top border: ┌─left─┬─Q1─┬─Q2─┬─event─▶P1─┐
     {
         std::string left_txt = " PATCHWORK -- seed ? / setup 0 ";
         std::string right_txt = std::string(" ") + kArrow + " P"
                               + char('1' + active) + " " + kBdr_H;
-        int right_fill = RIGHT - static_cast<int>(right_txt.size());
-        if (right_fill < 0) right_fill = 0;
-        std::printf("%s%s%s%s%s%s%s\n",
+        int left_fill = LEFT - static_cast<int>(left_txt.size());
+        if (left_fill < 0) left_fill = 0;
+        int event_fill = EVENT - static_cast<int>(right_txt.size());
+        if (event_fill < 0) event_fill = 0;
+        std::printf("%s%s%s%s%s%s%s%s%s%s%s\n",
                     kBdr_TL,
                     left_txt.c_str(),
-                    rep(kBdr_H, LEFT - static_cast<int>(left_txt.size())).c_str(),
+                    rep(kBdr_H, left_fill).c_str(),
                     kBdr_TT,
-                    rep(kBdr_H, right_fill).c_str(),
+                    rep(kBdr_H, Q_INNER).c_str(),
+                    kBdr_TT,
+                    rep(kBdr_H, Q_INNER).c_str(),
+                    kBdr_TT,
+                    rep(kBdr_H, event_fill).c_str(),
                     right_txt.c_str(),
                     kBdr_TR);
     }
 
-    // Build left column lines.
+    // ── Build detail rows (same format as narrow, left section = LEFT inner).
     int extra = std::max(0, (W - 80) / 10);
     int detail_count = std::min(6, 3 + extra);
     auto buyable = collect_buyable(state, setup, detail_count);
     int p_buttons = state.player(active).buttons();
 
-    std::vector<std::string> left_rows;
-    std::vector<int> left_visible;  // visible char count for each row
-
-    auto push_left = [&](const std::string& visible_text, const std::string& raw_for_print) {
-        left_rows.push_back(raw_for_print);
-        left_visible.push_back(static_cast<int>(visible_text.size()));
+    static const char* const kWideKeys[] = {
+        "[0-x]buy  [a]adv      [q]quit          ",
+        "[z/u]undo [Z/r]redo   [</>]log  [w]wrap",
+        "[m]v [f]^ [h]^/2  [,]- [.]+             "
     };
 
-    // Circle.
-    std::string cl = "Circle: " + circle_line(state, setup);
-    push_left(cl, cl);
-    std::string ml = "        " + std::string(static_cast<std::size_t>(state.circle_marker()), ' ') + "^";
-    push_left(ml, ml);
+    // ── Build right (quilt+event) columns.
+    int log_total   = static_cast<int>(log.entries.size());
+    int log_visible = std::min(9, log_total);
+    int log_offset  = log_total - log_visible;
 
-    // Detail rows.
-    for (int i = 0; i < detail_count; ++i) {
+    // Pad a string to `width` display cols.
+    auto pad_to = [](const std::string& s, int width) -> std::string {
+        if (static_cast<int>(s.size()) >= width)
+            return s.substr(0, static_cast<std::size_t>(width));
+        return s + std::string(static_cast<std::size_t>(width - static_cast<int>(s.size())), ' ');
+    };
+
+    // Returns the event column string (EVENT display cols) for quilt row `qrow`
+    // (-1 = header).
+    auto event_col = [&](int qrow) -> std::string {
+        if (qrow < 0) {
+            // Header.
+            return pad_to(" Event log", EVENT);
+        }
+        if (qrow < log_visible) {
+            const std::string& e = log.entries[static_cast<std::size_t>(log_offset + qrow)];
+            std::string display;
+            int usable = EVENT - 4;
+            if (usable < 1) usable = 1;
+            if (log.wrap_mode) {
+                display = e.substr(0, static_cast<std::size_t>(usable));
+            } else {
+                int off = log.scroll_offset;
+                if (off < static_cast<int>(e.size()))
+                    display = e.substr(static_cast<std::size_t>(off),
+                                       static_cast<std::size_t>(usable));
+            }
+            const char* pc = C ? kColorGreen : "";
+            const char* pr = C ? kReset : "";
+            std::string cell = std::string(pc) + "> " + pr + display;
+            int cell_vis = 2 + static_cast<int>(display.size());
+            int epad = EVENT - 2 - cell_vis;
+            if (epad < 0) epad = 0;
+            return " " + cell + std::string(static_cast<std::size_t>(epad), ' ') + " ";
+        }
+        return std::string(static_cast<std::size_t>(EVENT), ' ');
+    };
+
+    // Returns Q1/Q2 content (Q_INNER=11 display cols) for quilt row `qrow`
+    // (-1 = header, 0..8 = data).
+    auto quilt_col = [&](int which, int qrow) -> std::string {
+        if (qrow < 0) {
+            // Header: " P1 quilt  " or " P2 quilt  "
+            return which == 0 ? " P1 quilt  " : " P2 quilt  ";
+        }
+        return " ????????? ";
+    };
+
+    // Total rows in the main body:
+    //   Row 0:               circle  |  quilt header
+    //   Row 1:               marker  |  quilt data row 0
+    //   Rows 2..detail+1:   detail  |  quilt data rows 1..(detail)
+    //   Row detail+2:        blank   |  quilt data row detail+1   (if needed)
+    //   ...
+    //   Row TOTAL-2:         stats sep |  quilt data row TOTAL-3
+    //   Row TOTAL-1:         stats   |  quilt data row TOTAL-2
+    // TOTAL = 10 (quilt header + 9 data rows)
+    const int TOTAL = 10;
+
+    // Build left section content strings (plain + colored).
+    std::vector<std::string> lplain(TOTAL), lcolored(TOTAL);
+    // Row 0: Circle.
+    lplain[0] = lcolored[0] = "Circle: " + circle_line(state, setup);
+    // Row 1: Marker.
+    lplain[1] = lcolored[1] = "        "
+        + std::string(static_cast<std::size_t>(state.circle_marker()), ' ') + "^";
+    // Rows 2..(2+detail_count-1): Detail rows with inline key hints.
+    for (int i = 0; i < detail_count && (2 + i) < TOTAL - 2; ++i) {
+        const char* key_hint = (i < 3) ? kWideKeys[i] : "";
+        int key_len = static_cast<int>(std::strlen(key_hint));
+        // content column = LEFT - 2 - key_len (matching narrow formula with IW=LEFT)
+        int detail_width = LEFT - 2 - key_len;
+
+        std::string plain_buf;
         if (i < static_cast<int>(buyable.size())) {
             int id = buyable[static_cast<std::size_t>(i)];
             auto& p = kPatches[static_cast<std::size_t>(id)];
-            bool affordable = (p_buttons >= p.buttons);
-            char buf[70];
+            char buf[60];
             std::snprintf(buf, sizeof(buf),
-                          " [%d] %c  cost %2d  time %2d  income %d",
+                          "[%d] %c  cost %2d  time %2d  inc %d",
                           i, p.name, p.buttons, p.time, p.income);
-            if (C) {
-                const char* col = affordable ? kColorAff : kDim;
-                push_left(buf, col + std::string(buf) + kReset);
-            } else {
-                push_left(buf, buf);
-            }
+            plain_buf = buf;
+        }
+        int pad = detail_width - static_cast<int>(plain_buf.size());
+        if (pad < 0) pad = 0;
+        // Assemble: plain_buf + pad + key_hint (total = LEFT-2)
+        std::string plain_row = plain_buf
+            + std::string(static_cast<std::size_t>(pad), ' ')
+            + key_hint;
+        lplain[2 + i] = plain_row;
+        if (C && i < static_cast<int>(buyable.size())) {
+            int id = buyable[static_cast<std::size_t>(i)];
+            auto& p = kPatches[static_cast<std::size_t>(id)];
+            bool affordable = (p_buttons >= p.buttons);
+            const char* col = affordable ? kColorAff : kDim;
+            lcolored[2 + i] = col + plain_buf + kReset
+                + std::string(static_cast<std::size_t>(pad), ' ')
+                + key_hint;
         } else {
-            push_left("", "");
+            lcolored[2 + i] = plain_row;
         }
     }
-    push_left("", "");  // spacer
+    // Remaining rows before stats: blank.
+    for (int r = 2 + detail_count; r < TOTAL - 2; ++r) {
+        lplain[r] = lcolored[r] = "";
+    }
+    // Rows TOTAL-2 and TOTAL-1: stats separator + stats content (handled below).
 
+    // Stats strings.
     char stat0[60], stat1[60];
-    std::snprintf(stat0, sizeof(stat0), " P1  btn %3d  inc %2d  pos %2d  fr %2d",
+    std::snprintf(stat0, sizeof(stat0),
+                  " P1  btn %3d  inc %2d  pos %2d  fr %2d ",
                   state.player(0).buttons(), state.player(0).income(),
                   state.player(0).position(), state.player(0).free_spaces());
-    std::snprintf(stat1, sizeof(stat1), " P2  btn %3d  inc %2d  pos %2d  fr %2d",
+    std::snprintf(stat1, sizeof(stat1),
+                  " P2  btn %3d  inc %2d  pos %2d  fr %2d ",
                   state.player(1).buttons(), state.player(1).income(),
                   state.player(1).position(), state.player(1).free_spaces());
-    if (C) {
-        push_left(stat0, kColorP1 + std::string(stat0) + kReset);
-        push_left(stat1, kColorP2 + std::string(stat1) + kReset);
-    } else {
-        push_left(stat0, stat0);
-        push_left(stat1, stat1);
+    // Each stat padded to stats_mid and LEFT-stats_mid-1 cols.
+    std::string p0col_str = pad_to(stat0, stats_mid);
+    std::string p1col_str = pad_to(stat1, LEFT - stats_mid - 1);
+    std::string p0col_colored = C
+        ? (std::string(kColorP1) + (active == 0 ? kBold : "") + p0col_str + kReset)
+        : p0col_str;
+    std::string p1col_colored = C
+        ? (std::string(kColorP2) + (active == 1 ? kBold : "") + p1col_str + kReset)
+        : p1col_str;
+
+    // ── Print main rows.
+    for (int row = 0; row < TOTAL; ++row) {
+        // quilt row index: row 0 = header (-1), rows 1..9 = data 0..8
+        int qrow = row - 1;
+
+        std::string q1 = quilt_col(0, qrow);
+        std::string q2 = quilt_col(1, qrow);
+        std::string ev = event_col(qrow);
+
+        if (row == TOTAL - 2) {
+            // Stats separator: ├──stats_mid──┬──rest──┤ Q1 │ Q2 │ event │
+            std::string sep = kBdr_LT
+                + rep(kBdr_H, stats_mid) + kBdr_TT
+                + rep(kBdr_H, LEFT - stats_mid - 1) + kBdr_RT;
+            std::printf("%s%s%s%s%s%s%s\n",
+                        sep.c_str(),
+                        q1.c_str(), kBdr_V,
+                        q2.c_str(), kBdr_V,
+                        ev.c_str(), kBdr_V);
+        } else if (row == TOTAL - 1) {
+            // Stats row: │ P1 stats │ P2 stats │ Q1 │ Q2 │ event │
+            std::printf("%s%s%s%s%s%s%s%s%s%s%s\n",
+                        kBdr_V,
+                        p0col_colored.c_str(), kBdr_V,
+                        p1col_colored.c_str(), kBdr_V,
+                        q1.c_str(), kBdr_V,
+                        q2.c_str(), kBdr_V,
+                        ev.c_str(), kBdr_V);
+        } else {
+            // Normal row: │ left_content │ Q1 │ Q2 │ event │
+            const std::string& plain = lplain[static_cast<std::size_t>(row)];
+            const std::string& colored = lcolored[static_cast<std::size_t>(row)];
+            int plain_len = static_cast<int>(plain.size());
+            int lpad = LEFT - 2 - plain_len;
+            if (lpad < 0) lpad = 0;
+            std::printf("%s %s%s %s%s%s%s%s%s%s\n",
+                        kBdr_V,
+                        colored.c_str(),
+                        std::string(static_cast<std::size_t>(lpad), ' ').c_str(),
+                        kBdr_V,
+                        q1.c_str(), kBdr_V,
+                        q2.c_str(), kBdr_V,
+                        ev.c_str(), kBdr_V);
+        }
     }
 
-    std::string tt = " time: " + time_track(state.player(0).position(),
-                                             state.player(1).position(), 40);
-    push_left(tt, tt);
-    push_left(" [0-x]buy  [a]adv  [q]quit",
-              " [0-x]buy  [a]adv  [q]quit");
-    push_left(" [z/u]undo  [Z/r]redo  [</>]log  [w]wrap",
-              " [z/u]undo  [Z/r]redo  [</>]log  [w]wrap");
-    push_left(" [m]v [f]^ [h]^/2  [,]decrL  [.]incrL",
-              " [m]v [f]^ [h]^/2  [,]decrL  [.]incrL");
-
-    // Right column: header + 9 quilt rows + empty.
-    int log_total = static_cast<int>(log.entries.size());
-    int log_visible = std::min(9, log_total);
-    int log_offset = log_total - log_visible;
-    int log_pane_width = RIGHT - 24;  // two quilts ~24 cols
-    if (log_pane_width < 10) log_pane_width = 10;
-
-    auto right_row = [&](int row) -> std::pair<std::string, int> {
-        if (row == 0) {
-            std::string s = "  P1 quilt (9";
-            s += kMult; s += "9)     P2 quilt (9"; s += kMult; s += "9)     Event log";
-            return {s, static_cast<int>(s.size()) - 6};  // kMult is 2 bytes but 1 visible
-        }
-        if (row >= 1 && row <= 9) {
-            int qrow = row - 1;
-            std::string log_cell;
-            if (qrow < log_visible) {
-                const std::string& e = log.entries[static_cast<std::size_t>(log_offset + qrow)];
-                std::string display;
-                if (log.wrap_mode) {
-                    display = e.substr(0, static_cast<std::size_t>(log_pane_width));
-                } else {
-                    int off = log.scroll_offset;
-                    if (off < static_cast<int>(e.size()))
-                        display = e.substr(static_cast<std::size_t>(off),
-                                           static_cast<std::size_t>(log_pane_width));
-                }
-                const char* pc = C ? kColorGreen : "";
-                const char* pr = C ? kReset : "";
-                log_cell = std::string(pc) + "> " + pr + display;
-            }
-            char buf[200];
-            std::snprintf(buf, sizeof(buf), "  ?????????          ?????????          %s",
-                          log_cell.c_str());
-            int vis = 40 + static_cast<int>(
-                (qrow < log_visible
-                    ? log.entries[static_cast<std::size_t>(log_offset + qrow)].size()
-                    : 0));
-            return {buf, vis};
-        }
-        return {"", 0};
-    };
-
-    int max_rows = std::max(static_cast<int>(left_rows.size()), 11);
-
-    for (int row = 0; row < max_rows; ++row) {
-        std::string ltext = (row < static_cast<int>(left_rows.size()))
-                            ? left_rows[static_cast<std::size_t>(row)] : "";
-        int lvis = (row < static_cast<int>(left_visible.size()))
-                   ? left_visible[static_cast<std::size_t>(row)] : 0;
-        auto [rtext, rvis] = right_row(row);
-
-        int lpad = std::max(0, LEFT - 2 - lvis);
-        int rpad = std::max(0, RIGHT - rvis);
-
-        std::printf("%s %s%s%s%s%s%s\n",
-                    kBdr_V,
-                    ltext.c_str(),
-                    std::string(static_cast<std::size_t>(lpad), ' ').c_str(),
-                    kBdr_V,
-                    rtext.c_str(),
-                    std::string(static_cast<std::size_t>(rpad), ' ').c_str(),
-                    kBdr_V);
-    }
-
-    // ── NDJSON separator.
+    // ── NDJSON separator: ├──stats_mid──┴──left_rest──┴──Q1──┴──Q2──┴─label─┤
     std::printf("%s\n",
-        hline_t(kBdr_LT, kBdr_H, kBdr_BT, kBdr_RT, IW, LEFT - 1).c_str());
+        ndjson_sep_line(IW, {stats_mid, pos_lq, pos_q1q2, pos_q2ev},
+                        ndjson.height).c_str());
 
-    // ── NDJSON pane.
-    print_ndjson_pane(ndjson, C, IW + 2);
+    // ── NDJSON pane content rows.
+    print_ndjson_pane(ndjson, C, IW);
 
     // ── Bottom border.
     std::printf("%s\n", hline(kBdr_BL, kBdr_H, kBdr_BR, IW).c_str());
