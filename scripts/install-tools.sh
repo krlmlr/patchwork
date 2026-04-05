@@ -24,7 +24,7 @@ apt-get install -y --no-install-recommends \
 # R package manager: pak (from Posit Package Manager binary repo)
 # ---------------------------------------------------------------------------
 echo 'options(repos = c(CRAN = sprintf("https://p3m.dev/cran/latest/bin/linux/noble-%s/%s", R.version["arch"], substr(getRversion(), 1, 3))))' >> ~/.Rprofile
-Rscript -e 'install.packages("pak"); library(pak)'
+Rscript -e 'install.packages("pak"); library(pak); pak::ppm_has_binaries()'
 
 # ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
