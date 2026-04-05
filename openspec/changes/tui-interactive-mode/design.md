@@ -40,7 +40,7 @@ Extra columns beyond 80 widen the event-log pane and the time-track bar.
 │  [1] B  cost 5  time 3  inc 2   [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │
 │  [2] C  cost 2  time 1  inc 0   [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │
 │                                 [,]decrLines  [.]incrLines               │
-├──────────────────────────────────────────────────────────────────────────┤
+├───────────────────────────────────┬──────────────────────────────────────┤
 │ P1  btn 14  inc 3  pos 12  fr 74  │ P2  btn 11  inc 2  pos 20  fr 81     │
 ├─────────────────┬─────────────────┴──────────────────────────────────────┤
 │ P1 quilt (9×9)  │ P2 quilt (9×9)   Event log                             │
@@ -54,7 +54,7 @@ Extra columns beyond 80 widen the event-log pane and the time-track bar.
 │ ?????????       │ ?????????                                              │
 │ ?????????       │ ?????????                                              │
 ├─────────────────┴────────────────────────────────────────────────────────┤
-│ ndjson (5 lines) ────────────────────────────────── [m]↕ [f]⤢ [h]½↕ [,.] │
+│ ndjson log (5 lines) ────────────────────────────── [m]↕ [f]⤢ [h]½↕ [,.] │
 │ {"type":"move","player":0,"patch":1}                                     │
 │ {"type":"move","player":1,"action":"advance","buttons_gained":4}         │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -65,7 +65,7 @@ Extra columns beyond 80 widen the event-log pane and the time-track bar.
 At ≥160 columns a two-column layout is used: the left column holds the patch circle, adaptive detail, stats, time track, and controls; the right column holds the two quilts side by side and the event log. The NDJSON pane spans the full width at the bottom and gains proportionally more lines.
 
 ```txt
-┌─ PATCHWORK ── seed 42 / setup 0 ─────────────────────────────────────────────────────────────────────────────────────────────────────── ▶ P1 ─┐
+┌─ PATCHWORK ── seed 42 / setup 0 ─────────────────────────────┬───────────────────────────────────────────────────────────────────────── ▶ P1 ─┐
 │ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                    │  P1 quilt (9×9)     P2 quilt (9×9)     Event log                               │
 │                  ^                                           │  ?????????          ?????????          > P1 bought [1] (+1 income)             │
 │  [0] A  cost 3  time 2  income 1                             │  ?????????          ?????????          > P2 advanced (+4 buttons)              │
