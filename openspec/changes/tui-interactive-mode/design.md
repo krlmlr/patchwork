@@ -5,6 +5,7 @@ The engine has complete game logic (move generation, application, terminal detec
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Render current game state in ASCII art on a standard terminal: buttons, income, free spaces, time-track positions, the full patch circle (all 33 patch characters as a sequence with a circle-marker indicator), and adaptive detail lines for the next 3+ buyable patches
 - Two reserved 9×9 quilt board areas (one per player) displaying `?` in simplified mode — sized so the full quilt game requires no layout changes
 - Scrolling event log alongside the board view with horizontal scrolling and an optional line-wrap toggle
@@ -18,6 +19,7 @@ The engine has complete game logic (move generation, application, terminal detec
 - Catch2 unit tests for history stack and display helpers
 
 **Non-Goals:**
+
 - Full quilt-board ASCII art (cell contents shown as `?` until a placement phase is added)
 - Networked or multiplayer sessions
 - Mouse support
@@ -31,31 +33,31 @@ The engine has complete game logic (move generation, application, terminal detec
 Extra columns beyond 80 widen the event-log pane and the time-track bar.
 
 ```txt
-┌─ PATCHWORK ── seed 42 / setup 0 ───────────────────────────────── ▶ P1 ─┐
-│ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                 │
-│                  ^                                                         │
+┌─ PATCHWORK ── seed 42 / setup 0 ────────────────────────────────── ▶ P1 ─┐
+│ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                │
+│                  ^                                                       │
 │  [0] A  cost 3  time 2  inc 1   [0-x]buy  [a]adv      [q]quit            │
-│  [1] B  cost 5  time 3  inc 2   [z/u]undo [Z/r]redo   [</>]log  [↵]wrap  │
+│  [1] B  cost 5  time 3  inc 2   [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │
 │  [2] C  cost 2  time 1  inc 0   [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │
-│                                 [[]decrLines  []]incrLines                 │
-├───────────────────────────────────────────────────────────────────────────┤
+│                                 [,]decrLines  [.]incrLines               │
+├──────────────────────────────────────────────────────────────────────────┤
 │ P1  btn 14  inc 3  pos 12  fr 74  │ P2  btn 11  inc 2  pos 20  fr 81     │
-├─────────────────┬──────────────────┴────────────────────────────────────┤
+├─────────────────┬─────────────────┴──────────────────────────────────────┤
 │ P1 quilt (9×9)  │ P2 quilt (9×9)   Event log                             │
 │ ?????????       │ ?????????        > P1 bought [1] (+1 income)           │
 │ ?????????       │ ?????????        > P2 advanced (+4 buttons)            │
 │ ?????????       │ ?????????        > P1 earned leather patch             │
 │ ?????????       │ ?????????        > P2 bought [0]                       │
-│ ?????????       │ ?????????        >                                      │
-│ ?????????       │ ?????????                                               │
-│ ?????????       │ ?????????                                               │
-│ ?????????       │ ?????????                                               │
-│ ?????????       │ ?????????                                               │
-├─────────────────┴─────────────────────────────────────────────────────────┤
-│ ndjson (5 lines) ─────────────────────────────────── [m]↕ [f]⤢ [h]½↕ [][] │
-│ {"type":"move","player":0,"patch":1}                                       │
-│ {"type":"move","player":1,"action":"advance","buttons_gained":4}           │
-└───────────────────────────────────────────────────────────────────────────┘
+│ ?????????       │ ?????????        >                                     │
+│ ?????????       │ ?????????                                              │
+│ ?????????       │ ?????????                                              │
+│ ?????????       │ ?????????                                              │
+│ ?????????       │ ?????????                                              │
+├─────────────────┴────────────────────────────────────────────────────────┤
+│ ndjson (5 lines) ────────────────────────────────── [m]↕ [f]⤢ [h]½↕ [,.] │
+│ {"type":"move","player":0,"patch":1}                                     │
+│ {"type":"move","player":1,"action":"advance","buttons_gained":4}         │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Wide layout — 160 columns
@@ -63,23 +65,23 @@ Extra columns beyond 80 widen the event-log pane and the time-track bar.
 At ≥160 columns a two-column layout is used: the left column holds the patch circle, adaptive detail, stats, time track, and controls; the right column holds the two quilts side by side and the event log. The NDJSON pane spans the full width at the bottom and gains proportionally more lines.
 
 ```txt
-┌─ PATCHWORK ── seed 42 / setup 0 ───────────────────────────────────────────────────────────────────────────────────────────────────────── ▶ P1 ─┐
+┌─ PATCHWORK ── seed 42 / setup 0 ─────────────────────────────────────────────────────────────────────────────────────────────────────── ▶ P1 ─┐
 │ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                    │  P1 quilt (9×9)     P2 quilt (9×9)     Event log                               │
 │                  ^                                           │  ?????????          ?????????          > P1 bought [1] (+1 income)             │
 │  [0] A  cost 3  time 2  income 1                             │  ?????????          ?????????          > P2 advanced (+4 buttons)              │
 │  [1] B  cost 5  time 3  income 2                             │  ?????????          ?????????          > P1 earned leather patch               │
 │  [2] C  cost 2  time 1  income 0                             │  ?????????          ?????????          > P2 bought [0]                         │
-│  [3] D  cost 1  time 1  income 0                             │  ?????????          ?????????          >                                        │
-│  [4] E  cost 4  time 2  income 1                             │  ?????????          ?????????                                                   │
-│                                                              │  ?????????          ?????????                                                   │
-│  P1  btn 14  inc 3  pos 12  fr 74                            │  ?????????          ?????????                                                   │
-│  P2  btn 11  inc 2  pos 20  fr 81                            │  ?????????          ?????????                                                   │
+│  [3] D  cost 1  time 1  income 0                             │  ?????????          ?????????          >                                       │
+│  [4] E  cost 4  time 2  income 1                             │  ?????????          ?????????                                                  │
+│                                                              │  ?????????          ?????????                                                  │
+│  P1  btn 14  inc 3  pos 12  fr 74                            │  ?????????          ?????????                                                  │
+│  P2  btn 11  inc 2  pos 20  fr 81                            │  ?????????          ?????????                                                  │
 │  time: ──P1─────────────────P2──────── 0..53                 │                                                                                │
 │  [0-x]buy  [a]adv  [q]quit                                   │                                                                                │
-│  [z/u]undo  [Z/r]redo  [</>]log  [↵]wrap                     │                                                                                │
-│  [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕  [[]decrL  []]incrL     │                                                                                │
-├──────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────┤
-│ ndjson log (12 lines) ─────────────────────────────────────────────────────────────────────────────────────────────── [m]↕ [f]⤢ [h]½↕ [][] │
+│  [z/u]undo  [Z/r]redo  [</>]log  [w]wrap                     │                                                                                │
+│  [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕  [,]decrL  [.]incrL     │                                                                                │
+├──────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────┤
+│ ndjson log (12 lines) ────────────────────────────────────────────────────────────────────────────────────────────────── [m]↕ [f]⤢ [h]½↕ [,.] │
 │ {"type":"move","player":0,"patch":1,"cost":3,"time_cost":2,"income_gain":1}                                                                   │
 │ {"type":"move","player":1,"action":"advance","buttons_gained":4,"new_position":20}                                                            │
 │ {"type":"income","player":0,"amount":3,"new_total":14}                                                                                        │
@@ -130,6 +132,7 @@ Column budget at 80: quilt section ~30 cols, event log ~46 cols, ndjson 5 lines 
 ### 9. NDJSON log pane with resize controls
 
 **Decision:** The NDJSON log section occupies a configurable number of lines at the bottom of the frame. Four keyboard shortcuts control its size:
+
 - `m` — toggle minimize: collapses the pane to 0 lines (header bar only) and restores to the last non-zero height on the next press
 - `f` — maximize: expands the pane to fill all remaining terminal rows below the main frame
 - `h` — semi-maximize: sets the pane height to `floor((max_ndjson_lines) / 2)`, i.e., half the maximum
@@ -161,19 +164,19 @@ The default height is 5 lines. The event log and horizontal scroll behaviour are
 
 ### 10. Color scheme — ANSI 16-color, graceful degradation
 
-**Decision:** The TUI uses the ANSI 16-color palette. Color assignments:
+**Decision:** The TUI uses the ANSI 16-color palette. Color assignments per concept (TBD, defined with constants), other details:
 
-| Element | Color |
-|---|---|
-| P1 stats / marker | Bright cyan (`\033[96m`) |
-| P2 stats / marker | Bright yellow (`\033[93m`) |
-| Affordable patch detail | Bright green (`\033[92m`) |
-| Unaffordable patch detail | Dim white (`\033[2m`) |
-| Active-player row / header | Bold (`\033[1m`) |
-| Event-log prompt `>` | Green (`\033[32m`) |
-| NDJSON log text | Dim (`\033[2m`) |
-| Error / illegal-move flash | Bold red (`\033[1;31m`) |
-| Box-drawing frame | Default foreground |
+| Element                    | Color                                                                      |
+|----------------------------|----------------------------------------------------------------------------|
+| P1 stats / marker          | Bright cyan (`\033[96m`)                                                   |
+| P2 stats / marker          | Bright yellow (`\033[93m`)                                                 |
+| Affordable patch detail    | Bright green (`\033[92m`)                                                  |
+| Unaffordable patch detail  | Dim white (`\033[2m`)                                                      |
+| Active-player row / header | Bold (`\033[1m`)                                                           |
+| Event-log prompt `>`       | Green (`\033[32m`)                                                         |
+| NDJSON log text            | Dim for control characters (`\033[2m`), contents using colors for concepts |
+| Error / illegal-move flash | Bold red (`\033[1;31m`)                                                    |
+| Box-drawing frame          | Default foreground                                                         |
 
 Color is suppressed when: `TERM=dumb`, `NO_COLOR` environment variable is set, or `--no-color` flag is passed.
 

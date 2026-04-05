@@ -26,6 +26,8 @@
 - [ ] 3.10 Implement `append_log(LogState&, std::string)` that appends to the log buffer (max 50 entries) and resets the horizontal scroll offset to 0
 - [ ] 3.11 Implement log horizontal scrolling (`<` / `>` keys update offset) and wrap toggle (Enter key toggles wrap mode; in wrap mode offset is ignored)
 - [ ] 3.12 Add unit tests in `tests/tui_display_test.cpp` for: `append_log` buffer trimming, scroll-offset reset on new entry, circle line length, marker placement, quilt grid dimensions, log wrap vs. scroll rendering, NDJSON pane height state machine, color suppression; register in `tests/meson.build`
+- [ ] 3.13 Add snapshot tests for a few moves into a simple game (output without color) for 80, 120 and 160 columns, verifying the full frame layout and content
+- [ ] 3.14 Add snapshot tests for color output
 
 ## 4. Input Module
 
