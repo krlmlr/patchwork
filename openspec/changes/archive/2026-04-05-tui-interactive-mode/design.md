@@ -36,7 +36,7 @@ Extra columns beyond 80 widen the event-log pane and the time-track bar.
 ┌─ PATCHWORK ── seed 42 / setup 0 ───────────────────────────────────── ▶ P1 ─┐
 │ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                   │
 │                  ^                                                          │
-│  [0] A  cost  3  time 2  inc 1     [012]buy  [a]adv      [q]quit            │
+│  [0] A  cost  3  time 2  inc 1     [123]buy  [a]adv      [q]quit            │
 │  [1] B  cost  5  time 3  inc 2     [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │
 │  [2] C  cost 10  time 1  inc 0     [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │
 │                                    [,]decrLines  [.]incrLines               │
@@ -67,7 +67,7 @@ At ≥160 columns a two-column layout is used: the left column holds the patch c
 ┌─ PATCHWORK ── seed 42 / setup 0 ────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────────── ▶ P1 ─┐
 │ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567                                   │ P1 quilt  │ P2 quilt  │ Event log                                             │
 │                  ^                                                          │ ????????? │ ????????? │ > P1 bought [1] (+1 income)                           │
-│  [0] A  cost  3  time 2  inc 1     [012]buy  [a]adv      [q]quit            │ ????????? │ ????????? │ > P2 advanced (+4 buttons)                            │
+│  [0] A  cost  3  time 2  inc 1     [123]buy  [a]adv      [q]quit            │ ????????? │ ????????? │ > P2 advanced (+4 buttons)                            │
 │  [1] B  cost  5  time 3  inc 2     [z/u]undo [Z/r]redo   [</>]log  [w]wrap  │ ????????? │ ????????? │ > P1 earned leather patch                             │
 │  [2] C  cost  2  time 1  inc 0     [m]ndjson↕  [f]ndjson⤢  [h]ndjson½↕      │ ????????? │ ????????? │ > P2 bought [0]                                       │
 │  [3] D  cost  1  time 1  inc 0                                              │ ????????? │ ????????? │ >                                                     │
