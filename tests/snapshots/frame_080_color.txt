@@ -1,13 +1,13 @@
-┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────── ▶ P1 ─┐
+┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
 │ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
 │         ^                                                                    │
-│ [92m[0] 2  cost  2  time  1  inc 0[0m       [0-x]buy  [a]adv      [q]quit           │
-│ [92m[1] v  cost  1  time  3  inc 0[0m       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
-│ [92m[2] 3  cost  2  time  2  inc 0[0m      [m]v [f]^ [h]^/2  [,]- [.]+              │
+│ [92m[1] 2  cost  2  time  1  inc 0[0m       [1/2/3]buy  [a]adv      [q]quit         │
+│ [92m[2] v  cost  1  time  3  inc 0[0m       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [92m[3] 3  cost  2  time  2  inc 0[0m      [m]v [f]^ [h]^/2  [,]- [.]+              │
 ├───────────────────────────────────────┬──────────────────────────────────────┤
-│[96m[1m P1  btn   5  inc  0  pos  0  fr 81   [0m│[93m P2  btn   5  inc  0  pos  0  fr 81   [0m│
+│[96m[1m P1  btn   5  inc  0  pos  0  fr 81    [0m│[93m P2  btn   5  inc  0  pos  0  fr 81   [0m│
 ├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
-│ P1 quilt  │ P2 quilt  │ Event log                                           │
+│ P1 quilt  │ P2 quilt  │ Event log                                            │
 │ ????????? │ ????????? │ [32m> [0mP1 bought [0]                                      │
 │ ????????? │ ????????? │ [32m> [0mP2 advanced                                        │
 │ ????????? │ ????????? │                                                      │
@@ -17,10 +17,7 @@
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
-├───────────┴───────────┴─ ndjson log (5 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
-│ [2m{[0m"event"[2m:[0m"move"[2m,[0m"ply"[2m:[0m1[2m,[0m"player"[ │
-│ [2m{[0m"event"[2m:[0m"move"[2m,[0m"ply"[2m:[0m2[2m,[0m"player"[ │
-│                                                                              │
-│                                                                              │
-│                                                                              │
+├───────────┴───────────┴─ ndjson log (2 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
+│ [2m{[0m"event"[2m:[0m"move"[2m,[0m"ply"[2m:[0m1[2m,[0m"player"[2m:[0m[96m0[0m[2m,[0m"move_type"[2m:[0m[92m"buy_patch"[0m[2m,[0m"patch_index"[2m:[0m0   │
+│ [2m{[0m"event"[2m:[0m"move"[2m,[0m"ply"[2m:[0m2[2m,[0m"player"[2m:[0m[93m1[0m[2m,[0m"move_type"[2m:[0m[36m"advance"[0m[2m,[0m"position"[2m:[0m5[2m,[0m"but   │
 └──────────────────────────────────────────────────────────────────────────────┘

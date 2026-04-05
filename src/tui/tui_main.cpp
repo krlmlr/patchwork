@@ -62,10 +62,21 @@ int main(int argc, char** argv) {
     // Enter raw mode for game loop.
     RawMode raw_mode;
 
-    // Compute max ndjson lines = terminal height - fixed frame rows.
+    // Compute max ndjson lines = terminal height minus fixed frame rows.
+    // Narrow: top(1)+circle(2)+detail_min(3)+stats-sep(1)+stats(1)+quilt-sep(1)+
+    //         quilt-header(1)+quilt-rows(9)+ndjson-sep(1)+bottom(1) = 21 + ndjson
+    // Target: cfg.height - 1 (fill terminal minus last line)
+    // max_ndjson_narrow = (cfg.height - 1) - 21 = cfg.height - 22
+    // Wide: top(1)+body(10)+ndjson-sep(1)+bottom(1) = 13 + ndjson
+    // max_ndjson_wide   = (cfg.height - 1) - 13 = cfg.height - 14
     auto max_ndjson = [&]() -> int {
-        return std::max(0, cfg.height - 18);
+        if (cfg.width >= 160)
+            return std::max(0, cfg.height - 14);
+        return std::max(0, cfg.height - 22);
     };
+
+    // Start with the frame filling the entire terminal.
+    ndjson.height = max_ndjson();
 
     int ply = 0;
     std::string last_error;
@@ -84,12 +95,14 @@ int main(int argc, char** argv) {
 
         if (std::holds_alternative<UndoCmd>(cmd)) {
             history.undo();
-            append_log(log, "Undo");
+            // Undo removes the last event-log entry rather than adding a new one.
+            // In the current game loop each player+opponent round appends at most
+            // 2 entries; popping one per undo is the specified simplification.
+            if (!log.entries.empty()) log.entries.pop_back();
             continue;
         }
         if (std::holds_alternative<RedoCmd>(cmd)) {
             history.redo();
-            append_log(log, "Redo");
             continue;
         }
         if (std::holds_alternative<ScrollLogLeft>(cmd)) {

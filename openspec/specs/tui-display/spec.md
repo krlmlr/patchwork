@@ -2,7 +2,12 @@
 
 ### Requirement: Game state is rendered as a responsive box-framed ASCII layout
 
-The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. The frame SHALL contain six sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side (with event log to the right), (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported; the wide layout places the patch circle, stats, and controls in the left column and the quilts + event log in the right column.
+The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. **Every row in the rendered frame SHALL have the same visual display width equal to the terminal column count `W`; the right border character (or corner) SHALL appear at exactly the same horizontal position on every row.** The frame SHALL contain six sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side with the event log to the right, (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported.
+
+#### Scenario: All frame rows have the same visual width
+
+- **WHEN** `render_frame` is called on an 80-column terminal
+- **THEN** every printed row (after stripping ANSI escape codes) has a visual display width of exactly 80 columns
 
 #### Scenario: Frame renders both players' stats
 
@@ -45,7 +50,7 @@ The display SHALL render at least 3 detail lines below the circle marker, one pe
 #### Scenario: At least 3 detail lines are shown
 
 - **WHEN** at least 3 patches are buyable and the terminal is exactly 80 columns wide
-- **THEN** exactly 3 detail lines are shown, prefixed `[0]`, `[1]`, `[2]`
+- **THEN** exactly 3 detail lines are shown, prefixed `[1]`, `[2]`, `[3]`
 
 #### Scenario: Extra detail lines on wider terminals
 
@@ -87,7 +92,7 @@ The display SHALL apply ANSI 16-color codes using named constants defined in `di
 
 ### Requirement: NDJSON log pane is resizable
 
-The bottom NDJSON log pane height (in lines) is controlled at runtime. The initial height is 5 lines. Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `,` / `.` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts.
+The bottom NDJSON log pane height (in lines) is controlled at runtime. **The initial height is set so that the frame fills the entire terminal minus the last line** (i.e., `cfg.height - 1` total rows). Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `,` / `.` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts. **When the NDJSON pane height decreases the freed rows are used for additional patch-circle detail lines, and vice versa** (the total frame height stays constant at `cfg.height - 1`). The NDJSON height is clamped at render time so it never overflows the terminal.
 
 #### Scenario: Minimize hides all NDJSON lines
 
@@ -140,7 +145,7 @@ The lower-left section of the frame SHALL permanently display two 9×9 grids lab
 
 ### Requirement: Event log maintains a scrolling buffer with horizontal scroll and wrap toggle
 
-The display module SHALL maintain a bounded event log buffer of at most 50 entries. Each call to `append_log` adds a string to the tail; entries beyond the limit are discarded from the head. The rendered frame SHALL display the most recent entries that fit in the log pane. The log SHALL support a horizontal scroll offset (shifted by `<` / `>` keys); adding a new entry SHALL reset the offset to 0 so the newest line is fully visible. A wrap toggle (Enter key) SHALL switch between truncated-with-scroll and word-wrapped display; in wrap mode the horizontal offset is ignored.
+The display module SHALL maintain a bounded event log buffer of at most 50 entries. Each call to `append_log` adds a string to the tail; entries beyond the limit are discarded from the head. **An undo action SHALL remove the last entry from the log (pop-back) rather than appending a new entry; a redo action SHALL not modify the log.** The rendered frame SHALL display the most recent entries that fit in the log pane. The log SHALL support a horizontal scroll offset (shifted by `<` / `>` keys); adding a new entry SHALL reset the offset to 0 so the newest line is fully visible. A wrap toggle (key `w`) SHALL switch between truncated-with-scroll and word-wrapped display; in wrap mode the horizontal offset is ignored.
 
 #### Scenario: Log buffer respects maximum size
 

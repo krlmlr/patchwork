@@ -210,20 +210,20 @@ static std::string colorize_ndjson(const std::string& raw) {
 
 /// Print the NDJSON pane content lines (no header -- the header is embedded in
 /// the separator line produced by ndjson_sep_line()).
-static void print_ndjson_pane(const NdjsonState& ndjson, bool color, int iw) {
+/// `rows` is the effective number of rows to render (may differ from ndjson.height
+/// when the pane is clamped to fit the terminal height).
+static void print_ndjson_pane(const NdjsonState& ndjson, bool color, int iw, int rows) {
     int ndj_count = static_cast<int>(ndjson.lines.size());
-    int start = std::max(0, ndj_count - ndjson.height);
-    for (int k = 0; k < ndjson.height; ++k) {
+    int start = std::max(0, ndj_count - rows);
+    for (int k = 0; k < rows; ++k) {
         int idx = start + k;
         if (idx < ndj_count) {
-            std::string line = color
-                ? colorize_ndjson(ndjson.lines[static_cast<std::size_t>(idx)])
-                : ndjson.lines[static_cast<std::size_t>(idx)];
-            // Truncate to iw-4 visible chars.
-            if (static_cast<int>(line.size()) > iw - 4)
-                line.resize(static_cast<std::size_t>(iw - 4));
-            print_row(line, static_cast<int>(
-                ndjson.lines[static_cast<std::size_t>(idx)].size()), iw);
+            const std::string& raw = ndjson.lines[static_cast<std::size_t>(idx)];
+            // NDJSON event data is always ASCII so raw.size() == visual width.
+            int raw_vis = std::min(static_cast<int>(raw.size()), iw - 4);
+            std::string raw_trunc = raw.substr(0, static_cast<std::size_t>(raw_vis));
+            std::string line = color ? colorize_ndjson(raw_trunc) : raw_trunc;
+            print_row(line, raw_vis, iw);
         } else {
             print_row("", 0, iw);
         }
@@ -261,8 +261,10 @@ static void render_narrow(const SimplifiedGameState& state,
         std::string left_txt = " PATCHWORK -- seed ? / setup 0 --";
         std::string right_txt = std::string(" ") + kArrow + " P"
                               + char('1' + active) + " " + kBdr_H;
-        int mid = IW - static_cast<int>(left_txt.size())
-                     - static_cast<int>(right_txt.size());
+        // right_txt contains kArrow (3 bytes, 1 vis) and kBdr_H (3 bytes, 1 vis):
+        // 4 extra bytes.  Use visible width = byte_size - 4 for the mid calculation.
+        int right_vis = static_cast<int>(right_txt.size()) - 4;
+        int mid = IW - static_cast<int>(left_txt.size()) - right_vis;
         if (mid < 0) mid = 0;
         std::printf("%s%s%s%s%s\n",
                     kBdr_TL, left_txt.c_str(),
@@ -280,13 +282,20 @@ static void render_narrow(const SimplifiedGameState& state,
     }
 
     // ── Adaptive detail lines.
-    int extra = std::max(0, (W - 80) / 10);
-    int detail_count = 3 + extra;
+    // Fixed frame rows (excluding detail and ndjson): 18
+    //   top(1)+circle(2)+stats-sep(1)+stats(1)+quilt-sep(1)+quilt-header(1)+
+    //   quilt-data(9)+ndjson-sep(1)+bottom(1) = 18
+    // Target total = cfg.height - 1 (fill terminal minus last line).
+    // Effective ndjson rows (clamped to fit terminal):
+    int max_ndjson_narrow = std::max(0, cfg.height - 22);  // = height-1-18-3
+    int eff_ndjson = std::min(ndjson.height, max_ndjson_narrow);
+    // Detail fills remaining space (at least 3).
+    int detail_count = std::max(3, cfg.height - 19 - eff_ndjson);
     auto buyable = collect_buyable(state, setup, detail_count);
     int p_buttons = state.player(active).buttons();
 
     static const char* const kKeys[] = {
-        "[0-x]buy  [a]adv      [q]quit          ",
+        "[1/2/3]buy  [a]adv      [q]quit        ",
         "[z/u]undo [Z/r]redo   [</>]log  [w]wrap",
         "[m]v [f]^ [h]^/2  [,]- [.]+             "
     };
@@ -304,7 +313,7 @@ static void render_narrow(const SimplifiedGameState& state,
             char buf[60];
             std::snprintf(buf, sizeof(buf),
                           "[%d] %c  cost %2d  time %2d  inc %d",
-                          i, p.name, p.buttons, p.time, p.income);
+                          i + 1, p.name, p.buttons, p.time, p.income);
             if (C) {
                 const char* col = affordable ? kColorAff : kDim;
                 detail = col + std::string(buf) + kReset;
@@ -321,7 +330,7 @@ static void render_narrow(const SimplifiedGameState& state,
             char buf[60];
             std::snprintf(buf, sizeof(buf),
                           "[%d] %c  cost %2d  time %2d  inc %d",
-                          i, p.name, p.buttons, p.time, p.income);
+                          i + 1, p.name, p.buttons, p.time, p.income);
             plain_detail = buf;
         }
         int plain_len = static_cast<int>(plain_detail.size());
@@ -359,6 +368,7 @@ static void render_narrow(const SimplifiedGameState& state,
                   state.player(1).position(), state.player(1).free_spaces());
 
     // Pad stat0 to mid_col chars, stat1 to IW - mid_col - 1 chars.
+    // Row: │ stat0(mid_col) │ stat1(IW-mid_col-1) │  →  1+mid_col+1+(IW-mid_col-1)+1 = IW+2 ✓
     auto pad_to = [](const char* s, int width) -> std::string {
         std::string out(s);
         if (static_cast<int>(out.size()) < width)
@@ -367,8 +377,8 @@ static void render_narrow(const SimplifiedGameState& state,
         return out;
     };
     std::string p0col = C ? (std::string(kColorP1) + (active == 0 ? kBold : "")
-                              + pad_to(stat0, mid_col - 1) + kReset)
-                           : pad_to(stat0, mid_col - 1);
+                              + pad_to(stat0, mid_col) + kReset)
+                           : pad_to(stat0, mid_col);
     std::string p1col = C ? (std::string(kColorP2) + (active == 1 ? kBold : "")
                               + pad_to(stat1, IW - mid_col - 1) + kReset)
                            : pad_to(stat1, IW - mid_col - 1);
@@ -395,11 +405,13 @@ static void render_narrow(const SimplifiedGameState& state,
     const int log_pane_width = EVENT_INNER;
 
     // Header row: │ P1 quilt  │ P2 quilt  │ Event log ... │
+    // Visible: 1(│)+11(Q1)+1(│)+11(Q2)+1(│)+EVENT(log)+1(│) = IW+2 ✓
+    // Format: " P1 quilt  │ P2 quilt  │ %-*s" where %-*s fills EVENT-1 chars
+    // (" " + padded text = 1 + (EVENT-1) = EVENT)
     {
         char hdr[200];
         std::snprintf(hdr, sizeof(hdr), " P1 quilt  %s P2 quilt  %s %-*s",
-                      kBdr_V, kBdr_V, log_pane_width - 2, "Event log");
-        // visible = 11 + 1 + 11 + 1 + log_pane_width = 24 + log_pane_width = IW
+                      kBdr_V, kBdr_V, log_pane_width - 1, "Event log");
         std::printf("%s%s%s\n", kBdr_V, hdr, kBdr_V);
     }
 
@@ -441,10 +453,10 @@ static void render_narrow(const SimplifiedGameState& state,
 
     // ── NDJSON separator with embedded label: ├──┴──┴─ ndjson ... ─┤
     std::printf("%s\n",
-        ndjson_sep_line(IW, {pos_q1, pos_q2}, ndjson.height).c_str());
+        ndjson_sep_line(IW, {pos_q1, pos_q2}, eff_ndjson).c_str());
 
     // ── NDJSON pane content rows.
-    print_ndjson_pane(ndjson, C, IW);
+    print_ndjson_pane(ndjson, C, IW, eff_ndjson);
 
     // ── Bottom border.
     std::printf("%s\n", hline(kBdr_BL, kBdr_H, kBdr_BR, IW).c_str());
@@ -485,9 +497,11 @@ static void render_wide(const SimplifiedGameState& state,
         std::string left_txt = " PATCHWORK -- seed ? / setup 0 ";
         std::string right_txt = std::string(" ") + kArrow + " P"
                               + char('1' + active) + " " + kBdr_H;
+        // right_txt contains kArrow (3B→1vis) and kBdr_H (3B→1vis): 4 extra bytes.
+        int right_vis = static_cast<int>(right_txt.size()) - 4;
         int left_fill = LEFT - static_cast<int>(left_txt.size());
         if (left_fill < 0) left_fill = 0;
-        int event_fill = EVENT - static_cast<int>(right_txt.size());
+        int event_fill = EVENT - right_vis;
         if (event_fill < 0) event_fill = 0;
         std::printf("%s%s%s%s%s%s%s%s%s%s%s\n",
                     kBdr_TL,
@@ -504,16 +518,24 @@ static void render_wide(const SimplifiedGameState& state,
     }
 
     // ── Build detail rows (same format as narrow, left section = LEFT inner).
+    // Wide layout has TOTAL=10 fixed body rows; detail fills rows 2..(TOTAL-3).
+    // For width-adaptive detail: wider terminals show more lines.
+    constexpr int TOTAL = 10;  // quilt header + 9 data rows (also used below)
     int extra = std::max(0, (W - 80) / 10);
-    int detail_count = std::min(6, 3 + extra);
+    int detail_count = std::min(TOTAL - 4, 3 + extra);  // at most TOTAL-4 = 6
     auto buyable = collect_buyable(state, setup, detail_count);
     int p_buttons = state.player(active).buttons();
 
     static const char* const kWideKeys[] = {
-        "[0-x]buy  [a]adv      [q]quit          ",
+        "[1/2/3]buy  [a]adv      [q]quit        ",
         "[z/u]undo [Z/r]redo   [</>]log  [w]wrap",
         "[m]v [f]^ [h]^/2  [,]- [.]+             "
     };
+
+    // Effective NDJSON rows clamped to fit terminal.
+    // Wide total: top(1)+TOTAL(10)+ndjson_sep(1)+ndjson+bottom(1) = 13+ndjson
+    int max_ndjson_wide = std::max(0, cfg.height - 14);
+    int eff_ndjson = std::min(ndjson.height, max_ndjson_wide);
 
     // ── Build right (quilt+event) columns.
     int log_total   = static_cast<int>(log.entries.size());
@@ -576,8 +598,7 @@ static void render_wide(const SimplifiedGameState& state,
     //   ...
     //   Row TOTAL-2:         stats sep |  quilt data row TOTAL-3
     //   Row TOTAL-1:         stats   |  quilt data row TOTAL-2
-    // TOTAL = 10 (quilt header + 9 data rows)
-    const int TOTAL = 10;
+    // TOTAL = 10 (quilt header + 9 data rows, defined above)
 
     // Build left section content strings (plain + colored).
     std::vector<std::string> lplain(TOTAL), lcolored(TOTAL);
@@ -600,7 +621,7 @@ static void render_wide(const SimplifiedGameState& state,
             char buf[60];
             std::snprintf(buf, sizeof(buf),
                           "[%d] %c  cost %2d  time %2d  inc %d",
-                          i, p.name, p.buttons, p.time, p.income);
+                          i + 1, p.name, p.buttons, p.time, p.income);
             plain_buf = buf;
         }
         int pad = detail_width - static_cast<int>(plain_buf.size());
@@ -697,10 +718,10 @@ static void render_wide(const SimplifiedGameState& state,
     // ── NDJSON separator: ├──stats_mid──┴──left_rest──┴──Q1──┴──Q2──┴─label─┤
     std::printf("%s\n",
         ndjson_sep_line(IW, {stats_mid, pos_lq, pos_q1q2, pos_q2ev},
-                        ndjson.height).c_str());
+                        eff_ndjson).c_str());
 
     // ── NDJSON pane content rows.
-    print_ndjson_pane(ndjson, C, IW);
+    print_ndjson_pane(ndjson, C, IW, eff_ndjson);
 
     // ── Bottom border.
     std::printf("%s\n", hline(kBdr_BL, kBdr_H, kBdr_BR, IW).c_str());

@@ -47,7 +47,7 @@ Command read_command() {
     for (;;) {
         char c = '\0';
         if (read(STDIN_FILENO, &c, 1) <= 0) continue;
-        if (c >= '0' && c <= '9') return BuyPatchCmd{c - '0'};
+        if (c >= '1' && c <= '3') return BuyPatchCmd{c - '1'};
         if (c == 'a' || c == ' ') return AdvanceCmd{};
         if (c == 'z' || c == 'u') return UndoCmd{};
         if (c == 'Z' || c == 'r') return RedoCmd{};

@@ -30,19 +30,19 @@ The engine has complete game logic (move generation, application, terminal detec
 
 ### Narrow layout — 80 columns (minimum)
 
-Extra columns beyond 80 widen the event-log pane.
+Extra columns beyond 80 widen the event-log pane. The number of detail lines and NDJSON rows are adaptive: they share the available rows so that the total frame height equals `terminal_height − 1`.
 
 ```txt
-┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────── ▶ P1 ─┐
+┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
 │ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
 │         ^                                                                    │
-│ [0] 2  cost  2  time  1  inc 0       [0-x]buy  [a]adv      [q]quit           │
-│ [1] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
-│ [2] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │
+│ [1] 2  cost  2  time  1  inc 0       [1/2/3]buy  [a]adv      [q]quit         │
+│ [2] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │
 ├───────────────────────────────────────┬──────────────────────────────────────┤
-│ P1  btn   5  inc  0  pos  0  fr 81   │ P2  btn   5  inc  0  pos  0  fr 81   │
+│ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │
 ├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
-│ P1 quilt  │ P2 quilt  │ Event log                                           │
+│ P1 quilt  │ P2 quilt  │ Event log                                            │
 │ ????????? │ ????????? │ > P1 bought [0]                                      │
 │ ????????? │ ????????? │ > P2 advanced                                        │
 │ ????????? │ ????????? │                                                      │
@@ -52,29 +52,26 @@ Extra columns beyond 80 widen the event-log pane.
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
-├───────────┴───────────┴─ ndjson log (5 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
-│ {"event":"move","ply":1,"player":0,"move_type":"buy_patch","patch_index":0 │
-│                                                                              │
-│                                                                              │
-│                                                                              │
+├───────────┴───────────┴─ ndjson log (2 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
+│ {"event":"move","ply":1,"player":0,"move_type":"buy_patch","patch_index":0   │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Wide layout — 160 columns
 
-At ≥160 columns a four-column layout is used: the left column holds the patch circle, adaptive detail, and stats; three peer columns hold Q1 quilt, Q2 quilt, and event log. The NDJSON pane spans the full width at the bottom.
+At ≥160 columns a four-column layout is used: the left column holds the patch circle, adaptive detail, and stats; three peer columns hold Q1 quilt, Q2 quilt, and event log. The NDJSON pane spans the full width at the bottom. The total frame height is still `terminal_height − 1`.
 
 ```txt
-┌ PATCHWORK -- seed ? / setup 0 ───────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────── ▶ P1 ─┐
+┌ PATCHWORK -- seed ? / setup 0 ───────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────────── ▶ P1 ─┐
 │ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │ P1 quilt  │ P2 quilt  │ Event log                                             │
 │         ^                                                                    │ ????????? │ ????????? │ > P1 bought [0]                                       │
-│ [0] 2  cost  2  time  1  inc 0       [0-x]buy  [a]adv      [q]quit           │ ????????? │ ????????? │ > P2 advanced                                         │
-│ [1] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
-│ [2] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │ ????????? │ ????????? │                                                       │
-│ [3] j  cost  3  time  1  inc 0                                               │ ????????? │ ????????? │                                                       │
-│ [4] t  cost  2  time  2  inc 0                                               │ ????????? │ ????????? │                                                       │
-│ [5] 4  cost  3  time  3  inc 1                                               │ ????????? │ ????????? │                                                       │
+│ [1] 2  cost  2  time  1  inc 0       [1/2/3]buy  [a]adv      [q]quit         │ ????????? │ ????????? │ > P2 advanced                                         │
+│ [2] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
+│ [3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │ ????????? │ ????????? │                                                       │
+│ [4] j  cost  3  time  1  inc 0                                               │ ????????? │ ????????? │                                                       │
+│ [5] t  cost  2  time  2  inc 0                                               │ ????????? │ ????????? │                                                       │
+│ [6] 4  cost  3  time  3  inc 1                                               │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┬──────────────────────────────────────┤ ????????? │ ????????? │                                                       │
 │ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┴──────────────────────────────────────┴───────────┴───────────┴─ ndjson log (5 lines) ──────────[m]v [f]^ [h]^/2 [,.]─┤
@@ -86,7 +83,7 @@ At ≥160 columns a four-column layout is used: the left column holds the patch 
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Column budget at 80: each quilt col 11 wide, event log ~54 cols, ndjson 5 lines (default). At 120 cols the log pane gains ~40 columns. At ≥160 cols the four-column layout activates with explicit Q1/Q2/event columns and the stats sub-separator inside the left panel.
+Column budget at 80: each quilt col 11 wide, event log ~54 cols, ndjson rows adaptive (fills terminal height). At 120 cols the log pane gains ~40 columns. At ≥160 cols the four-column layout activates with explicit Q1/Q2/event columns and the stats sub-separator inside the left panel. Buy keys are `1`, `2`, `3` (1-indexed), mapping to `BuyPatch{0}`, `BuyPatch{1}`, `BuyPatch{2}` internally.
 
 ## Decisions
 
