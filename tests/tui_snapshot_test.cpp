@@ -286,11 +286,11 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
           "[tui_snapshot]") {
     auto setup = make_setup(0);
     SimplifiedGameState state{};
-    RngState rng(42);
+    RngState agent_rng(42);  // random-agent RNG; separate from the game state
     LogState log{};
     NdjsonState ndjson{};
     ndjson.height = 3;  // fixed for reproducible snapshots
-    History history(state, rng);
+    History history(state, agent_rng);
 
     // Display: 80 cols, 40 rows — taller terminal so more detail lines are shown.
     auto cfg = make_cfg_h(80, 40);
@@ -306,9 +306,9 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
     // Returns true if a move was made, false if game was already terminal.
     auto do_ply = [&]() -> bool {
         if (is_terminal(state)) return false;
-        // Snapshot the rng BEFORE making the move (for deterministic redo).
-        RngState rng_snap = rng;
-        auto move = random_move(state, setup, rng);
+        // Snapshot the agent_rng BEFORE making the move (for deterministic redo).
+        RngState agent_rng_snap = agent_rng;
+        auto move = random_move(state, setup, agent_rng);
         int player_1idx = state.active_player() + 1;
         if (std::holds_alternative<BuyPatch>(move)) {
             int pid = std::get<BuyPatch>(move).patch_index;
@@ -318,7 +318,7 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
             append_log(log, log_entry_advance(player_1idx));
         }
         state = apply_move(state, move, setup);
-        history.push(state, rng_snap, log.entries);
+        history.push(state, agent_rng_snap, log.entries);
         return true;
     };
 
@@ -334,25 +334,27 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
     history.undo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    rng       = history.current_rng();
+    agent_rng       = history.current_rng();
     snap("undo1");              // step 11
 
     history.undo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    rng       = history.current_rng();
+    agent_rng       = history.current_rng();
     snap("undo2");              // step 12
 
     // Redo once.
     history.redo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    rng       = history.current_rng();
+    agent_rng       = history.current_rng();
     snap("redo1");              // step 13
 
-    // Continue to end of game.
+    // Continue to end of game.  The guard of 50 (> max game plies ~35) prevents
+    // an infinite loop if the terminal condition is never reached.
+    static constexpr int kMaxRemainingPlies = 50;
     int remaining = 0;
-    while (!is_terminal(state) && remaining < 50) {
+    while (!is_terminal(state) && remaining < kMaxRemainingPlies) {
         do_ply();
         snap("cont" + zpad2(remaining));  // steps 14+
         ++remaining;
