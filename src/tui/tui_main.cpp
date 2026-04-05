@@ -5,6 +5,7 @@
 
 #include "../game_logger.hpp"
 #include "../game_setups.hpp"
+#include "../game_state.hpp"
 #include "../move_application.hpp"
 #include "../move_generation.hpp"
 #include "../random_agent.hpp"
@@ -124,9 +125,8 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        // Legality check.
+        // Legality check — silently ignore illegal commands.
         if (!is_legal(cmd, state, setup)) {
-            last_error = "Illegal move — press a valid key.";
             continue;
         }
 
@@ -215,9 +215,11 @@ int main(int argc, char** argv) {
     int s0 = score(final_state, 0);
     int s1 = score(final_state, 1);
     int w  = winner(final_state);
+    bool bonus0 = (final_state.bonus_status() == BonusStatus::kPlayer0);
+    bool bonus1 = (final_state.bonus_status() == BonusStatus::kPlayer1);
     std::printf("\n  Game over!\n");
-    std::printf("  P1 score: %d\n", s0);
-    std::printf("  P2 score: %d\n", s1);
+    std::printf("  P1 score: %d%s\n", s0, bonus0 ? " (+7 bonus)" : "");
+    std::printf("  P2 score: %d%s\n", s1, bonus1 ? " (+7 bonus)" : "");
     if (w == 0) std::printf("  Winner: P1\n\n");
     else        std::printf("  Winner: P2\n\n");
 
