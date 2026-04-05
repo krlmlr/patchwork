@@ -164,19 +164,37 @@ The default height is 5 lines. The event log and horizontal scroll behaviour are
 
 ### 10. Color scheme — ANSI 16-color, graceful degradation
 
-**Decision:** The TUI uses the ANSI 16-color palette. Color assignments per concept (TBD, defined with constants), other details:
+**Decision:** The TUI uses the ANSI 16-color palette. Named constants (e.g. `kColorP1`, `kColorAffordable`) are defined once in `display.hpp` and used everywhere; no inline escape literals outside that file. Color assignments:
 
-| Element                    | Color                                                                      |
-|----------------------------|----------------------------------------------------------------------------|
-| P1 stats / marker          | Bright cyan (`\033[96m`)                                                   |
-| P2 stats / marker          | Bright yellow (`\033[93m`)                                                 |
-| Affordable patch detail    | Bright green (`\033[92m`)                                                  |
-| Unaffordable patch detail  | Dim white (`\033[2m`)                                                      |
-| Active-player row / header | Bold (`\033[1m`)                                                           |
-| Event-log prompt `>`       | Green (`\033[32m`)                                                         |
-| NDJSON log text            | Dim for control characters (`\033[2m`), contents using colors for concepts |
-| Error / illegal-move flash | Bold red (`\033[1;31m`)                                                    |
-| Box-drawing frame          | Default foreground                                                         |
+**Main frame:**
+
+| Element                    | Color                      |
+|----------------------------|----------------------------|
+| P1 stats / marker          | Bright cyan (`\033[96m`)   |
+| P2 stats / marker          | Bright yellow (`\033[93m`) |
+| Affordable patch detail    | Bright green (`\033[92m`)  |
+| Unaffordable patch detail  | Dim (`\033[2m`)            |
+| Active-player row / header | Bold (`\033[1m`)           |
+| Event-log prompt `>`       | Green (`\033[32m`)         |
+| Error / illegal-move flash | Bold red (`\033[1;31m`)    |
+| Box-drawing frame          | Default foreground         |
+
+**NDJSON log pane** — JSON syntax highlighting by concept (all constants):
+
+| NDJSON token / concept              | Color                       |
+|-------------------------------------|-----------------------------|
+| Structural characters `{}:,`        | Dim (`\033[2m`)             |
+| Key names (quoted strings as keys)  | Default foreground          |
+| `"event"` value `"game_start"`      | Bold (`\033[1m`)            |
+| `"event"` value `"move"`            | Default foreground          |
+| `"event"` value `"game_end"`        | Bold (`\033[1m`)            |
+| `"player"` value `0`                | Bright cyan (`\033[96m`)    |
+| `"player"` value `1`                | Bright yellow (`\033[93m`)  |
+| `"move_type"` value `"buy_patch"`   | Bright green (`\033[92m`)   |
+| `"move_type"` value `"advance"`     | Cyan (`\033[36m`)           |
+| `"winner"` value `0`                | Bright cyan (`\033[96m`)    |
+| `"winner"` value `1`                | Bright yellow (`\033[93m`)  |
+| Numeric values (positions, buttons) | Default foreground          |
 
 Color is suppressed when: `TERM=dumb`, `NO_COLOR` environment variable is set, or `--no-color` flag is passed.
 

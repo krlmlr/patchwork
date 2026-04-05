@@ -73,7 +73,7 @@ When the terminal is at least 160 columns wide, the TUI SHALL switch to a two-co
 
 ### Requirement: Color is applied to key elements
 
-The display SHALL apply ANSI 16-color codes to: P1 stats and markers (bright cyan), P2 stats and markers (bright yellow), affordable patch detail rows (bright green), unaffordable patch detail rows (dim), active-player header bold, event-log prompt `>` (green), and NDJSON log text (dim). Color SHALL be suppressed when `TERM=dumb`, `NO_COLOR` is set, or `--no-color` is passed.
+The display SHALL apply ANSI 16-color codes using named constants defined in `display.hpp`. Main frame colors: P1 stats and markers (bright cyan), P2 stats and markers (bright yellow), affordable patch detail rows (bright green), unaffordable patch detail rows (dim), active-player header bold, event-log prompt `>` (green), error/illegal-move flash (bold red). NDJSON log pane colors: structural characters `{}:,` (dim), `"player"` value `0` (bright cyan), `"player"` value `1` (bright yellow), `"move_type"` value `"buy_patch"` (bright green), `"move_type"` value `"advance"` (cyan), `"event"` values `"game_start"` and `"game_end"` (bold), `"winner"` value `0` (bright cyan), `"winner"` value `1` (bright yellow). All color SHALL be suppressed when `TERM=dumb`, `NO_COLOR` is set, or `--no-color` is passed.
 
 #### Scenario: Affordable patches are rendered in green
 
@@ -87,7 +87,7 @@ The display SHALL apply ANSI 16-color codes to: P1 stats and markers (bright cya
 
 ### Requirement: NDJSON log pane is resizable
 
-The bottom NDJSON log pane height (in lines) is controlled at runtime. The initial height is 5 lines. Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `[` / `]` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts.
+The bottom NDJSON log pane height (in lines) is controlled at runtime. The initial height is 5 lines. Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `,` / `.` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts.
 
 #### Scenario: Minimize hides all NDJSON lines
 
@@ -111,10 +111,10 @@ The bottom NDJSON log pane height (in lines) is controlled at runtime. The initi
 
 #### Scenario: Increment and decrement adjust height by 1
 
-- **WHEN** the NDJSON pane has height 5 and `]` is pressed
+- **WHEN** the NDJSON pane has height 5 and `.` is pressed
 - **THEN** the pane has height 6
 
-- **WHEN** the pane has height 0 and `[` is pressed
+- **WHEN** the pane has height 0 and `,` is pressed
 - **THEN** the pane height remains 0 (clamped at minimum)
 
 The lower-left section of the frame SHALL permanently display two 9×9 grids labelled "P1 quilt" and "P2 quilt". In simplified mode (no quilt board tracking) every cell SHALL display the character `?`. The grid dimensions and position in the frame SHALL not change when full quilt tracking is added in a later phase; only the cell content changes.

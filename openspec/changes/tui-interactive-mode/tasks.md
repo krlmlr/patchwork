@@ -20,11 +20,11 @@
 - [ ] 3.4 Implement adaptive detail lines: show at least 3 buyable-patch detail rows (index, name, cost, time, income); add `floor((width-80)/10)` extra rows on wider terminals; color affordable rows green, unaffordable rows dim
 - [ ] 3.5 Implement two 9×9 quilt board areas: each cell displays `?` in simplified mode; areas are labelled "P1 quilt" and "P2 quilt" and their dimensions are fixed for future full-quilt use
 - [ ] 3.6 Implement responsive layout: narrow — event-log pane width = `terminal_width - 32`; wide (≥160) — left column ≈65 cols, right column = remaining; time-track bar scales to fill available width
-- [ ] 3.7 Apply ANSI 16-color: P1 bright cyan, P2 bright yellow, active-player bold, event-log `>` green, NDJSON pane dim; skip color codes when `color_enabled` is false
-- [ ] 3.8 Implement resizable NDJSON log pane: default 5 lines; `m` toggles minimize/restore; `f` maximizes; `h` semi-maximizes (`floor(max/2)`); `[`/`]` dec/inc by 1 (clamped); header bar always visible showing height and shortcuts
+- [ ] 3.7 Apply ANSI 16-color using named constants in `display.hpp`: P1 bright cyan, P2 bright yellow, active-player bold, event-log `>` green, error bold red; NDJSON pane: structural chars dim, player values use player colors, `buy_patch` green, `advance` cyan, `game_start`/`game_end` bold, `winner` values use player colors; skip color codes when `color_enabled` is false
+- [ ] 3.8 Implement resizable NDJSON log pane: default 5 lines; `m` toggles minimize/restore; `f` maximizes; `h` semi-maximizes (`floor(max/2)`); `,`/`.` dec/inc by 1 (clamped); header bar always visible showing height and shortcuts
 - [ ] 3.9 Implement `render_frame(const GameState&, const LogState&, const NdjsonState&)` that clears the terminal and prints the full frame
 - [ ] 3.10 Implement `append_log(LogState&, std::string)` that appends to the log buffer (max 50 entries) and resets the horizontal scroll offset to 0
-- [ ] 3.11 Implement log horizontal scrolling (`<` / `>` keys update offset) and wrap toggle (Enter key toggles wrap mode; in wrap mode offset is ignored)
+- [ ] 3.11 Implement log horizontal scrolling (`<` / `>` keys update offset) and wrap toggle (`w` key toggles wrap mode; in wrap mode offset is ignored)
 - [ ] 3.12 Add unit tests in `tests/tui_display_test.cpp` for: `append_log` buffer trimming, scroll-offset reset on new entry, circle line length, marker placement, quilt grid dimensions, log wrap vs. scroll rendering, NDJSON pane height state machine, color suppression; register in `tests/meson.build`
 - [ ] 3.13 Add snapshot tests for a few moves into a simple game (output without color) for 80, 120 and 160 columns, verifying the full frame layout and content
 - [ ] 3.14 Add snapshot tests for color output
@@ -33,7 +33,7 @@
 
 - [ ] 4.1 Define `Command` variant in `src/tui/input.hpp`: `BuyPatch{int index}`, `Advance{}`, `Undo{}`, `Redo{}`, `ScrollLogLeft{}`, `ScrollLogRight{}`, `ToggleLogWrap{}`, `NdjsonToggleMinimize{}`, `NdjsonMaximize{}`, `NdjsonSemiMaximize{}`, `NdjsonDecrLines{}`, `NdjsonIncrLines{}`, `Quit{}`
 - [ ] 4.2 Implement `RawMode` RAII class in `src/tui/input.cpp`: saves `termios` on construction, restores on destruction, registers `atexit` handler
-- [ ] 4.3 Implement `read_command()` that reads one character in raw mode and maps it to a `Command`: digits `0`–`9` → `BuyPatch`, `a`/Space → `Advance`, `z`/`u` → `Undo`, `Z`/`r` → `Redo`, `<` → `ScrollLogLeft`, `>` → `ScrollLogRight`, Enter → `ToggleLogWrap`, `m` → `NdjsonToggleMinimize`, `f` → `NdjsonMaximize`, `h` → `NdjsonSemiMaximize`, `[` → `NdjsonDecrLines`, `]` → `NdjsonIncrLines`, `q`/`Q` → `Quit`; ignore unrecognised keys
+- [ ] 4.3 Implement `read_command()` that reads one character in raw mode and maps it to a `Command`: digits `0`–`9` → `BuyPatch`, `a`/Space → `Advance`, `z`/`u` → `Undo`, `Z`/`r` → `Redo`, `<` → `ScrollLogLeft`, `>` → `ScrollLogRight`, `w` → `ToggleLogWrap`, `m` → `NdjsonToggleMinimize`, `f` → `NdjsonMaximize`, `h` → `NdjsonSemiMaximize`, `,` → `NdjsonDecrLines`, `.` → `NdjsonIncrLines`, `q`/`Q` → `Quit`; ignore unrecognised keys
 - [ ] 4.4 Implement `is_legal(const Command&, const GameState&)` helper that checks whether the resolved `Move` is in `generate_moves(state)`
 
 ## 5. Launch Module
