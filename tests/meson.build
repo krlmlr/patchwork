@@ -99,4 +99,7 @@ test_tui_snapshot = executable(
   '../src/tui/display.cpp',
   dependencies : [patchwork_dep, catch2_dep],
 )
-test('tui_snapshot', test_tui_snapshot)
+# Pass the absolute path to the snapshot directory so the test finds the
+# golden files regardless of the working directory meson uses.
+test('tui_snapshot', test_tui_snapshot,
+     env : ['SNAPSHOT_DIR=' + meson.project_source_root() / 'tests' / 'snapshots'])

@@ -676,6 +676,7 @@ std::string render_frame_to_string(const SimplifiedGameState& state,
                                     const DisplayConfig& cfg) {
     int pipefd[2];
     if (pipe(pipefd) != 0) return {};
+    std::fflush(stdout);  // flush any buffered output before redirecting
     int saved_stdout = dup(STDOUT_FILENO);
     dup2(pipefd[1], STDOUT_FILENO);
     close(pipefd[1]);
