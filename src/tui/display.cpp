@@ -31,7 +31,7 @@ static const char* const kBdr_TT  = "\xe2\x94\xac";  // ┬
 static const char* const kBdr_BT  = "\xe2\x94\xb4";  // ┴
 // static const char* const kBdr_CT  = "\xe2\x94\xbc";  // ┼
 static const char* const kArrow   = "\xe2\x96\xb6";  // ▶
-static const char* const kMult    = "\xc3\x97";       // ×
+// static const char* const kMult    = "\xc3\x97";       // ×
 
 /// Repeat a UTF-8 string `n` times.
 static std::string rep(const char* s, int n) {
