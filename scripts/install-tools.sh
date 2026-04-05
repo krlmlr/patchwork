@@ -23,7 +23,7 @@ apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 # R package manager: pak (from Posit Package Manager binary repo)
 # ---------------------------------------------------------------------------
-Rscript -e "options(repos = c(PPM = 'https://packagemanager.posit.co/cran/__linux__/noble/latest')); install.packages('pak')"
+Rscript -e 'options(repos = c(CRAN = sprintf("https://p3m.dev/cran/latest/bin/linux/noble-%s/%s", R.version["arch"], substr(getRversion(), 1, 3)))); install.packages("pak"); library(pak)'
 
 # ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
@@ -52,5 +52,5 @@ clang-format --version
 node --version
 npm --version
 openspec --version
-markdownlint-cli2 --version
+markdownlint-cli2 --help | head -n 1
 echo "=== All tools installed successfully ==="
