@@ -27,7 +27,7 @@ The engine has complete game logic (move generation, application, terminal detec
 
 Layout at 80 columns (minimum); extra columns widen the log pane and the time-track bar.
 
-```
+```txt
 PATCHWORK — seed 42 / setup 0                                         [P1]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567  (^ = buy window start)
@@ -37,7 +37,6 @@ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567  (^ = buy window start)
   [2] C  cost 2  time 1  income 0     [↵] toggle log wrap
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   P1: btn 14  inc  3  pos 12  fr 74   P2: btn 11  inc  2  pos 20  fr 81
-  Time:  ──P1────────────────P2──────────────────────────────  0..53
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   P1 quilt (9×9)    P2 quilt (9×9)    Event log
   ?????????         ?????????         > P1 bought [1] (+1 income)
@@ -50,6 +49,7 @@ Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567  (^ = buy window start)
   ?????????         ?????????
   ?????????         ?????????
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{ndjson log lines scroll here, horizontally scrollable or wrapped}
 ```
 
 Column budget at 80: quilt section ~30 cols (`  ?????????   ?????????   `), log ~48 cols. At 120 cols the log pane gains ~40 additional columns automatically.
