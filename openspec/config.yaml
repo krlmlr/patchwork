@@ -8,6 +8,8 @@ context: |
   Tech stack: C++23, Meson build system, Catch2 tests, R for codegen and analysis, YAML data files.
   Domain: board game engine — Uwe Rosenberg's Patchwork, implemented from scratch with AI techniques.
 
+  Glossary: read docs/glossary.md for canonical definitions of all game and engine terms before proposing or implementing any change.
+
   Roadmap: read openspec/roadmap.md before proposing or implementing any change.
   The roadmap is human-maintained. It records completed phases, the current in-progress phase,
   upcoming phases, and open questions. Always align proposals and designs with roadmap priorities.
