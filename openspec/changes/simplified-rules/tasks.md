@@ -9,13 +9,13 @@
 
 ## 2. Move type
 
-- [x] 2.1 Create `src/move.hpp` defining `BuyPatch` and `Advance` variants and a `Move` type (std::variant or discriminated struct)
+- [x] 2.1 Create `cpp/move.hpp` defining `BuyPatch` and `Advance` variants and a `Move` type (std::variant or discriminated struct)
 - [x] 2.2 Add equality operators for `Move` so tests can compare moves
 - [x] 2.3 Add Catch2 tests: BuyPatch carries index, Advance != BuyPatch
 
 ## 3. Legal move generation
 
-- [x] 3.1 Create `src/move_generation.hpp` / `.cpp` with `legal_moves(const SimplifiedGameState&) → std::vector<Move>`
+- [x] 3.1 Create `cpp/move_generation.hpp` / `.cpp` with `legal_moves(const SimplifiedGameState&) → std::vector<Move>`
 - [x] 3.2 Implement circular scan from circle marker to find up to three available patches
 - [x] 3.3 Filter patches by affordability (buttons only; no position cap — positions > 53 are valid)
 - [x] 3.4 Always include `Advance` for non-terminal states; return empty for terminal states (both players ≥ 53)
@@ -23,7 +23,7 @@
 
 ## 4. Move application
 
-- [x] 4.1 Create `src/move_application.hpp` / `.cpp` with `apply_move(SimplifiedGameState, Move) → SimplifiedGameState`
+- [x] 4.1 Create `cpp/move_application.hpp` / `.cpp` with `apply_move(SimplifiedGameState, Move) → SimplifiedGameState`
 - [x] 4.2 Implement `BuyPatch` path: deduct buttons, advance position (no cap), add income, reduce free_spaces, mark patch unavailable, advance circle marker; update `next_player`; if this is the first move crossing ≥ 53, set `first_to_finish`
 - [x] 4.3 Implement `Advance` path: advance to opponent position + 1 (no cap), credit 1 button per space advanced; update `next_player`; if this is the first move crossing ≥ 53, set `first_to_finish`
 - [x] 4.4 Implement button income space payout (positions 5, 11, 17, 23, 29, 35, 41, 47, 53): for each threshold crossed by the move, add `income` to buttons
@@ -33,7 +33,7 @@
 
 ## 5. Terminal detection and scoring
 
-- [x] 5.1 Create `src/terminal_and_scoring.hpp` with `is_terminal`, `score`, and `winner` free functions
+- [x] 5.1 Create `cpp/terminal_and_scoring.hpp` with `is_terminal`, `score`, and `winner` free functions
 - [x] 5.2 Implement `is_terminal`: both players at position ≥ 53
 - [x] 5.3 Implement `score(state, player)`: buttons − 2 × free_spaces + 7 if bonus held
 - [x] 5.4 Implement `winner(state)`: compare scores; on equal scores use `first_to_finish` as tiebreaker (never returns -1)
@@ -41,7 +41,7 @@
 
 ## 6. NDJSON game logger
 
-- [x] 6.1 Create `src/game_logger.hpp` / `.cpp` with a `GameLogger` class (or free functions) writing to an `std::ostream`
+- [x] 6.1 Create `cpp/game_logger.hpp` / `.cpp` with a `GameLogger` class (or free functions) writing to an `std::ostream`
 - [x] 6.2 Implement `log_game_start(ostream, seed, setup_id, initial_state)`
 - [x] 6.3 Implement `log_move(ostream, ply, player, move, new_state)`
 - [x] 6.4 Implement `log_game_end(ostream, state)` using `score` and `winner`
@@ -50,24 +50,24 @@
 
 ## 7. Random agent
 
-- [x] 7.1 Create `src/random_agent.hpp` / `.cpp` with `random_move(const SimplifiedGameState&, std::mt19937&) → Move`
+- [x] 7.1 Create `cpp/random_agent.hpp` / `.cpp` with `random_move(const SimplifiedGameState&, std::mt19937&) → Move`
 - [x] 7.2 Use `std::uniform_int_distribution` over `legal_moves` indices
 - [x] 7.3 Add Catch2 tests: returned move is always legal; same seed produces same move; distribution check over many samples
 
 ## 8. Play driver executable
 
-- [x] 8.1 Create `src/play_driver.cpp` with `main`, parsing `--seed`, `--setup`, and optional `--output` arguments
+- [x] 8.1 Create `cpp/play_driver.cpp` with `main`, parsing `--seed`, `--setup`, and optional `--output` arguments
 - [x] 8.2 Load `GameSetup` from the specified setup id (via existing setup loading code)
 - [x] 8.3 Seed `std::mt19937` with the given seed; initialise a `SimplifiedGameState` from the setup
 - [x] 8.4 Run game loop: while not terminal, call `random_move` for active player, call `apply_move`, log move
 - [x] 8.5 Log game-start before loop and game-end after loop
 - [x] 8.6 Write output to stdout by default; redirect to file if `--output` is given
 - [x] 8.7 Print usage to stderr and exit non-zero on missing or invalid arguments
-- [x] 8.8 Register play driver as a separate Meson executable target in `src/meson.build`
+- [x] 8.8 Register play driver as a separate Meson executable target in `cpp/meson.build`
 - [x] 8.9 Manual smoke test: run the driver with a fixed seed and verify the log is valid NDJSON and two identical runs produce identical output
 
 ## 9. Build and test integration
 
-- [x] 9.1 Add new source files to `src/meson.build` (library sources) and `tests/meson.build` (test sources)
+- [x] 9.1 Add new source files to `cpp/meson.build` (library sources) and `tests/meson.build` (test sources)
 - [x] 9.2 Run `meson setup build && meson test -C build` and confirm all tests pass
 - [x] 9.3 Update `openspec/roadmap.md` to mark "Simplified Rules" as done

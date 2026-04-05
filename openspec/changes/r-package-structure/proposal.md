@@ -26,6 +26,6 @@ The R code in `codegen/` consists of standalone scripts with no shared infrastru
 
 - `codegen/generate_patches.R` and `codegen/generate_setups.R`: refactored to thin scripts
 - New files: `DESCRIPTION`, `NAMESPACE`, `R/patches.R`, `R/setups.R` (or similar)
-- No changes to generated C++ output (`src/generated/`)
+- No changes to generated C++ output (`cpp/generated/`)
 - No changes to `data/` files
 - Downstream: future R analysis scripts (Tile Analysis phase, logging) will benefit from shared utilities loaded via `pkgload::load_all()`

@@ -6,4 +6,4 @@ The file `codegen/generate_setups.R` SHALL contain only: a call to `pkgload::loa
 #### Scenario: Script delegates to package function
 - **WHEN** `Rscript codegen/generate_setups.R` is run from the project root
 - **THEN** `pkgload::load_all()` is called first and then `generate_setups()` is invoked
-- **AND** the generated `src/generated/game_setups.hpp` is byte-for-byte identical to what the original script produced
+- **AND** the generated `cpp/generated/game_setups.hpp` is byte-for-byte identical to what the original script produced

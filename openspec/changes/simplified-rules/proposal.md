@@ -29,7 +29,7 @@ The `SimplifiedGameState` type established in the previous phase captures per-pl
 
 ## Impact
 
-- New source files under `src/` for move types, move generation, move application, terminal/scoring logic, game logger, random agent, and play driver
+- New source files under `cpp/` for move types, move generation, move application, terminal/scoring logic, game logger, random agent, and play driver
 - New test files under `tests/` for each new capability
 - `codegen/` and `data/` unchanged; generated headers unchanged
 - No changes to `PlayerState` / `GameState` (full spatial types)

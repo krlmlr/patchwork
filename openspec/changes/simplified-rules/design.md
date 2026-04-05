@@ -62,7 +62,7 @@ The codebase has no JSON dependency. Two options: (a) add `nlohmann/json` as a M
 
 `random_move(const SimplifiedGameState&, std::mt19937&) → Move` is a pure function parameterised by an rng. This is simpler than a class hierarchy at this stage; a polymorphic `Agent` interface can be introduced when a second agent type is added.
 
-### 9. Play driver as a standalone `main` in `src/`
+### 9. Play driver as a standalone `main` in `cpp/`
 
 A small `play_driver.cpp` with its own `main` entry point, compiled as a separate Meson executable target. Input: `--seed <n> --setup <file>` (or positional). Output: NDJSON log to stdout or `--output <file>`. This matches the roadmap's "reproducible random play" goal without coupling game logic to I/O.
 

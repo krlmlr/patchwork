@@ -9,5 +9,5 @@ project(
   ],
 )
 
-subdir('src')
+subdir('cpp')
 subdir('tests')

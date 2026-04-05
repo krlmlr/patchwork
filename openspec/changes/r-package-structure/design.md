@@ -29,13 +29,13 @@ Place `DESCRIPTION` and `R/` at the repository root rather than in a subdirector
 
 **Alternative considered:** Placing the package under `r/`. Rejected because it requires changing all call sites and adds no value for a non-installable package.
 
-### Decision: Minimal NAMESPACE (export everything)
+### Decision: NAMESPACE managed by roxygen2
 
-Use `exportPattern("^[^\\.]")` in `NAMESPACE` to export all public functions without requiring `@export` roxygen tags.
+Use `roxygen2` to generate `NAMESPACE`, with `@export` tags on functions that should be part of the public API.
 
-**Rationale:** This project does not publish to CRAN and `R CMD check` compliance is out of scope. A minimal export pattern keeps overhead low. Maintainers can tighten exports later if needed.
+**Rationale:** roxygen2 is a standard R documentation and namespace tool. It co-locates export declarations with function definitions, making it easy to see what is and isn't exported. `DESCRIPTION` declares `Config/roxygen2/version` so that tools know to manage `NAMESPACE` via roxygen2.
 
-**Alternative considered:** Using roxygen2 to generate `NAMESPACE`. Rejected as it adds a build step and a new dependency not currently in the project.
+**Alternative considered:** A hand-maintained `exportPattern("^[^\\.]")`. Accepted initially, then superseded by roxygen2 since it is fine as a project dependency.
 
 ### Decision: Split R functions by concern into separate files
 
@@ -45,7 +45,7 @@ Create `R/patches.R` for patch-related helpers and `R/setups.R` for setup-relate
 
 ### Decision: codegen scripts become thin entry-point wrappers
 
-Each `codegen/` script retains only: `pkgload::load_all(quiet = TRUE)`, argument/path setup, and a single top-level function call (e.g. `generate_patches("src/generated/patches.hpp")`).
+Each `codegen/` script retains only: `pkgload::load_all(quiet = TRUE)`, argument/path setup, and a single top-level function call (e.g. `generate_patches("cpp/generated/patches.hpp")`).
 
 **Rationale:** Keeps scripts readable and eliminates code that would otherwise be untestable. The function bodies live in `R/` where they can eventually be unit-tested.
 

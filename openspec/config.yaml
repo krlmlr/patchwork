@@ -16,7 +16,7 @@ context: |
   - AI owns code, human owns design (each change is proposed and reviewed before implementation).
   - Single source of truth: canonical data lives in data/ files; C++ code is generated and committed.
   - Tests from day one — no change ships without tests.
-  - R scripts live in codegen/ and produce committed headers under src/generated/.
+  - R scripts live in codegen/ and produce committed headers under cpp/generated/.
   - Game logs use NDJSON format (future phases).
 
 # Per-artifact rules (optional)

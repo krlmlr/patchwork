@@ -21,6 +21,11 @@ apt-get install -y --no-install-recommends \
     npm
 
 # ---------------------------------------------------------------------------
+# R package manager: pak (from Posit Package Manager binary repo)
+# ---------------------------------------------------------------------------
+Rscript -e "options(repos = c(PPM = 'https://packagemanager.posit.co/cran/__linux__/noble/latest')); install.packages('pak')"
+
+# ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
 # ---------------------------------------------------------------------------
 apt-get install -y --no-install-recommends pipx

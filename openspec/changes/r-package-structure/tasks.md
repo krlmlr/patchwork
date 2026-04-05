@@ -16,11 +16,11 @@
 
 ## 4. Refactor Entry-Point Scripts
 
-- [x] 4.1 Rewrite `codegen/generate_patches.R` to: call `pkgload::load_all(quiet = TRUE)`, then call `generate_patches("src/generated/patches.hpp")`
-- [x] 4.2 Rewrite `codegen/generate_setups.R` to: call `pkgload::load_all(quiet = TRUE)`, then call `generate_setups("src/generated/game_setups.hpp", n_setups = 100L)`
+- [x] 4.1 Rewrite `codegen/generate_patches.R` to: call `pkgload::load_all(quiet = TRUE)`, then call `generate_patches("cpp/generated/patches.hpp")`
+- [x] 4.2 Rewrite `codegen/generate_setups.R` to: call `pkgload::load_all(quiet = TRUE)`, then call `generate_setups("cpp/generated/game_setups.hpp", n_setups = 100L)`
 
 ## 5. Verification
 
-- [x] 5.1 Run `Rscript codegen/generate_patches.R` from the project root and confirm `src/generated/patches.hpp` is byte-for-byte identical to the previously committed version
-- [x] 5.2 Run `Rscript codegen/generate_setups.R` from the project root and confirm `src/generated/game_setups.hpp` is byte-for-byte identical to the previously committed version
+- [x] 5.1 Run `Rscript codegen/generate_patches.R` from the project root and confirm `cpp/generated/patches.hpp` is byte-for-byte identical to the previously committed version
+- [x] 5.2 Run `Rscript codegen/generate_setups.R` from the project root and confirm `cpp/generated/game_setups.hpp` is byte-for-byte identical to the previously committed version
 - [x] 5.3 Confirm `pkgload::load_all()` succeeds without errors from the project root in an interactive R session

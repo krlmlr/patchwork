@@ -91,8 +91,11 @@ parse_shape <- function(shape_str) {
   cells
 }
 
-# Validate the patch catalog against all spec requirements and emit patches.hpp.
-generate_patches <- function(output_path = "src/generated/patches.hpp") {
+#' Validate the patch catalog against all spec requirements and emit patches.hpp.
+#'
+#' @param output_path Path to write the generated C++ header.
+#' @export
+generate_patches <- function(output_path = "cpp/generated/patches.hpp") {
   catalog <- yaml::read_yaml("data/patches.yaml")
   stopifnot(length(catalog) == 33)
 

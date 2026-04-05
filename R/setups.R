@@ -1,12 +1,12 @@
 # Game setup code generation utilities.
 # Loaded via pkgload::load_all() from the project root.
 
-# Generate canonical game setups and emit game_setups.hpp.
-#
-# Each setup is a reproducible random permutation of the 33 patch names with
-# the two-square tile ("2") always last. Increasing n_setups leaves the first
-# entries bit-for-bit identical because each setup i uses set.seed(i).
-generate_setups <- function(output_path = "src/generated/game_setups.hpp",
+#' Generate canonical game setups and emit game_setups.hpp.
+#'
+#' @param output_path Path to write the generated C++ header.
+#' @param n_setups Number of setups to generate.
+#' @export
+generate_setups <- function(output_path = "cpp/generated/game_setups.hpp",
                              n_setups = 100L) {
   catalog <- yaml::read_yaml("data/patches.yaml")
   stopifnot(length(catalog) == 33L)

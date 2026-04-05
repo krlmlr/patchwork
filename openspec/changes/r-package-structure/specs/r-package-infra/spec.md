@@ -12,7 +12,7 @@ The project root SHALL contain a `DESCRIPTION` file with at minimum the fields `
 - **THEN** `yaml` appears in the `Imports` field
 
 ### Requirement: NAMESPACE file enables function export
-The project root SHALL contain a `NAMESPACE` file that exports all public R functions (those not starting with `.`).
+The project root SHALL contain a `NAMESPACE` file managed by `roxygen2` (indicated by `Config/roxygen2/version` in `DESCRIPTION`). Public functions intended for use from `codegen/` scripts SHALL carry `@export` roxygen tags; helper functions may remain unexported.
 
 #### Scenario: Public functions are accessible after load_all
 - **WHEN** `pkgload::load_all()` is called

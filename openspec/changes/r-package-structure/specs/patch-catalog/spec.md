@@ -6,4 +6,4 @@ The file `codegen/generate_patches.R` SHALL contain only: a call to `pkgload::lo
 #### Scenario: Script delegates to package function
 - **WHEN** `Rscript codegen/generate_patches.R` is run from the project root
 - **THEN** `pkgload::load_all()` is called first and then `generate_patches()` is invoked
-- **AND** the generated `src/generated/patches.hpp` is byte-for-byte identical to what the original script produced
+- **AND** the generated `cpp/generated/patches.hpp` is byte-for-byte identical to what the original script produced
