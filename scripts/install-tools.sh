@@ -52,5 +52,6 @@ clang-format --version
 node --version
 npm --version
 openspec --version
-markdownlint-cli2 --help | head -n 1
+# markdownlint-cli2 doesn't have a --version flag but prints its version in the first line of --help output
+markdownlint-cli2 --help | head -n 1 || true
 echo "=== All tools installed successfully ==="
