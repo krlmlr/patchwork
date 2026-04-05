@@ -6,6 +6,7 @@
 #include "../game_logger.hpp"
 #include "../game_setups.hpp"
 #include "../game_state.hpp"
+#include "../generated/patches.hpp"
 #include "../move_application.hpp"
 #include "../move_generation.hpp"
 #include "../random_agent.hpp"
@@ -95,14 +96,14 @@ int main(int argc, char** argv) {
 
         if (std::holds_alternative<UndoCmd>(cmd)) {
             history.undo();
-            // Undo removes the last event-log entry rather than adding a new one.
-            // In the current game loop each player+opponent round appends at most
-            // 2 entries; popping one per undo is the specified simplification.
-            if (!log.entries.empty()) log.entries.pop_back();
+            // Restore event-log to the snapshot stored in the history entry.
+            log.entries = history.current_log_entries();
             continue;
         }
         if (std::holds_alternative<RedoCmd>(cmd)) {
             history.redo();
+            // Restore event-log to the snapshot stored in the history entry.
+            log.entries = history.current_log_entries();
             continue;
         }
         if (std::holds_alternative<ScrollLogLeft>(cmd)) {
@@ -143,10 +144,19 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        // Build move.
+        // Build move.  BuyPatchCmd.index is the sequential position (0-based)
+        // within the legal BuyPatch moves; translate to the actual patch_id.
         Move move = Advance{};
         if (std::holds_alternative<BuyPatchCmd>(cmd)) {
-            move = BuyPatch{std::get<BuyPatchCmd>(cmd).index};
+            int seq = std::get<BuyPatchCmd>(cmd).index;
+            auto legal = legal_moves(state, setup);
+            int bc = 0;
+            for (auto& m : legal) {
+                if (std::holds_alternative<BuyPatch>(m)) {
+                    if (bc == seq) { move = m; break; }
+                    ++bc;
+                }
+            }
         }
 
         // Snapshot RNG before opponent move.
@@ -155,19 +165,20 @@ int main(int argc, char** argv) {
         // Apply player move.
         SimplifiedGameState new_state = apply_move(state, move, setup);
 
-        // Log move.
+        // Log move.  Patch names (single char) give consistent-width entries.
         {
             std::ostringstream oss;
             log_move(oss, ply, state.active_player(), move, new_state);
             std::string line = oss.str();
             if (!line.empty() && line.back() == '\n') line.pop_back();
             append_ndjson(ndjson, line);
-            // Human-readable event log.
+            // Human-readable event log uses patch name char to avoid width variation.
             if (std::holds_alternative<BuyPatch>(move)) {
-                int idx = std::get<BuyPatch>(move).patch_index;
+                int pid = std::get<BuyPatch>(move).patch_index;
+                char pname = kPatches[static_cast<std::size_t>(pid)].name;
                 char buf[60];
-                std::snprintf(buf, sizeof(buf), "P%d bought [%d]",
-                              state.active_player() + 1, idx);
+                std::snprintf(buf, sizeof(buf), "P%d bought [%c]",
+                              state.active_player() + 1, pname);
                 append_log(log, buf);
             } else {
                 char buf[40];
@@ -191,10 +202,11 @@ int main(int argc, char** argv) {
                 if (!line.empty() && line.back() == '\n') line.pop_back();
                 append_ndjson(ndjson, line);
                 if (std::holds_alternative<BuyPatch>(opp_move)) {
-                    int idx = std::get<BuyPatch>(opp_move).patch_index;
+                    int pid = std::get<BuyPatch>(opp_move).patch_index;
+                    char pname = kPatches[static_cast<std::size_t>(pid)].name;
                     char buf[60];
-                    std::snprintf(buf, sizeof(buf), "P%d (cpu) bought [%d]",
-                                  new_state.active_player() + 1, idx);
+                    std::snprintf(buf, sizeof(buf), "P%d (cpu) bought [%c]",
+                                  new_state.active_player() + 1, pname);
                     append_log(log, buf);
                 } else {
                     char buf[40];
@@ -207,8 +219,8 @@ int main(int argc, char** argv) {
             new_state = after_opp;
         }
 
-        // Push new state + RNG snapshot (before opponent move) to history.
-        history.push(new_state, rng);
+        // Push new state + RNG snapshot + log snapshot to history.
+        history.push(new_state, rng, log.entries);
     }
 
     // Result summary.

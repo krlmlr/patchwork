@@ -21,20 +21,38 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
+#include <random>
 #include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "tui/display.hpp"
+#include "tui/history.hpp"
 #include "simplified_game_state.hpp"
 #include "game_setups.hpp"
+#include "generated/patches.hpp"
+#include "move_application.hpp"
+#include "move_generation.hpp"
+#include "random_agent.hpp"
+#include "terminal_and_scoring.hpp"
 
 namespace fs = std::filesystem;
 using patchwork::SimplifiedGameState;
+using patchwork::BuyPatch;
+using patchwork::Advance;
 using patchwork::make_setup;
+using patchwork::kPatches;
+using patchwork::random_move;
+using patchwork::apply_move;
+using patchwork::legal_moves;
+using patchwork::is_terminal;
 using patchwork::tui::DisplayConfig;
 using patchwork::tui::LogState;
 using patchwork::tui::NdjsonState;
+using patchwork::tui::History;
+using patchwork::tui::RngState;
 using patchwork::tui::append_log;
 using patchwork::tui::append_ndjson;
 using patchwork::tui::render_frame_to_string;
@@ -49,13 +67,35 @@ static DisplayConfig make_cfg(int width, bool color = false) {
     return cfg;
 }
 
+static DisplayConfig make_cfg_h(int width, int height, bool color = false) {
+    DisplayConfig cfg;
+    cfg.width  = width;
+    cfg.height = height;
+    cfg.color_enabled = color;
+    return cfg;
+}
+
+// Format a log entry for a buy move using the patch's single-char name.
+// This matches what tui_main.cpp produces and avoids width variation.
+static std::string log_entry_buy(int player_1idx, char patch_name) {
+    char buf[60];
+    std::snprintf(buf, sizeof(buf), "P%d bought [%c]", player_1idx, patch_name);
+    return buf;
+}
+static std::string log_entry_advance(int player_1idx) {
+    char buf[40];
+    std::snprintf(buf, sizeof(buf), "P%d advanced", player_1idx);
+    return buf;
+}
+
 static void setup_scene(SimplifiedGameState& state, LogState& log,
                         NdjsonState& ndjson) {
     state  = SimplifiedGameState{};
     log    = LogState{};
     ndjson = NdjsonState{};
-    append_log(log, "P1 bought [0]");
-    append_log(log, "P2 advanced");
+    // Use the patch-name format (patch_index=0 has name '2').
+    append_log(log, log_entry_buy(1, '2'));
+    append_log(log, log_entry_advance(2));
     append_ndjson(ndjson,
         R"({"event":"move","ply":1,"player":0,"move_type":"buy_patch",)"
         R"("patch_index":0,"position":3,"buttons":2})");
@@ -150,6 +190,13 @@ static void check_snapshot(const std::string& snapshot_name,
     }
 }
 
+// Zero-padded integer: 0 → "00", 5 → "05", 35 → "35"
+static std::string zpad2(int n) {
+    std::ostringstream ss;
+    ss << std::setfill('0') << std::setw(2) << n;
+    return ss.str();
+}
+
 // ── Snapshot test cases ───────────────────────────────────────────────────────
 
 TEST_CASE("Snapshot: 80-col narrow layout", "[tui_snapshot]") {
@@ -201,4 +248,113 @@ TEST_CASE("Snapshot: 80-col with ANSI color codes", "[tui_snapshot]") {
     std::string actual = render_frame_to_string(state, setup, log, ndjson,
                                                 make_cfg(80, /*color=*/true));
     check_snapshot("frame_080_color", actual);
+}
+
+TEST_CASE("Snapshot: 80-col, 40-row taller terminal with 12 log entries",
+          "[tui_snapshot]") {
+    SimplifiedGameState state{};
+    LogState log{};
+    NdjsonState ndjson{};
+    ndjson.height = 5;
+
+    auto setup = make_setup(0);
+    auto cfg   = make_cfg_h(80, 40);
+
+    // 12 log entries with single-char patch names to verify visual alignment.
+    // All "[X]" tokens are exactly 3 bytes wide, ensuring column alignment.
+    const char* entries[] = {
+        "P1 bought [2]", "P2 advanced",   "P1 advanced",
+        "P2 bought [v]", "P1 bought [3]", "P2 advanced",
+        "P1 advanced",   "P2 bought [j]", "P1 bought [t]",
+        "P2 advanced",   "P1 advanced",   "P2 bought [4]",
+    };
+    for (auto* e : entries) append_log(log, e);
+    append_ndjson(ndjson,
+        R"({"event":"move","ply":12,"player":1,"move_type":"advance"})");
+
+    std::string actual = render_frame_to_string(state, setup, log, ndjson, cfg);
+    check_snapshot("frame_080_h40", actual);
+}
+
+// ── Full game sequence snapshot test ──────────────────────────────────────────
+//
+// Drives a complete simplified game with seed=42 / setup=0 using the random
+// agent for ALL moves.  Snapshots are stored in tests/snapshots/game_seq/.
+// The test also exercises undo/redo after the first 5 rounds.
+
+TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
+          "[tui_snapshot]") {
+    auto setup = make_setup(0);
+    SimplifiedGameState state{};
+    RngState rng(42);
+    LogState log{};
+    NdjsonState ndjson{};
+    ndjson.height = 3;  // fixed for reproducible snapshots
+    History history(state, rng);
+
+    // Display: 80 cols, 40 rows — taller terminal so more detail lines are shown.
+    auto cfg = make_cfg_h(80, 40);
+
+    int step = 0;
+    auto snap = [&](const std::string& label) {
+        check_snapshot("game_seq/step_" + zpad2(step) + "_" + label,
+                       render_frame_to_string(state, setup, log, ndjson, cfg));
+        ++step;
+    };
+
+    // Helper: apply one ply via random_move (both players use random agent).
+    // Returns true if a move was made, false if game was already terminal.
+    auto do_ply = [&]() -> bool {
+        if (is_terminal(state)) return false;
+        // Snapshot the rng BEFORE making the move (for deterministic redo).
+        RngState rng_snap = rng;
+        auto move = random_move(state, setup, rng);
+        int player_1idx = state.active_player() + 1;
+        if (std::holds_alternative<BuyPatch>(move)) {
+            int pid = std::get<BuyPatch>(move).patch_index;
+            char pname = kPatches[static_cast<std::size_t>(pid)].name;
+            append_log(log, log_entry_buy(player_1idx, pname));
+        } else {
+            append_log(log, log_entry_advance(player_1idx));
+        }
+        state = apply_move(state, move, setup);
+        history.push(state, rng_snap, log.entries);
+        return true;
+    };
+
+    snap("initial");            // step 00
+
+    // Play 10 plies (5 P1 moves + 5 P2 moves in a typical alternating game).
+    for (int i = 0; i < 10; ++i) {
+        if (!do_ply()) break;
+        snap("ply" + zpad2(i));  // steps 01–10
+    }
+
+    // Undo twice.
+    history.undo();
+    state     = history.current_state();
+    log.entries = history.current_log_entries();
+    rng       = history.current_rng();
+    snap("undo1");              // step 11
+
+    history.undo();
+    state     = history.current_state();
+    log.entries = history.current_log_entries();
+    rng       = history.current_rng();
+    snap("undo2");              // step 12
+
+    // Redo once.
+    history.redo();
+    state     = history.current_state();
+    log.entries = history.current_log_entries();
+    rng       = history.current_rng();
+    snap("redo1");              // step 13
+
+    // Continue to end of game.
+    int remaining = 0;
+    while (!is_terminal(state) && remaining < 50) {
+        do_ply();
+        snap("cont" + zpad2(remaining));  // steps 14+
+        ++remaining;
+    }
 }

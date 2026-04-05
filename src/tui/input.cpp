@@ -71,11 +71,15 @@ bool is_legal(const Command& cmd,
     if (is_terminal(state)) return false;
     auto moves = legal_moves(state, setup);
     if (std::holds_alternative<BuyPatchCmd>(cmd)) {
+        // BuyPatchCmd.index is the sequential position (0=first buyable,
+        // 1=second, 2=third).  Count BuyPatch entries in the legal-moves list.
         int idx = std::get<BuyPatchCmd>(cmd).index;
+        int buy_count = 0;
         for (auto& m : moves) {
-            if (std::holds_alternative<BuyPatch>(m) &&
-                std::get<BuyPatch>(m).patch_index == idx)
-                return true;
+            if (std::holds_alternative<BuyPatch>(m)) {
+                if (buy_count == idx) return true;
+                ++buy_count;
+            }
         }
         return false;
     }

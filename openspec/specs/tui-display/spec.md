@@ -45,22 +45,19 @@ The display SHALL always show the complete 33-character patch sequence on a sing
 
 ### Requirement: Patch circle shows adaptive detail lines
 
-The display SHALL render at least 3 detail lines below the circle marker, one per buyable patch, showing: circle index, patch name, cost, time cost, and income. When the terminal is wider than 80 columns the number of additional detail lines SHALL increase adaptively (approximately one extra line per 10 extra columns). If fewer than 3 patches remain buyable, only the available patches are listed.
+The display SHALL render at least 3 detail lines below the circle marker, one per buyable patch, showing: circle index, patch name, cost, time cost, and income. **Detail lines SHALL use a fixed-width index format `[%2d]` (right-aligned within square brackets, minimum 2 digits) so that all entries are visually aligned regardless of the sequential index value.** When the terminal is wider than 80 columns the number of additional detail lines SHALL increase adaptively (approximately one extra line per 10 extra columns). If fewer than 3 patches remain buyable, only the available patches are listed.
+
+**Event-log entries SHALL be visually aligned**: the patch name in `"Pn bought [c]"` entries is always a single character `c`, ensuring consistent column width across all log entries regardless of the number of moves played.
 
 #### Scenario: At least 3 detail lines are shown
 
 - **WHEN** at least 3 patches are buyable and the terminal is exactly 80 columns wide
-- **THEN** exactly 3 detail lines are shown, prefixed `[1]`, `[2]`, `[3]`
+- **THEN** exactly 3 detail lines are shown, prefixed `[ 1]`, `[ 2]`, `[ 3]`
 
-#### Scenario: Extra detail lines on wider terminals
+#### Scenario: Detail lines have uniform column alignment
 
-- **WHEN** the terminal is 100 columns wide and at least 5 patches are buyable
-- **THEN** at least 5 detail lines are shown
-
-#### Scenario: Fewer detail lines near end of game
-
-- **WHEN** only 2 patches remain buyable
-- **THEN** exactly 2 detail lines appear
+- **WHEN** more than 9 detail lines are shown (terminal is tall and NDJSON pane is minimised)
+- **THEN** entry 9 is rendered `[ 9]` and entry 10 is rendered `[10]`, with both the patch name and all subsequent fields starting at the same column
 
 ### Requirement: Wide layout activates at ≥160 columns
 

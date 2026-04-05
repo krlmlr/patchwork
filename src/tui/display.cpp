@@ -312,7 +312,7 @@ static void render_narrow(const SimplifiedGameState& state,
             bool affordable = (p_buttons >= p.buttons);
             char buf[60];
             std::snprintf(buf, sizeof(buf),
-                          "[%d] %c  cost %2d  time %2d  inc %d",
+                          "[%2d] %c  cost %2d  time %2d  inc %d",
                           i + 1, p.name, p.buttons, p.time, p.income);
             if (C) {
                 const char* col = affordable ? kColorAff : kDim;
@@ -329,7 +329,7 @@ static void render_narrow(const SimplifiedGameState& state,
             auto& p = kPatches[static_cast<std::size_t>(id)];
             char buf[60];
             std::snprintf(buf, sizeof(buf),
-                          "[%d] %c  cost %2d  time %2d  inc %d",
+                          "[%2d] %c  cost %2d  time %2d  inc %d",
                           i + 1, p.name, p.buttons, p.time, p.income);
             plain_detail = buf;
         }
@@ -620,7 +620,7 @@ static void render_wide(const SimplifiedGameState& state,
             auto& p = kPatches[static_cast<std::size_t>(id)];
             char buf[60];
             std::snprintf(buf, sizeof(buf),
-                          "[%d] %c  cost %2d  time %2d  inc %d",
+                          "[%2d] %c  cost %2d  time %2d  inc %d",
                           i + 1, p.name, p.buttons, p.time, p.income);
             plain_buf = buf;
         }

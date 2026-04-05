@@ -13,6 +13,7 @@ using RngState = std::mt19937;
 struct HistoryEntry {
     SimplifiedGameState state;
     RngState rng;
+    std::vector<std::string> log_entries;  // event-log snapshot at this point
 };
 
 /// Cursor-based undo/redo history of (GameState, RngState) pairs.
@@ -21,8 +22,10 @@ public:
     /// Construct with the initial game state and RNG snapshot.
     History(SimplifiedGameState initial_state, RngState initial_rng);
 
-    /// Push a new entry, truncating any redo branch above the cursor.
-    void push(SimplifiedGameState state, RngState rng);
+    /// Push a new entry (with log snapshot), truncating any redo branch above
+    /// the cursor.
+    void push(SimplifiedGameState state, RngState rng,
+              std::vector<std::string> log_entries = {});
 
     /// Move cursor back by one. No-op if already at the beginning.
     void undo();
@@ -35,6 +38,9 @@ public:
 
     /// Return the RNG snapshot at the current cursor position.
     [[nodiscard]] const RngState& current_rng() const;
+
+    /// Return the event-log snapshot at the current cursor position.
+    [[nodiscard]] const std::vector<std::string>& current_log_entries() const;
 
     [[nodiscard]] bool can_undo() const;
     [[nodiscard]] bool can_redo() const;

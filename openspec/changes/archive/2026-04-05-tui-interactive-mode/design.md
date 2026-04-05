@@ -36,14 +36,14 @@ Extra columns beyond 80 widen the event-log pane. The number of detail lines and
 ┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
 │ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
 │         ^                                                                    │
-│ [1] 2  cost  2  time  1  inc 0       [1/2/3]buy  [a]adv      [q]quit         │
-│ [2] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
-│ [3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │
+│ [ 1] 2  cost  2  time  1  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
+│ [ 2] v  cost  1  time  3  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [ 3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │
 ├───────────────────────────────────────┬──────────────────────────────────────┤
 │ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │
 ├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
 │ P1 quilt  │ P2 quilt  │ Event log                                            │
-│ ????????? │ ????????? │ > P1 bought [0]                                      │
+│ ????????? │ ????????? │ > P1 bought [2]                                      │
 │ ????????? │ ????????? │ > P2 advanced                                        │
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
@@ -65,13 +65,13 @@ At ≥160 columns a four-column layout is used: the left column holds the patch 
 ```txt
 ┌ PATCHWORK -- seed ? / setup 0 ───────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────────── ▶ P1 ─┐
 │ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │ P1 quilt  │ P2 quilt  │ Event log                                             │
-│         ^                                                                    │ ????????? │ ????????? │ > P1 bought [0]                                       │
-│ [1] 2  cost  2  time  1  inc 0       [1/2/3]buy  [a]adv      [q]quit         │ ????????? │ ????????? │ > P2 advanced                                         │
-│ [2] v  cost  1  time  3  inc 0       [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
-│ [3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+              │ ????????? │ ????????? │                                                       │
-│ [4] j  cost  3  time  1  inc 0                                               │ ????????? │ ????????? │                                                       │
-│ [5] t  cost  2  time  2  inc 0                                               │ ????????? │ ????????? │                                                       │
-│ [6] 4  cost  3  time  3  inc 1                                               │ ????????? │ ????????? │                                                       │
+│         ^                                                                    │ ????????? │ ????????? │ > P1 bought [2]                                       │
+│ [ 1] 2  cost  2  time  1  inc 0      [1/2/3]buy  [a]adv      [q]quit         │ ????????? │ ????????? │ > P2 advanced                                         │
+│ [ 2] v  cost  1  time  3  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
+│ [ 3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │ ????????? │ ????????? │                                                       │
+│ [ 4] j  cost  3  time  1  inc 0                                              │ ????????? │ ????????? │                                                       │
+│ [ 5] t  cost  2  time  2  inc 0                                              │ ????????? │ ????????? │                                                       │
+│ [ 6] 4  cost  3  time  3  inc 1                                              │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┬──────────────────────────────────────┤ ????????? │ ????????? │                                                       │
 │ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┴──────────────────────────────────────┴───────────┴───────────┴─ ndjson log (5 lines) ──────────[m]v [f]^ [h]^/2 [,.]─┤
@@ -95,9 +95,9 @@ Column budget at 80: each quilt col 11 wide, event log ~54 cols, ndjson rows ada
 
 **Alternative considered:** `ftxui` (C++ TUI library) — powerful but adds a CMake-based dependency that conflicts with Meson-first philosophy.
 
-### 2. History stores `(GameState, RngState)` pairs with a cursor
+### 2. History stores `(GameState, RngState, LogEntries)` triples with a cursor
 
-**Decision:** `History` holds a `std::vector<HistoryEntry>` where each entry is a `(GameState, RngState)` pair, plus an `int current` index. `RngState` captures a snapshot of the random agent's `std::mt19937_64` state at the moment the entry was recorded. Undo decrements the cursor; redo increments it and restores the saved `RngState` to the agent so the opponent's next move is identical to what was played originally. A new move truncates everything above the cursor and appends.
+**Decision:** `History` holds a `std::vector<HistoryEntry>` where each entry is a `(GameState, RngState, LogEntries)` triple, plus an `int current` index. `RngState` captures a snapshot of the random agent's `std::mt19937_64` state. `LogEntries` is a `std::vector<std::string>` snapshot of the event-log at that point. Undo decrements the cursor and restores both `GameState` and `LogEntries`; redo increments it and additionally restores the saved `RngState` to the agent so the opponent's next move is identical to what was played originally. A new move truncates everything above the cursor and appends.
 
 **Rationale:** `GameState` is compact (~40 bytes). `std::mt19937_64::state_size` is 312 `uint64_t` words (~2.5 KB). Even at 200 history entries this is ~500 KB — negligible. Storing the full RNG state makes redo deterministic without replaying move sequences, and avoids any dependency on a move-log approach. This directly fulfils the "preserve engine random seed" requirement.
 

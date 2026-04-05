@@ -97,6 +97,7 @@ test_tui_snapshot = executable(
   'test_tui_snapshot',
   'tui_snapshot_test.cpp',
   '../src/tui/display.cpp',
+  '../src/tui/history.cpp',
   dependencies : [patchwork_dep, catch2_dep],
 )
 # Pass the absolute path to the snapshot directory so the test finds the
