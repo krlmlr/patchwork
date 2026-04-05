@@ -51,7 +51,7 @@ The following is the proposed initial content for `docs/glossary.md`, grouped by
 A fabric piece that players purchase and place on their quilt board. Each patch has a button cost, a time cost, a button income value, and a shape.
 
 **patch circle**
-The ring of 33 patches arranged around the time board at the start of the game. Players may always choose from the three patches immediately clockwise of the circle marker.
+The ring of 33 patches arranged around the time board at the start of the game. Players may always choose from the three patches immediately clockwise of the marker.
 
 **time track** (also: time board)
 The linear track numbered 0–53 on which players advance their time tokens. The player furthest behind always takes the next turn.
@@ -77,11 +77,11 @@ The current number of buttons a player holds. Players start with 5 buttons.
 **income phase** (also: payout; [rulebook: "Button Income"])
 The event triggered when a player's time token passes or lands on a button-symbol space on the time track. The player receives buttons equal to the total button income of all patches on their quilt board. Also called a payout.
 
-**leather patch** (also: 1×1 patch; [rulebook: "special patch"])
+**leather** (also: leather patch, 1×1 patch; [rulebook: "special patch"])
 A 1×1 patch awarded to a player when their time token passes one of the five marked spaces on the time track. Placed immediately on the quilt board. Used to fill single-cell gaps. Not to be confused with the bonus tile (also occasionally called "special tile" in some rulebook printings).
 
-**circle marker** ([rulebook: "neutral token"])
-An index (0–32) into the patch circle that indicates the position from which the three available patches are counted. After a patch is taken, the circle marker advances to the position just after the taken patch. In the engine, stored as a 6-bit integer in the shared game state.
+**marker** (also: circle marker; [rulebook: "neutral token"])
+An index (0–32) into the patch circle that indicates the position from which the three available patches are counted. After a patch is taken, the marker advances to the position just after the taken patch. In the engine, stored as a 6-bit integer in the shared game state.
 
 **buy window** (also: window)
 The set of up to three patches currently available for purchase: the patches at positions marker, marker+1, and marker+2 (mod 33) in the patch circle. At least one patch is always available unless the patch circle is empty. The buy window shifts after each purchase because the marker advances past the taken patch.
@@ -120,7 +120,7 @@ During the game (before both players reach space 53), a projected score can be e
 ### Engine
 
 **game state**
-A complete snapshot of the game at a point in time, containing both players' states and the shared state (patch availability, circle marker position, bonus status).
+A complete snapshot of the game at a point in time, containing both players' states and the shared state (patch availability, marker position, bonus status).
 
 **player state**
 The per-player portion of the game state: quilt board occupancy, time-track position, button balance, and button income.

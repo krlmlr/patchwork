@@ -17,7 +17,7 @@ The file `docs/glossary.md` SHALL be the canonical definition of all game and en
 #### Scenario: Glossary contains initial game-rules terms
 
 - **WHEN** `docs/glossary.md` is read
-- **THEN** it contains definitions for at minimum: patch, patch circle, time track, quilt board, button cost, time cost, button income, button balance, leather patch, circle marker, buy window, advance move, buy move, income phase, bonus tile, active player, starting player, turn order, patch gain, scoring
+- **THEN** it contains definitions for at minimum: patch, patch circle, time track, quilt board, button cost, time cost, button income, button balance, leather, marker, buy window, advance move, buy move, income phase, bonus tile, active player, starting player, turn order, patch gain, scoring
 
 #### Scenario: Rulebook term aliases are noted
 
