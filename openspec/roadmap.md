@@ -26,7 +26,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 - Meson build system + Catch2
 - YAML patch catalog (33 patches, ASCII art shapes) + R codegen → committed C++ header
 - Core game state types: `PlayerState` (128-bit), `GameState` (packed shared state)
-- Directory structure: `src/`, `tests/`, `data/`, `codegen/`, `logs/`
+- Directory structure: `cpp/`, `tests/`, `data/`, `codegen/`, `logs/`
 
 **Known gap carried forward:** Initial patch circle arrangement (random permutation, fixed at game start) is not yet in `GameState`. R will manage canonical game setups for study.
 

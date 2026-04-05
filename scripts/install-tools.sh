@@ -21,6 +21,12 @@ apt-get install -y --no-install-recommends \
     npm
 
 # ---------------------------------------------------------------------------
+# R package manager: pak (from Posit Package Manager binary repo)
+# ---------------------------------------------------------------------------
+echo 'options(repos = c(CRAN = sprintf("https://p3m.dev/cran/latest/bin/linux/noble-%s/%s", R.version["arch"], substr(getRversion(), 1, 3))))' >> ~/.Rprofile
+Rscript -e 'install.packages("pak"); library(pak); pak::ppm_has_binaries()'
+
+# ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
 # ---------------------------------------------------------------------------
 apt-get install -y --no-install-recommends pipx
@@ -47,5 +53,6 @@ clang-format --version
 node --version
 npm --version
 openspec --version
-markdownlint-cli2 --version
+# markdownlint-cli2 doesn't have a --version flag but prints its version in the first line of --help output
+markdownlint-cli2 --help | head -n 1 || true
 echo "=== All tools installed successfully ==="

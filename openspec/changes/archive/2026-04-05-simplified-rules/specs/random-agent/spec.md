@@ -25,7 +25,7 @@ Two calls to `random_move` with identically seeded `std::mt19937` instances and 
 
 ### Requirement: Random agent compiles and links as a standalone usable unit
 
-The random agent SHALL be declared in a header under `src/` and implemented in a corresponding `.cpp` file. It SHALL have no dependency on the logger or play driver.
+The random agent SHALL be declared in a header under `cpp/` and implemented in a corresponding `.cpp` file. It SHALL have no dependency on the logger or play driver.
 
 #### Scenario: Random agent header can be included independently
 

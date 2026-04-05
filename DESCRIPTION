@@ -1,0 +1,15 @@
+Package: patchworkengine
+Title: Patchwork Board Game Engine — R Utilities
+Version: 0.0.1
+Description: Shared R utilities for code generation and analysis in the
+    Patchwork game engine project. Loaded via pkgload::load_all(); not
+    intended for installation or CRAN submission.
+License: MIT
+Imports:
+    yaml
+Suggests:
+    pkgload,
+    roxygen2,
+    testthat
+Encoding: UTF-8
+Config/roxygen2/version: 7.3.3.9000
