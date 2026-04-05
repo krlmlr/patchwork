@@ -297,7 +297,7 @@ static void render_narrow(const SimplifiedGameState& state,
     static const char* const kKeys[] = {
         "[1/2/3]buy  [a]adv      [q]quit        ",
         "[z/u]undo [Z/r]redo   [</>]log  [w]wrap",
-        "[m]v [f]^ [h]^/2  [,]- [.]+             "
+        "[m]v [f]^ [h]^/2  [,]- [.]+            "
     };
 
     for (int i = 0; i < detail_count; ++i) {
@@ -529,7 +529,7 @@ static void render_wide(const SimplifiedGameState& state,
     static const char* const kWideKeys[] = {
         "[1/2/3]buy  [a]adv      [q]quit        ",
         "[z/u]undo [Z/r]redo   [</>]log  [w]wrap",
-        "[m]v [f]^ [h]^/2  [,]- [.]+             "
+        "[m]v [f]^ [h]^/2  [,]- [.]+            "
     };
 
     // Effective NDJSON rows clamped to fit terminal.
