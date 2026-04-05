@@ -2,7 +2,7 @@
 
 - [ ] 1.1 Create `docs/` directory
 - [ ] 1.2 Create `docs/glossary.md` with a table of contents and terms grouped by category: Game Rules, Engine, Data & Tooling; note rulebook aliases with `[rulebook: "…"]` where the canonical name differs from the rulebook term
-- [ ] 1.3 Add Game Rules terms from the design: patch, patch circle, time track, time token, quilt board, button cost, time cost, button income, button balance, income phase (alias: payout), leather patch, circle marker, advance move, buy move, bonus tile, active player, starting player, turn order, patch gain, scoring
+- [ ] 1.3 Add Game Rules terms from the design: patch, patch circle, time track, time token, quilt board, button cost, time cost, button income, button balance, income phase (alias: payout), leather patch, circle marker, buy window, advance move, buy move, bonus tile, active player, starting player, turn order, patch gain, scoring
 - [ ] 1.4 Add Engine terms from the design (current): game state, player state, simplified game state, move, legal move, terminal state, game setup, game log, random agent
 - [ ] 1.5 Add Engine terms from the design (forward-looking): heuristic agent, evaluation function, minimax, alpha-beta pruning, iterative deepening, MCTS, UCB1, rollout policy, policy network, value network, self-play, Elo rating
 - [ ] 1.6 Add Data & Tooling terms from the design: patch catalog, game setups, codegen, NDJSON

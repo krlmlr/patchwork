@@ -83,11 +83,14 @@ A 1×1 patch awarded to a player when their time token passes one of the five ma
 **circle marker** ([rulebook: "neutral token"])
 An index (0–32) into the patch circle that indicates the position from which the three available patches are counted. After a patch is taken, the circle marker advances to the position just after the taken patch. In the engine, stored as a 6-bit integer in the shared game state.
 
+**buy window** (also: window)
+The set of up to three patches currently available for purchase: the patches at positions marker, marker+1, and marker+2 (mod 33) in the patch circle. At least one patch is always available unless the patch circle is empty. The buy window shifts after each purchase because the marker advances past the taken patch.
+
 **advance move** (also: action A; [rulebook: "Advance and Receive Buttons"])
 The move where the active player moves their time token to the space directly in front of the opponent's token and receives one button per space advanced.
 
 **buy move** (also: action B; [rulebook: "Take and Place a Patch"])
-The move where the active player purchases one of the three patches in front of the circle marker, pays its button cost, places it on their quilt board, and advances their time token by its time cost.
+The move where the active player purchases one patch from the buy window, pays its button cost, places it on their quilt board, and advances their time token by its time cost.
 
 **bonus tile** ([rulebook: "special tile"])
 A tile worth 7 points awarded to the first player to completely fill a 7×7 area (49 cells) on their quilt board. In the engine, its ownership is tracked by the `BonusStatus` enum. Sometimes called the "7×7 bonus."
