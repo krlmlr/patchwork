@@ -2,7 +2,7 @@
 
 ### Requirement: Input loop reads single keypress commands
 
-The input module SHALL provide a blocking `read_command` function that returns a typed `Command` variant without requiring the user to press Enter. Valid commands are: `BuyPatch{int index}` (digit keys `0`–`4`), `Advance` (keys `a` or Space), `Undo` (keys `z` or `u`), `Redo` (keys `Z` or `r`), and `Quit` (key `q` or `Q`). Any other key SHALL be silently ignored and `read_command` SHALL continue waiting.
+The input module SHALL provide a blocking `read_command` function that returns a typed `Command` variant without requiring the user to press Enter. Valid commands are: `BuyPatch{int index}` (digit keys `0`–`9`), `Advance` (keys `a` or Space), `Undo` (keys `z` or `u`), `Redo` (keys `Z` or `r`), `ScrollLogLeft` (key `<`), `ScrollLogRight` (key `>`), `ToggleLogWrap` (Enter / `\r`), and `Quit` (key `q` or `Q`). Any other key SHALL be silently ignored and `read_command` SHALL continue waiting.
 
 #### Scenario: Digit key produces BuyPatch command
 
@@ -38,6 +38,21 @@ The input module SHALL provide a blocking `read_command` function that returns a
 
 - **WHEN** the user presses key `x`
 - **THEN** `read_command` does not return and continues waiting for a valid key
+
+#### Scenario: '<' key produces ScrollLogLeft command
+
+- **WHEN** the user presses key `<`
+- **THEN** `read_command` returns `ScrollLogLeft{}`
+
+#### Scenario: '>' key produces ScrollLogRight command
+
+- **WHEN** the user presses key `>`
+- **THEN** `read_command` returns `ScrollLogRight{}`
+
+#### Scenario: Enter key produces ToggleLogWrap command
+
+- **WHEN** the user presses the Enter key
+- **THEN** `read_command` returns `ToggleLogWrap{}`
 
 ### Requirement: RawMode guard enables and restores terminal raw mode
 

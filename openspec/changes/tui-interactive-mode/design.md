@@ -5,17 +5,19 @@ The engine has complete game logic (move generation, application, terminal detec
 ## Goals / Non-Goals
 
 **Goals:**
-- Render current game state in ASCII art on a standard terminal: buttons, income, free spaces, time-track positions, and the visible patch circle
-- Scrolling event log alongside the board view
+- Render current game state in ASCII art on a standard terminal: buttons, income, free spaces, time-track positions, the full patch circle (all 33 patch characters as a sequence with a circle-marker indicator), and adaptive detail lines for the next 3+ buyable patches
+- Two reserved 9×9 quilt board areas (one per player) displaying `?` in simplified mode — sized so the full quilt game requires no layout changes
+- Scrolling event log alongside the board view with horizontal scrolling and an optional line-wrap toggle
 - Single-keypress input loop: digit keys to buy a patch by circle index, `a` / Space to advance, `z`/`Z` for undo/redo, `q` to quit
-- Unlimited undo/redo via a move history stack
-- Launch screen: pick game setup index, random seed, and opponent agent before starting
+- Unlimited undo/redo via a move history stack that preserves the full RNG state alongside each game state for deterministic replay
+- Minimum terminal width 80 columns; layout expands to use additional width when available
+- Launch screen: pick game setup index and random seed before starting
 - TUI preview (ASCII mockup) included in this design document
 - New Meson executable target `patchwork-tui` linking `src/tui/` against the engine static library
 - Catch2 unit tests for history stack and display helpers
 
 **Non-Goals:**
-- Full quilt-board ASCII art (reserved for a future phase; area shown as placeholder)
+- Full quilt-board ASCII art (cell contents shown as `?` until a placement phase is added)
 - Networked or multiplayer sessions
 - Mouse support
 - Windows console (UTF-8 ANSI terminal assumed)
@@ -23,26 +25,34 @@ The engine has complete game logic (move generation, application, terminal detec
 
 ## TUI Preview
 
+Layout at 80 columns (minimum); extra columns widen the log pane and the time-track bar.
+
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  PATCHWORK  —  seed 42, setup 0                                  ║
-╠══════════════════════╦═══════════════════════════════════════════╣
-║  Player 1   Player 2 ║  Patch circle (3 available)               ║
-║  btn  14    btn  11  ║  [0] ◆ cost 2  time 1  income 0           ║
-║  inc   3    inc   2  ║  [1] ▲ cost 4  time 2  income 1           ║
-║  free 74   free 81   ║  [2] ● cost 3  time 3  income 2           ║
-╠══════════════════════╣  ...                                       ║
-║  Time track          ╠═══════════════════════════════════════════╣
-║  0  .  .  .  .  .    ║  Event log                                 ║
-║  P1──────┘           ║  > P1 bought patch [1]  (+1 income)       ║
-║  P2─────────────┘    ║  > P2 advanced (+4 buttons)               ║
-║  . . 54 . . . 58     ║  > P1 earned leather patch                ║
-╠══════════════════════╣  > P2 bought patch [0]                    ║
-║  Quilt board (stub)  ║                                            ║
-║  [reserved]          ╚═══════════════════════════════════════════╣
-║                      ║  [0-2] buy patch  [a] advance  [z] undo  ║
-╚══════════════════════╩══════════════════════════════════════════╝
+PATCHWORK — seed 42 / setup 0                                         [P1]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Circle: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567  (^ = buy window start)
+                ^
+  [0] A  cost 3  time 2  income 1     [0-x] buy  [a] advance  [q] quit
+  [1] B  cost 5  time 3  income 2     [z/u] undo  [Z/r] redo  [</> ] log scroll
+  [2] C  cost 2  time 1  income 0     [↵] toggle log wrap
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  P1: btn 14  inc  3  pos 12  fr 74   P2: btn 11  inc  2  pos 20  fr 81
+  Time:  ──P1────────────────P2──────────────────────────────  0..53
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  P1 quilt (9×9)    P2 quilt (9×9)    Event log
+  ?????????         ?????????         > P1 bought [1] (+1 income)
+  ?????????         ?????????         > P2 advanced (+4 buttons)
+  ?????????         ?????????         > P1 earned leather patch
+  ?????????         ?????????         > P2 bought [0]
+  ?????????         ?????????         >
+  ?????????         ?????????         [< >] scroll  [↵] toggle wrap
+  ?????????         ?????????
+  ?????????         ?????????
+  ?????????         ?????????
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+Column budget at 80: quilt section ~30 cols (`  ?????????   ?????????   `), log ~48 cols. At 120 cols the log pane gains ~40 additional columns automatically.
 
 ## Decisions
 
@@ -54,13 +64,37 @@ The engine has complete game logic (move generation, application, terminal detec
 
 **Alternative considered:** `ftxui` (C++ TUI library) — powerful but adds a CMake-based dependency that conflicts with Meson-first philosophy.
 
-### 2. History as a `std::vector<GameState>` with a cursor
+### 2. History stores `(GameState, RngState)` pairs with a cursor
 
-**Decision:** `History` holds a `std::vector<GameState>` and an `int current` index. Undo decrements the index; redo increments it; a new move truncates everything above the cursor and appends.
+**Decision:** `History` holds a `std::vector<HistoryEntry>` where each entry is a `(GameState, RngState)` pair, plus an `int current` index. `RngState` captures a snapshot of the random agent's `std::mt19937_64` state at the moment the entry was recorded. Undo decrements the cursor; redo increments it and restores the saved `RngState` to the agent so the opponent's next move is identical to what was played originally. A new move truncates everything above the cursor and appends.
 
-**Rationale:** `GameState` is compact (two 128-bit player states + one 64-bit shared word = 40 bytes). Storing the full state on each move is trivially cheap compared to storing move lists and replaying from the start. This also makes undo/redo O(1) and avoids replaying move sequences.
+**Rationale:** `GameState` is compact (~40 bytes). `std::mt19937_64::state_size` is 312 `uint64_t` words (~2.5 KB). Even at 200 history entries this is ~500 KB — negligible. Storing the full RNG state makes redo deterministic without replaying move sequences, and avoids any dependency on a move-log approach. This directly fulfils the "preserve engine random seed" requirement.
 
-**Alternative considered:** Store only moves and replay — O(n) undo, complicates the history interface, no benefit for this state size.
+**Alternative considered:** Store only moves and replay from the start — O(n) redo, and still requires a seeded-from-start RNG snapshot at the initial entry; no advantage over full-state storage.
+
+### 6. Full patch circle display with adaptive detail
+
+**Decision:** The circle section always shows the full 33-character patch sequence as a single line (using single-char patch names from the patch catalog), with a `^` marker on the line below indicating the current buy-window start. Immediately below, a variable number of detail lines (at least 3, more if vertical space allows) list the buyable patches with cost, time cost, and income. On terminals wider than 80 columns the detail section gains one more row per N extra columns (where N is tuned empirically).
+
+**Rationale:** Showing all 33 characters gives the player a full strategic view of the circle at a glance. The adaptive detail respects the "space allowing" constraint from the roadmap description while always guaranteeing at least 3 buy options are described.
+
+### 7. Two 9×9 quilt areas; `?` placeholder for simplified mode
+
+**Decision:** The lower-left pane is permanently split into two 9×9 grids (one per player). Each cell is a single character wide. In simplified mode every cell displays `?`. When a full quilt board is added in a later phase, cells are replaced with patch characters — no layout changes required.
+
+**Rationale:** Reserving the exact final quilt dimensions today means the frame geometry is fixed for the lifetime of the project. `?` clearly communicates "not yet tracked" to the user without pretending the data is absent.
+
+### 8. Responsive layout: 80-column baseline, expand if wider
+
+**Decision:** The rendering function queries the current terminal width on each frame via `ioctl TIOCGWINSZ`. The log pane gets all columns beyond the fixed left section (quilt + stats + separators ≈ 32 cols). The time-track bar scales to fill the available width. A minimum of 80 columns is enforced at startup.
+
+**Rationale:** Makes the TUI immediately useful on wider terminals (100, 120, 160 cols) without a separate wide-mode code path.
+
+### 9. Log horizontal scrolling and wrap toggle
+
+**Decision:** The log pane maintains a horizontal scroll offset (in characters). `<` and `>` keys shift it left/right. A `↵` (Enter) key toggles word-wrap mode; in wrap mode the scroll offset is ignored. The scroll offset resets to 0 on each new log entry so the most recent line is always fully visible by default.
+
+**Rationale:** Long move descriptions or patch names can exceed the log pane width. Horizontal scrolling is simpler than truncation and lets users read the full text. Wrap mode is an alternative for users who prefer it.
 
 ### 3. Single-file `tui_main.cpp` entry point, modular headers
 
@@ -95,5 +129,5 @@ The engine has complete game logic (move generation, application, terminal detec
 
 ## Open Questions
 
-- Should the patch circle display wrap after 3 patches or show all available? → show up to 5 visible patches (the window the rules define), truncate with "…" if fewer are available at end of game.
 - Should `z`/`Z` be undo/redo, or arrow keys? → `z` (undo) / `Z` (redo) preferred for single-hand use; also support `u` / `r` as aliases.
+- Adaptive circle detail rows: how many extra rows per extra column? → Empirically tune during implementation; start with `floor((terminal_width - 80) / 10)` bonus rows, minimum 0.
