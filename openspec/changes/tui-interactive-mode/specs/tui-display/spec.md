@@ -1,8 +1,8 @@
 ## ADDED Requirements
 
-### Requirement: Game state is rendered as a responsive ASCII frame
+### Requirement: Game state is rendered as a responsive box-framed ASCII layout
 
-The TUI SHALL render the full game state into a frame on each display update. The frame SHALL contain five sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail, (3) player stats and time track, (4) two 9×9 quilt boards side by side, (5) event log pane. The frame SHALL be redrawn in full on every update by clearing the terminal and printing from the top-left corner. The layout SHALL be designed for a minimum of 80 columns; on wider terminals the log pane and time-track bar SHALL expand to fill the extra width.
+The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. The frame SHALL contain six sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side (with event log to the right), (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported; the wide layout places the patch circle, stats, and controls in the left column and the quilts + event log in the right column.
 
 #### Scenario: Frame renders both players' stats
 
@@ -57,7 +57,65 @@ The display SHALL render at least 3 detail lines below the circle marker, one pe
 - **WHEN** only 2 patches remain buyable
 - **THEN** exactly 2 detail lines appear
 
-### Requirement: Two 9×9 quilt boards are reserved in the layout
+### Requirement: Wide layout activates at ≥160 columns
+
+When the terminal is at least 160 columns wide, the TUI SHALL switch to a two-column layout: the left column (≈65 cols) contains the patch circle, adaptive detail lines, player stats, time-track bar, and keyboard-shortcut legend; the right column contains the two 9×9 quilts side by side and the event log. The NDJSON log pane spans the full terminal width below both columns.
+
+#### Scenario: Wide layout is used at 160 columns
+
+- **WHEN** `render_frame` is called with terminal width 160
+- **THEN** the patch circle section and the quilt section appear in separate columns on the same row range
+
+#### Scenario: Narrow layout is used at 159 columns
+
+- **WHEN** `render_frame` is called with terminal width 159
+- **THEN** the patch circle section appears above the quilt section (single-column layout)
+
+### Requirement: Color is applied to key elements
+
+The display SHALL apply ANSI 16-color codes to: P1 stats and markers (bright cyan), P2 stats and markers (bright yellow), affordable patch detail rows (bright green), unaffordable patch detail rows (dim), active-player header bold, event-log prompt `>` (green), and NDJSON log text (dim). Color SHALL be suppressed when `TERM=dumb`, `NO_COLOR` is set, or `--no-color` is passed.
+
+#### Scenario: Affordable patches are rendered in green
+
+- **WHEN** `render_frame` is called and patch [0] is affordable for the active player
+- **THEN** the output contains ANSI green escape codes surrounding patch [0]'s detail line
+
+#### Scenario: Color is suppressed when NO_COLOR is set
+
+- **WHEN** `NO_COLOR` environment variable is set and `render_frame` is called
+- **THEN** the output contains no ANSI escape codes
+
+### Requirement: NDJSON log pane is resizable
+
+The bottom NDJSON log pane height (in lines) is controlled at runtime. The initial height is 5 lines. Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `[` / `]` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts.
+
+#### Scenario: Minimize hides all NDJSON lines
+
+- **WHEN** the NDJSON pane is at its default height and `m` is pressed
+- **THEN** the rendered output shows 0 NDJSON content lines (only the header bar)
+
+#### Scenario: Restore returns to previous height
+
+- **WHEN** the NDJSON pane is minimized and `m` is pressed again
+- **THEN** the rendered output shows the same number of NDJSON lines as before minimization
+
+#### Scenario: Maximize fills remaining rows
+
+- **WHEN** `f` is pressed and the terminal has N rows available below the main frame
+- **THEN** the NDJSON pane displays N lines
+
+#### Scenario: Semi-maximize sets half the maximum
+
+- **WHEN** `h` is pressed and the maximum NDJSON height is 20 lines
+- **THEN** the NDJSON pane displays 10 lines
+
+#### Scenario: Increment and decrement adjust height by 1
+
+- **WHEN** the NDJSON pane has height 5 and `]` is pressed
+- **THEN** the pane has height 6
+
+- **WHEN** the pane has height 0 and `[` is pressed
+- **THEN** the pane height remains 0 (clamped at minimum)
 
 The lower-left section of the frame SHALL permanently display two 9×9 grids labelled "P1 quilt" and "P2 quilt". In simplified mode (no quilt board tracking) every cell SHALL display the character `?`. The grid dimensions and position in the frame SHALL not change when full quilt tracking is added in a later phase; only the cell content changes.
 

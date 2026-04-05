@@ -14,21 +14,24 @@
 
 ## 3. Display Module
 
-- [ ] 3.1 Define `init_display()` in `src/tui/display.hpp`: queries terminal size via `ioctl TIOCGWINSZ`; exits with error message if fewer than 80×24
-- [ ] 3.2 Implement full patch circle line: render all 33 patch characters in circle order (bought patches shown as `.`), with `^` marker line below at the buy-window start position
-- [ ] 3.3 Implement adaptive detail lines: show at least 3 buyable-patch detail rows (index, name, cost, time, income); add `floor((width-80)/10)` extra rows on wider terminals
-- [ ] 3.4 Implement two 9×9 quilt board areas: each cell displays `?` in simplified mode; areas are labelled "P1 quilt" and "P2 quilt" and their dimensions are fixed for future full-quilt use
-- [ ] 3.5 Implement responsive layout: log pane width = `terminal_width - 32` (minimum 1); time-track bar scales to fill available width
-- [ ] 3.6 Implement `render_frame(const GameState&, const LogState&)` that clears the terminal and prints the full five-section frame
-- [ ] 3.7 Implement `append_log(LogState&, std::string)` that appends to the log buffer (max 50 entries) and resets the horizontal scroll offset to 0
-- [ ] 3.8 Implement log horizontal scrolling (`<` / `>` keys update offset) and wrap toggle (Enter key toggles wrap mode; in wrap mode offset is ignored)
-- [ ] 3.9 Add unit tests in `tests/tui_display_test.cpp` for: `append_log` buffer trimming, scroll-offset reset on new entry, circle line length, marker placement, quilt grid dimensions, log wrap vs. scroll rendering; register in `tests/meson.build`
+- [ ] 3.1 Define `init_display()` in `src/tui/display.hpp`: queries terminal size via `ioctl TIOCGWINSZ`; exits with error message if fewer than 80×24; detects `TERM=dumb` / `NO_COLOR` / `--no-color` and sets a `color_enabled` flag
+- [ ] 3.2 Implement box-drawn frame: use `┌─┐│├─┤└─┘┬┴┼` for all borders and section dividers; narrow (80–159 col) and wide (≥160 col) layouts
+- [ ] 3.3 Implement full patch circle line: render all 33 patch characters in circle order (bought patches shown as `.`), with `^` marker line below at the buy-window start position
+- [ ] 3.4 Implement adaptive detail lines: show at least 3 buyable-patch detail rows (index, name, cost, time, income); add `floor((width-80)/10)` extra rows on wider terminals; color affordable rows green, unaffordable rows dim
+- [ ] 3.5 Implement two 9×9 quilt board areas: each cell displays `?` in simplified mode; areas are labelled "P1 quilt" and "P2 quilt" and their dimensions are fixed for future full-quilt use
+- [ ] 3.6 Implement responsive layout: narrow — event-log pane width = `terminal_width - 32`; wide (≥160) — left column ≈65 cols, right column = remaining; time-track bar scales to fill available width
+- [ ] 3.7 Apply ANSI 16-color: P1 bright cyan, P2 bright yellow, active-player bold, event-log `>` green, NDJSON pane dim; skip color codes when `color_enabled` is false
+- [ ] 3.8 Implement resizable NDJSON log pane: default 5 lines; `m` toggles minimize/restore; `f` maximizes; `h` semi-maximizes (`floor(max/2)`); `[`/`]` dec/inc by 1 (clamped); header bar always visible showing height and shortcuts
+- [ ] 3.9 Implement `render_frame(const GameState&, const LogState&, const NdjsonState&)` that clears the terminal and prints the full frame
+- [ ] 3.10 Implement `append_log(LogState&, std::string)` that appends to the log buffer (max 50 entries) and resets the horizontal scroll offset to 0
+- [ ] 3.11 Implement log horizontal scrolling (`<` / `>` keys update offset) and wrap toggle (Enter key toggles wrap mode; in wrap mode offset is ignored)
+- [ ] 3.12 Add unit tests in `tests/tui_display_test.cpp` for: `append_log` buffer trimming, scroll-offset reset on new entry, circle line length, marker placement, quilt grid dimensions, log wrap vs. scroll rendering, NDJSON pane height state machine, color suppression; register in `tests/meson.build`
 
 ## 4. Input Module
 
-- [ ] 4.1 Define `Command` variant in `src/tui/input.hpp`: `BuyPatch{int index}`, `Advance{}`, `Undo{}`, `Redo{}`, `ScrollLogLeft{}`, `ScrollLogRight{}`, `ToggleLogWrap{}`, `Quit{}`
+- [ ] 4.1 Define `Command` variant in `src/tui/input.hpp`: `BuyPatch{int index}`, `Advance{}`, `Undo{}`, `Redo{}`, `ScrollLogLeft{}`, `ScrollLogRight{}`, `ToggleLogWrap{}`, `NdjsonToggleMinimize{}`, `NdjsonMaximize{}`, `NdjsonSemiMaximize{}`, `NdjsonDecrLines{}`, `NdjsonIncrLines{}`, `Quit{}`
 - [ ] 4.2 Implement `RawMode` RAII class in `src/tui/input.cpp`: saves `termios` on construction, restores on destruction, registers `atexit` handler
-- [ ] 4.3 Implement `read_command()` that reads one character in raw mode and maps it to a `Command`: digits `0`–`9` → `BuyPatch`, `a`/Space → `Advance`, `z`/`u` → `Undo`, `Z`/`r` → `Redo`, `<` → `ScrollLogLeft`, `>` → `ScrollLogRight`, Enter → `ToggleLogWrap`, `q`/`Q` → `Quit`; ignore unrecognised keys
+- [ ] 4.3 Implement `read_command()` that reads one character in raw mode and maps it to a `Command`: digits `0`–`9` → `BuyPatch`, `a`/Space → `Advance`, `z`/`u` → `Undo`, `Z`/`r` → `Redo`, `<` → `ScrollLogLeft`, `>` → `ScrollLogRight`, Enter → `ToggleLogWrap`, `m` → `NdjsonToggleMinimize`, `f` → `NdjsonMaximize`, `h` → `NdjsonSemiMaximize`, `[` → `NdjsonDecrLines`, `]` → `NdjsonIncrLines`, `q`/`Q` → `Quit`; ignore unrecognised keys
 - [ ] 4.4 Implement `is_legal(const Command&, const GameState&)` helper that checks whether the resolved `Move` is in `generate_moves(state)`
 
 ## 5. Launch Module
@@ -38,16 +41,19 @@
 
 ## 6. Main Game Loop
 
-- [ ] 6.1 Implement `tui_main.cpp`: call `init_display`, `run_launch_screen`, construct initial `GameState` from `kGameSetups[setup_index]` with `GameSetup`, seed `RandomAgent`, snapshot initial `RngState`, construct `History`
+- [ ] 6.1 Implement `tui_main.cpp`: parse `--no-color` flag; call `init_display`, `run_launch_screen`, construct initial `GameState` from `kGameSetups[setup_index]` with `GameSetup`, seed `RandomAgent`, snapshot initial `RngState`, construct `History` and initial `NdjsonState`
 - [ ] 6.2 Enter the main loop: call `render_frame`, call `read_command`, dispatch `Command` — snapshot RNG state before opponent move, apply legal player moves, trigger opponent move, push `(new_state, pre_opponent_rng_state)` to `History`, append log entries
 - [ ] 6.3 Handle `Undo` / `Redo` commands: call `history.undo()` / `history.redo()`, restore agent to `history.current_rng()`, re-render
 - [ ] 6.4 Handle `ScrollLogLeft`, `ScrollLogRight`, `ToggleLogWrap`: update `LogState` and re-render without advancing game state
-- [ ] 6.5 Detect terminal game state after each move and break the loop
-- [ ] 6.6 On `Quit` or terminal state: clear terminal and print result summary (player scores, bonus flag, winner declaration)
+- [ ] 6.5 Handle `NdjsonToggleMinimize`, `NdjsonMaximize`, `NdjsonSemiMaximize`, `NdjsonDecrLines`, `NdjsonIncrLines`: update `NdjsonState` and re-render without advancing game state
+- [ ] 6.6 Detect terminal game state after each move and break the loop
+- [ ] 6.7 On `Quit` or terminal state: clear terminal and print result summary (player scores, bonus flag, winner declaration)
 
 ## 7. Integration and Polish
 
 - [ ] 7.1 Run the full test suite (`meson test -C build`) and confirm all existing tests and new TUI tests pass
-- [ ] 7.2 Manually play a short game end-to-end: verify undo/redo (including deterministic opponent redo), full circle display, adaptive detail rows, 9×9 quilt `?` grids, log scrolling, wrap toggle, and result summary
-- [ ] 7.3 Test on a terminal sized exactly 80×24 and confirm layout is not clipped
-- [ ] 7.4 Test on a 120-column terminal and confirm the log pane and time-track bar expand correctly
+- [ ] 7.2 Manually play a short game end-to-end: verify undo/redo (including deterministic opponent redo), full circle display, adaptive detail rows, 9×9 quilt `?` grids, log scrolling, wrap toggle, NDJSON panel resizing (min/max/semi/fine-tune), and result summary
+- [ ] 7.3 Test on a terminal sized exactly 80×24 (narrow layout)
+- [ ] 7.4 Test on a 120-column terminal (narrow layout, wider log pane)
+- [ ] 7.5 Test on a 160-column terminal (wide layout: circle left, quilts right, expanded NDJSON)
+- [ ] 7.6 Test with `NO_COLOR` set and verify no ANSI escape codes in output
