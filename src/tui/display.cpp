@@ -27,7 +27,7 @@ static const char* const kBdr_LT  = "\xe2\x94\x9c";  // ├
 static const char* const kBdr_RT  = "\xe2\x94\xa4";  // ┤
 static const char* const kBdr_TT  = "\xe2\x94\xac";  // ┬
 static const char* const kBdr_BT  = "\xe2\x94\xb4";  // ┴
-static const char* const kBdr_CT  = "\xe2\x94\xbc";  // ┼
+// static const char* const kBdr_CT  = "\xe2\x94\xbc";  // ┼
 static const char* const kArrow   = "\xe2\x96\xb6";  // ▶
 static const char* const kMult    = "\xc3\x97";       // ×
 
