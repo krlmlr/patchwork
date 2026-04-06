@@ -1,83 +1,49 @@
-### Requirement: SimplifiedPlayerState fits in 32 bits
+### Requirement: SimplifiedGameState tracks which player acts next
 
-`SimplifiedPlayerState` SHALL encode all per-player economy state in no more than 32 bits. Fields SHALL be: free spaces (7 bits, 0–81), time track position (6 bits, 0–53), button balance (7 bits, 0–127), button income (5 bits, 0–31).
+`SimplifiedGameState` SHALL store a 1-bit `next_player` field (0 or 1) in the existing shared `uint64_t` word (bit 41, currently unused). It SHALL default to 0 (player 0 goes first). `active_player()` SHALL return this field. `apply_move` SHALL update it: if the moved player's new position strictly exceeds the opponent's position, the opponent becomes `next_player`; otherwise the moved player remains `next_player`.
 
-#### Scenario: SimplifiedPlayerState size is within bound
-
-- **WHEN** `sizeof(SimplifiedPlayerState)` is evaluated at compile time
-- **THEN** the result is less than or equal to 4 bytes
-
-#### Scenario: Default-constructed SimplifiedPlayerState has expected initial values
-
-- **WHEN** a `SimplifiedPlayerState` is default-constructed
-- **THEN** free spaces is 81, time position is 0, buttons is 5 (starting value per game rules), income is 0
-
-### Requirement: SimplifiedPlayerState free_spaces field tracks remaining quilt area
-
-The `free_spaces` field of `SimplifiedPlayerState` SHALL represent how many cells of the 9×9 quilt are not yet covered by patches. It SHALL be decremented when a patch is placed; the minimum value is 0.
-
-#### Scenario: free_spaces stores full range
-
-- **WHEN** `free_spaces` is set to any value in 0–81
-- **THEN** reading `free_spaces` returns the same value
-
-#### Scenario: free_spaces rejects out-of-range values
-
-- **WHEN** a value greater than 81 is assigned to `free_spaces`
-- **THEN** the program either rejects it at compile time or asserts/throws at runtime
-
-### Requirement: SimplifiedPlayerState scalar fields round-trip correctly
-
-All scalar fields of `SimplifiedPlayerState` (time position, buttons, income) SHALL store and retrieve values without loss across their full valid ranges.
-
-#### Scenario: Time position stores full range
-
-- **WHEN** time position is set to any value in 0–53
-- **THEN** reading time position returns the same value
-
-#### Scenario: Button balance stores full range
-
-- **WHEN** button balance is set to any value in 0–127
-- **THEN** reading buttons returns the same value
-
-#### Scenario: Button income stores full range
-
-- **WHEN** button income is set to any value in 0–31
-- **THEN** reading income returns the same value
-
-### Requirement: SimplifiedGameState combines simplified player and shared state
-
-`SimplifiedGameState` SHALL contain two `SimplifiedPlayerState` instances (player 0 and player 1) and shared game state: patch availability bitmask (33 bits), circle marker position (6 bits, 0–32), 7×7 bonus status (2 bits: unclaimed/player0/player1).
-
-#### Scenario: SimplifiedGameState default construction
+#### Scenario: next_player defaults to 0
 
 - **WHEN** a `SimplifiedGameState` is default-constructed
-- **THEN** both players have default `SimplifiedPlayerState`, all 33 patches are available, circle marker is 0, bonus is unclaimed
+- **THEN** `active_player()` returns 0
 
-#### Scenario: Patch availability round-trip
+#### Scenario: next_player round-trips
 
-- **WHEN** a patch is marked unavailable by index (0–32) in `SimplifiedGameState`
-- **THEN** querying that index returns unavailable, and all other patches remain available
+- **WHEN** `next_player` is set to 1
+- **THEN** `active_player()` returns 1
 
-#### Scenario: Circle marker stores full range
+#### Scenario: Active player remains active on tie
 
-- **WHEN** circle marker is set to any value in 0–32 in `SimplifiedGameState`
-- **THEN** reading it returns the same value
+- **WHEN** player 0 is active, moves from position 4 to position 8, and player 1 is at position 8
+- **THEN** `active_player()` returns 0 in the successor state
 
-### Requirement: SimplifiedGameState and PlayerState/GameState have no implicit conversions
+#### Scenario: Active player switches when overtaking opponent
 
-`SimplifiedGameState` and `GameState` (and their corresponding player-state types) SHALL be distinct types with no implicit or explicit conversions between them.
+- **WHEN** player 0 is active, moves from position 4 to position 9, and player 1 is at position 8
+- **THEN** `active_player()` returns 1 in the successor state
 
-#### Scenario: Types are distinct
+### Requirement: SimplifiedGameState tracks which player first reached the terminal position
 
-- **WHEN** the type identity of `SimplifiedPlayerState` and `PlayerState` is checked at compile time
-- **THEN** `std::is_same_v<SimplifiedPlayerState, PlayerState>` is `false`
+`SimplifiedGameState` SHALL store a 1-bit `first_to_finish` field (0 or 1) in the existing shared `uint64_t` word (bit 42, currently unused). It SHALL default to 0. `apply_move` SHALL set it exactly once: the first time a player's position transitions from < 53 to ≥ 53 while the other player's position is still < 53. Once set, it SHALL NOT be changed. `winner` reads this field to resolve equal scores.
 
-### Requirement: Simplified game state types are unit tested
+#### Scenario: first_to_finish defaults to 0
 
-All `SimplifiedPlayerState` and `SimplifiedGameState` fields SHALL have Catch2 unit tests covering default construction, field round-trips, and boundary values.
+- **WHEN** a `SimplifiedGameState` is default-constructed
+- **THEN** `first_to_finish` is 0
 
-#### Scenario: Tests exist and pass
+#### Scenario: first_to_finish set when first player reaches 53
 
-- **WHEN** `meson test -C build` is run
-- **THEN** all simplified-game-state tests pass with exit code 0
+- **WHEN** player 0 is at position 52 and player 1 is at position 40, and a move advances player 0 to position 53
+- **THEN** `first_to_finish` is set to 0
+
+#### Scenario: first_to_finish not overwritten when second player reaches 53
+
+- **WHEN** `first_to_finish` is already set to 0 and a subsequent move advances player 1 to position 53
+- **THEN** `first_to_finish` remains 0
+
+The position field of `SimplifiedPlayerState` SHALL accept and store any value in 0–63 (full 6-bit range). Values above 53 represent a player who has moved past the last active time square. The existing `SimplifiedPlayerState` 6-bit field already has this capacity; the implementation SHALL NOT cap positions at 53.
+
+#### Scenario: Position stores values above 53
+
+- **WHEN** position is set to any value in 53–63
+- **THEN** reading position returns the same value
