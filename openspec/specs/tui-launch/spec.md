@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: Launch screen collects game configuration before starting
 
 When `patchwork-tui` starts, it SHALL display a launch screen that prompts the user to enter: (1) a game setup index (0–99, default 0), (2) a random seed (any non-negative integer, default 42). The opponent is always the built-in random agent for this phase. The user confirms with Enter. Invalid input SHALL display an inline error and re-prompt the same field without clearing earlier entries.

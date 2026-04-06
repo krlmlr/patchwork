@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: Random agent selects a legal move uniformly at random
 
 `random_move(state, rng)` SHALL select and return one move from the collection returned by `legal_moves(state)` with equal probability for each legal move. It SHALL NOT call `legal_moves` when the state is terminal.

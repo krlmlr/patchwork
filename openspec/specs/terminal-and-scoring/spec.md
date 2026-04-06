@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: Terminal detection identifies end of game
 
 `is_terminal(state)` SHALL return true if and only if both players have a time-track position of 53 or greater. Position 53 represents "done" — the player has moved past the last active square on the time track.
