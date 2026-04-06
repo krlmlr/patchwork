@@ -1,7 +1,8 @@
 ## 1. Configure PPM in install-tools.sh
 
-- [ ] 1.1 Add a step in `scripts/install-tools.sh` (after `rig add release` installs R) that writes a site-wide `Rprofile.site` setting `options(repos = c(PPM = "https://packagemanager.posit.co/cran/__linux__/noble/latest"))` so all subsequent R package installs use PPM binaries
-- [ ] 1.2 Verify the smoke-test section of `install-tools.sh` prints the configured repo URL (e.g., `Rscript -e 'cat(getOption("repos"), "\n")'`)
+- [ ] 1.1 Add a step in `scripts/install-tools.sh` (after `rig add release` installs R) that writes a site-wide `Rprofile.site` with two options: `repos` pointing to `https://packagemanager.posit.co/cran/__linux__/noble/latest` and `HTTPUserAgent` set to `sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os))` — both are required for PPM to serve Linux binaries
+- [ ] 1.2 Verify the smoke-test section of `install-tools.sh` prints the configured repo URL and HTTPUserAgent (e.g., `Rscript -e 'cat(getOption("repos"), "\n"); cat(getOption("HTTPUserAgent"), "\n")'`)
+- [ ] 1.3 Add a binary-install smoke test in `install-tools.sh`: run `Rscript -e 'pak::pkg_install("DBI", ask = FALSE)'` and confirm the output contains no `gcc`/`g++`/`R CMD INSTALL` lines (pipe to a grep assertion), proving PPM served a pre-built binary
 
 ## 2. Cache R packages in CI workflow
 

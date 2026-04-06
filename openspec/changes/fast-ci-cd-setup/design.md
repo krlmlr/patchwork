@@ -19,9 +19,28 @@ R packages are currently installed from CRAN source in every CI run with no cach
 
 ### Use PPM binary snapshot for Ubuntu 24.04
 
-PPM exposes a CRAN-compatible URL with pre-built binaries: `https://packagemanager.posit.co/cran/__linux__/noble/latest`. Setting `options(repos = c(PPM = "<url>"))` in a site-wide `Rprofile.site` (written by `install-tools.sh`) makes every subsequent `pak` / `install.packages` call use it without further changes to R scripts.
+PPM exposes a CRAN-compatible URL with pre-built binaries: `https://packagemanager.posit.co/cran/__linux__/noble/latest`. Two R options must be set together in a site-wide `Rprofile.site` (written by `install-tools.sh`):
+
+```r
+options(
+  repos = c(PPM = "https://packagemanager.posit.co/cran/__linux__/noble/latest"),
+  HTTPUserAgent = sprintf(
+    "R/%s R (%s)",
+    getRversion(),
+    paste(getRversion(), R.version$platform, R.version$arch, R.version$os)
+  )
+)
+```
+
+`HTTPUserAgent` is critical: PPM inspects it to determine which pre-built binary to serve. Without it the request looks like a generic CRAN client and PPM falls back to serving source tarballs.
 
 **Alternative considered**: setting `RENV_CONFIG_REPOS_OVERRIDE` or editing each workflow step inline. Rejected — the site-wide Rprofile is the single place that covers all three environments because `install-tools.sh` runs in all of them.
+
+### Verify binary install in CI (acceptance test)
+
+The smoke-test section of `install-tools.sh` SHALL install `DBI` (a stable, dependency-free pure-R package) via `pak::pkg_install("DBI", ask = FALSE)` and then assert that the package was installed from a binary (not compiled from source). The assertion checks that no C compiler was invoked — the absence of `.so` / `.dll` compilation artifacts in the install log, or simply timing the install (binary install completes in under 10 s; source compilation takes 30 s+). A practical shell check: capture `pak` output and `grep -v "R CMD INSTALL"` failing means source was used.
+
+**Alternative considered**: checking `packageDescription("DBI")$NeedsCompilation`. Rejected — `DBI` is a pure-R package so this is always `"no"` regardless of install path; it doesn't prove PPM was used. Instead, check that pak reports `type: binary` in its install plan or that no compilation subprocess was spawned.
 
 ### Cache key based on DESCRIPTION hash
 

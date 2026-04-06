@@ -1,11 +1,22 @@
 ## ADDED Requirements
 
 ### Requirement: PPM binary repository is configured for all R package installs
-`install-tools.sh` SHALL write a site-wide `Rprofile.site` entry that sets the PPM binary CRAN mirror for Ubuntu 24.04 (`noble`) as the default repository before any R package installation occurs.
+`install-tools.sh` SHALL write a site-wide `Rprofile.site` entry that sets both the PPM binary CRAN mirror for Ubuntu 24.04 (`noble`) **and** the `HTTPUserAgent` string that PPM requires to serve Linux binaries, before any R package installation occurs.
 
 #### Scenario: PPM URL is present after install-tools.sh runs
 - **WHEN** `install-tools.sh` completes on Ubuntu 24.04
 - **THEN** `Rscript -e 'getOption("repos")'` returns a URL containing `packagemanager.posit.co` and `noble`
+
+#### Scenario: HTTPUserAgent is set after install-tools.sh runs
+- **WHEN** `install-tools.sh` completes on Ubuntu 24.04
+- **THEN** `Rscript -e 'getOption("HTTPUserAgent")'` returns a string of the form `R/<version> R (<version> <platform> <arch> <os>)`
+
+### Requirement: Binary installation is verified by a smoke test
+The smoke-test section of `install-tools.sh` SHALL install `DBI` using `pak::pkg_install("DBI", ask = FALSE)` and assert that no C compiler or `R CMD INSTALL` from source was invoked, confirming PPM served a pre-built binary.
+
+#### Scenario: DBI installs as binary without source compilation
+- **WHEN** `install-tools.sh` runs the DBI smoke test on Ubuntu 24.04 with PPM configured
+- **THEN** `pak::pkg_install("DBI", ask = FALSE)` completes without printing any `gcc`/`g++`/`R CMD INSTALL` compilation output, and DBI appears in the installed packages list
 
 #### Scenario: pak uses PPM when installing packages
 - **WHEN** `Rscript -e 'pak::pak()'` is executed after `install-tools.sh`
