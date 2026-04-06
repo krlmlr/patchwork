@@ -20,7 +20,10 @@ jobs:
         run: sudo bash scripts/install-tools.sh
 
       - name: Check if binaries are available
-        run: Rscript -e 'pak::ppm_has_binaries()'
+        run: Rscript -e 'getOption("repos"); pak::ppm_has_binaries()'
+
+      - name: Install rlang
+        run: Rscript -e 'pak::pak("rlang")'
 
       - name: Install R package dependencies
         run: Rscript -e 'pak::pak()'
