@@ -1,20 +1,20 @@
 ## 1. Project Structure
 
-- [x] 1.1 Create `src/tui/` directory and add empty placeholder files: `history.hpp`, `history.cpp`, `display.hpp`, `display.cpp`, `input.hpp`, `input.cpp`, `launch.hpp`, `launch.cpp`, `tui_main.cpp`
-- [x] 1.2 Add new Meson executable target `patchwork-tui` in `src/meson.build` linking `src/tui/*.cpp` against the existing `patchwork_lib` static library
+- [x] 1.1 Create `cpp/tui/` directory and add empty placeholder files: `history.hpp`, `history.cpp`, `display.hpp`, `display.cpp`, `input.hpp`, `input.cpp`, `launch.hpp`, `launch.cpp`, `tui_main.cpp`
+- [x] 1.2 Add new Meson executable target `patchwork-tui` in `cpp/meson.build` linking `cpp/tui/*.cpp` against the existing `patchwork_lib` static library
 - [x] 1.3 Verify `meson setup build && meson compile -C build patchwork-tui` succeeds with empty stubs
 
 ## 2. History Module
 
-- [x] 2.1 Define `HistoryEntry` struct in `src/tui/history.hpp`: holds `GameState` + `RngState` (a snapshot of `std::mt19937_64` state)
+- [x] 2.1 Define `HistoryEntry` struct in `cpp/tui/history.hpp`: holds `GameState` + `RngState` (a snapshot of `std::mt19937_64` state)
 - [x] 2.2 Define `History` class: constructor accepts initial `GameState` and `RngState`; methods `push`, `undo`, `redo`, `current_state`, `current_rng`, `can_undo`, `can_redo`
-- [x] 2.3 Implement `History` in `src/tui/history.cpp` using `std::vector<HistoryEntry>` and an `int` cursor
+- [x] 2.3 Implement `History` in `cpp/tui/history.cpp` using `std::vector<HistoryEntry>` and an `int` cursor
 - [x] 2.4 Write Catch2 tests in `tests/tui_history_test.cpp` covering: initial entry, push, push-after-undo truncation, undo, redo, boundary no-ops, and deterministic redo (verify `current_rng()` after redo returns the saved RNG state)
 - [x] 2.5 Register the new test file in `tests/meson.build` and confirm `meson test -C build` passes
 
 ## 3. Display Module
 
-- [x] 3.1 Define `init_display()` in `src/tui/display.hpp`: queries terminal size via `ioctl TIOCGWINSZ`; exits with error message if fewer than 80×24; detects `TERM=dumb` / `NO_COLOR` / `--no-color` and sets a `color_enabled` flag
+- [x] 3.1 Define `init_display()` in `cpp/tui/display.hpp`: queries terminal size via `ioctl TIOCGWINSZ`; exits with error message if fewer than 80×24; detects `TERM=dumb` / `NO_COLOR` / `--no-color` and sets a `color_enabled` flag
 - [x] 3.2 Implement box-drawn frame: use `┌─┐│├─┤└─┘┬┴┼` for all borders and section dividers; narrow (80–159 col) and wide (≥160 col) layouts
 - [x] 3.3 Implement full patch circle line: render all 33 patch characters in circle order (bought patches shown as `.`), with `^` marker line below at the buy-window start position
 - [x] 3.4 Implement adaptive detail lines: show at least 3 buyable-patch detail rows (index, name, cost, time, income); add `floor((width-80)/10)` extra rows on wider terminals; color affordable rows green, unaffordable rows dim
@@ -31,14 +31,14 @@
 
 ## 4. Input Module
 
-- [x] 4.1 Define `Command` variant in `src/tui/input.hpp`: `BuyPatch{int index}`, `Advance{}`, `Undo{}`, `Redo{}`, `ScrollLogLeft{}`, `ScrollLogRight{}`, `ToggleLogWrap{}`, `NdjsonToggleMinimize{}`, `NdjsonMaximize{}`, `NdjsonSemiMaximize{}`, `NdjsonDecrLines{}`, `NdjsonIncrLines{}`, `Quit{}`
-- [x] 4.2 Implement `RawMode` RAII class in `src/tui/input.cpp`: saves `termios` on construction, restores on destruction, registers `atexit` handler
+- [x] 4.1 Define `Command` variant in `cpp/tui/input.hpp`: `BuyPatch{int index}`, `Advance{}`, `Undo{}`, `Redo{}`, `ScrollLogLeft{}`, `ScrollLogRight{}`, `ToggleLogWrap{}`, `NdjsonToggleMinimize{}`, `NdjsonMaximize{}`, `NdjsonSemiMaximize{}`, `NdjsonDecrLines{}`, `NdjsonIncrLines{}`, `Quit{}`
+- [x] 4.2 Implement `RawMode` RAII class in `cpp/tui/input.cpp`: saves `termios` on construction, restores on destruction, registers `atexit` handler
 - [x] 4.3 Implement `read_command()` that reads one character in raw mode and maps it to a `Command`: digits `0`–`9` → `BuyPatch`, `a`/Space → `Advance`, `z`/`u` → `Undo`, `Z`/`r` → `Redo`, `<` → `ScrollLogLeft`, `>` → `ScrollLogRight`, `w` → `ToggleLogWrap`, `m` → `NdjsonToggleMinimize`, `f` → `NdjsonMaximize`, `h` → `NdjsonSemiMaximize`, `,` → `NdjsonDecrLines`, `.` → `NdjsonIncrLines`, `q`/`Q` → `Quit`; ignore unrecognised keys
 - [x] 4.4 Implement `is_legal(const Command&, const GameState&)` helper that checks whether the resolved `Move` is in `generate_moves(state)`
 
 ## 5. Launch Module
 
-- [x] 5.1 Implement `run_launch_screen()` in `src/tui/launch.cpp`: prompts for setup index (0–99, default 0) and seed (default 42) using normal cooked-mode line input, validates each field, re-prompts on invalid input
+- [x] 5.1 Implement `run_launch_screen()` in `cpp/tui/launch.cpp`: prompts for setup index (0–99, default 0) and seed (default 42) using normal cooked-mode line input, validates each field, re-prompts on invalid input
 - [x] 5.2 Return a `LaunchConfig{int setup_index, uint64_t seed}` struct from `run_launch_screen()`
 
 ## 6. Main Game Loop

@@ -191,7 +191,7 @@ The file `data/patches.yaml` — the single source of truth for all 33 patches, 
 Stored configurations of patch circle arrangements in `data/setups/`, used for reproducible experiments.
 
 **codegen**
-The R script (`codegen/generate_patches.R`) that reads `data/patches.yaml` and writes the committed C++ header `src/generated/patches.hpp`.
+The R script (`codegen/generate_patches.R`) that reads `data/patches.yaml` and writes the committed C++ header `cpp/generated/patches.hpp`.
 
 **NDJSON** (Newline-Delimited JSON)
 The format used for game logs: one JSON object per line, enabling streaming and easy analysis with tools like DuckDB.

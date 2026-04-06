@@ -14,11 +14,13 @@ apt-get install -y --no-install-recommends \
     git \
     ca-certificates \
     catch2 \
-    clang-format \
-    r-base \
-    r-cran-yaml \
-    nodejs \
-    npm
+    clang-format
+
+# ---------------------------------------------------------------------------
+# R
+# ---------------------------------------------------------------------------
+curl -Ls https://github.com/r-lib/rig/releases/download/latest/rig-linux-$(arch)-latest.tar.gz | tar xz -C /usr/local
+rig add release
 
 # ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
@@ -47,5 +49,6 @@ clang-format --version
 node --version
 npm --version
 openspec --version
-markdownlint-cli2 --version
+# markdownlint-cli2 doesn't have a --version flag but prints its version in the first line of --help output
+markdownlint-cli2 --help | head -n 1 || true
 echo "=== All tools installed successfully ==="

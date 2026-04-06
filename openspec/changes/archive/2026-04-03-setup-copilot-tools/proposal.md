@@ -38,4 +38,4 @@ A companion change will add GitHub Actions CI (running the same build and tests 
 - CI will catch regressions on every push and pull request
 - `mise run format` and `mise run lint` are available in the devcontainer for consistent formatting
 - Every project action is now invokable via `mise run <task>`, satisfying the `mise-tasks` spec invariant
-- No changes to `src/`, `tests/`, `data/`, or `codegen/` — this is purely environment scaffolding and documentation
+- No changes to `cpp/`, `tests/`, `data/`, or `codegen/` — this is purely environment scaffolding and documentation

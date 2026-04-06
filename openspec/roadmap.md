@@ -26,7 +26,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 - Meson build system + Catch2
 - YAML patch catalog (33 patches, ASCII art shapes) + R codegen → committed C++ header
 - Core game state types: `PlayerState` (128-bit), `GameState` (packed shared state)
-- Directory structure: `src/`, `tests/`, `data/`, `codegen/`, `logs/`
+- Directory structure: `cpp/`, `tests/`, `data/`, `codegen/`, `logs/`
 
 **Known gap carried forward:** Initial patch circle arrangement (random permutation, fixed at game start) is not yet in `GameState`. R will manage canonical game setups for study.
 
@@ -76,6 +76,13 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 - Add full game setup to logs (initial patch circle arrangement, seed)
 - Add more post-move state summaries to move logs (income, free spaces, total board value, patch circle)
+
+---
+
+### Fast CI/CD Setup
+
+- Install R packages from PPM
+- For GHA, Copilot and devcontainer
 
 ---
 
@@ -136,14 +143,61 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ### TUI refinements
 
-- JSON log scrolling does not work yet: horizontal broken, vertical unspecified
-- JSON log word wrapping broken
+- Add TUI elements to glossary
+- If a keypress is detected but leads to no action or is otherwise unavailable, show reason in red over the last line of the TUI (e.g. "not enough buttons", "patch not available", "already at starting position")
+- When game is finished, show final scores and declare winner in green over the last line, undo remains available
+- Gameplay bug: default game setup 0/seed 42, P1 buys L then advances twice then buys w then tries to buy A (cost 0), this is marked as allowed in the highlighting of the circle but fails (pressing 3 leads to no action). Snapshot:
+
+    ```txt
+    ┌ PATCHWORK -- seed ? / setup 0 --─────────────────────────────────────────────────── ▶ P1 ─┐
+    │ Circle: Zt.v3....Jq.SOAXox41TzpedlsNHjm52                                                 │
+    │                     ^                                                                     │
+    │ [ 1] S  cost  7  time  6  inc 3                   [1/2/3]buy  [a]adv      [q]quit         │
+    │ [ 2] O  cost  5  time  3  inc 1                   [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+    │ [ 3] A  cost  0  time  3  inc 1                   [m]v [f]^ [h]^/2  [,]- [.]+             │
+    │ [ 4] X  cost  1  time  4  inc 1                                                           │
+    │ [ 5] o  cost  6  time  5  inc 2                                                           │
+    │ [ 6] x  cost  5  time  4  inc 2                                                           │
+    │ [ 7] 4  cost  3  time  3  inc 1                                                           │
+    │ [ 8] 1  cost  7  time  2  inc 2                                                           │
+    │ [ 9] T  cost  5  time  5  inc 2                                                           │
+    │ [10] z  cost  2  time  3  inc 1                                                           │
+    │ [11] p  cost  2  time  2  inc 0                                                           │
+    │ [12] e  cost  3  time  6  inc 2                                                           │
+    ├─────────────────────────────────────────────┬─────────────────────────────────────────────┤
+    │ P1  btn   1  inc  5  pos 16  fr 72          │ P2  btn   7  inc  2  pos 18  fr 59          │
+    ├───────────┬───────────┬─────────────────────┴─────────────────────────────────────────────┤
+    │ P1 quilt  │ P2 quilt  │ Event log                                                         │
+    │ ????????? │ ????????? │ > P2 (cpu) bought [k]                                             │
+    │ ????????? │ ????????? │ > P2 (cpu) bought [u]                                             │
+    │ ????????? │ ????????? │ > P2 (cpu) advanced                                               │
+    │ ????????? │ ????????? │ > P1 advanced                                                     │
+    │ ????????? │ ????????? │ > P2 (cpu) bought [y]                                             │
+    │ ????????? │ ????????? │ > P1 advanced                                                     │
+    │ ????????? │ ????????? │ > P2 (cpu) advanced                                               │
+    │ ????????? │ ????????? │ > P1 bought [w]                                                   │
+    │ ????????? │ ????????? │ > P2 (cpu) bought [U]                                             │
+    ├───────────┴───────────┴─ ndjson log (9 lines) ──────────────────────[m]v [f]^ [h]^/2 [,.]─┤
+    │ {"event":"move","ply":26,"player":1,"move_type":"buy_patch","patch_index":23,"position"   │
+    │ {"event":"move","ply":27,"player":1,"move_type":"buy_patch","patch_index":11,"position"   │
+    │ {"event":"move","ply":28,"player":1,"move_type":"advance","position":7,"buttons":6}       │
+    │ {"event":"move","ply":29,"player":0,"move_type":"advance","position":8,"buttons":5}       │
+    │ {"event":"move","ply":30,"player":1,"move_type":"buy_patch","patch_index":14,"position"   │
+    │ {"event":"move","ply":31,"player":0,"move_type":"advance","position":12,"buttons":11}     │
+    │ {"event":"move","ply":32,"player":1,"move_type":"advance","position":13,"buttons":6}      │
+    │ {"event":"move","ply":33,"player":0,"move_type":"buy_patch","patch_index":18,"position"   │
+    │ {"event":"move","ply":34,"player":1,"move_type":"buy_patch","patch_index":21,"position"   │
+    └───────────────────────────────────────────────────────────────────────────────────────────┘
+    ```
+
+- NDJSON log scrolling does not work yet: horizontal broken (scrolls game/event log instead), vertical unspecified
+- NDJSON log word wrapping broken
 - Each rendered frame adds to the terminal's output history; is there a way to avoid this and keep the terminal's scrollback clean?
 - Start in `NdjsonSemiMaximize` mode
-- Effectively unbounded event log, no truncation (games with many moves consist only of advances, adjust the max log size to accommodate)
+- Effectively unbounded event and JSON log, no truncation (games with many moves consist only of advances, adjust the max log size to accommodate)
 - Display bonus tile status and leather patch counts in the TUI
-- Display more stats in the TUI (current score, projected score, placement gain and projected income per patch, ...)
-- Faded out lines outside buying window
+- Display more stats in the TUI (current score, projected score, spaces covered + placement gain + projected income per patch, ...)
+- Circle lines outside buying window should show as faded
 - No winner when quitting early
 
 ---

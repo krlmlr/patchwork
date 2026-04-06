@@ -24,7 +24,7 @@ The engine can play games programmatically but has no human-facing interface, ma
 
 ## Impact
 
-- New source files under `src/tui/` (display, input, history, launch)
+- New source files under `cpp/tui/` (display, input, history, launch)
 - No changes to existing game engine, state types, or logging code
 - New Meson build target linking `tui/` sources with the existing engine library
 - New Catch2 tests for undo/redo history and display formatting helpers

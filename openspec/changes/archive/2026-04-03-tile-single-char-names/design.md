@@ -2,7 +2,7 @@
 
 The Patchwork engine identifies patches by integer ID (1–33). The ID is the only identifier present in game logs and any future debug output. While unambiguous, numeric IDs require a look-up to understand what shape is being referred to. A single memorable character per patch — chosen to echo its visual shape — makes logs immediately human-readable without any look-up.
 
-The patch catalog lives in `data/patches.yaml` and is the single source of truth. A generated C++ header (`src/generated/patches.hpp`) is produced by `codegen/generate_patches.R` and committed. Adding the name follows the same pipeline: edits in YAML → edit in the codegen script → regenerate and commit the header.
+The patch catalog lives in `data/patches.yaml` and is the single source of truth. A generated C++ header (`cpp/generated/patches.hpp`) is produced by `codegen/generate_patches.R` and committed. Adding the name follows the same pipeline: edits in YAML → edit in the codegen script → regenerate and commit the header.
 
 This change also takes the opportunity to sort and renumber patches in a logical order (size → cost → income) and to normalise each `shape` value to its canonical form.
 

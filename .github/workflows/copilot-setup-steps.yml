@@ -12,3 +12,6 @@ jobs:
 
       - name: Install project tools
         run: sudo bash scripts/install-tools.sh
+
+      - name: Install R package dependencies
+        run: Rscript -e 'pak::pak()'
