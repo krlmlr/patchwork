@@ -26,8 +26,6 @@ rig add release
 # R package manager: pak (from Posit Package Manager binary repo)
 # ---------------------------------------------------------------------------
 
-# https://github.com/r-lib/pak/issues/826
-echo 'options(repos = "https://p3m.dev/cran/__linux__/noble/latest", HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))' | sudo tee -a /etc/R/Rprofile.site
 Rscript -e 'library(pak); pak::ppm_has_binaries()'
 
 # ---------------------------------------------------------------------------
