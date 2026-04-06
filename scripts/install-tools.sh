@@ -22,10 +22,6 @@ apt-get install -y --no-install-recommends \
 curl -Ls https://github.com/r-lib/rig/releases/download/latest/rig-linux-$(arch)-latest.tar.gz | tar xz -C /usr/local
 rig add release
 
-# https://github.com/r-lib/pak/issues/826
-mkdir -p /etc/R
-echo 'options(repos = "https://p3m.dev/cran/__linux__/noble/latest", HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))' | sudo tee -a /etc/R/Rprofile.site
-
 # ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
 # ---------------------------------------------------------------------------
