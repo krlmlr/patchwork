@@ -6,6 +6,7 @@
 #include "../game_logger.hpp"
 #include "../game_setups.hpp"
 #include "../game_state.hpp"
+#include "../generated/game_setups.hpp"
 #include "../generated/patches.hpp"
 #include "../move_application.hpp"
 #include "../move_generation.hpp"
@@ -41,7 +42,8 @@ int main(int argc, char** argv) {
     LaunchConfig launch = run_launch_screen();
 
     // Build game.
-    GameSetup setup = make_setup(launch.setup_index);
+    GameSetup setup = GameSetup(kGameSetups[static_cast<std::size_t>(
+        launch.setup_index % static_cast<int>(kNumGameSetups))]);
     SimplifiedGameState initial_state{};
     RngState rng(static_cast<std::mt19937::result_type>(launch.seed));
 

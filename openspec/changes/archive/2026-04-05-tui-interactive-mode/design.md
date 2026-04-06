@@ -34,11 +34,11 @@ Extra columns beyond 80 widen the event-log pane. The number of detail lines and
 
 ```txt
 ┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
-│ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
+│ Circle: ZtLv3kuywJqUSOAXox41TzpedlsNHjm52                                    │
 │         ^                                                                    │
-│ [ 1] 2  cost  2  time  1  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
-│ [ 2] v  cost  1  time  3  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
-│ [ 3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │
+│ [ 1] Z  cost  4  time  2  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
+│ [ 2] t  cost  2  time  2  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [ 3] L  cost  4  time  6  inc 2      [m]v [f]^ [h]^/2  [,]- [.]+             │
 ├───────────────────────────────────────┬──────────────────────────────────────┤
 │ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │
 ├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
@@ -64,14 +64,14 @@ At ≥160 columns a four-column layout is used: the left column holds the patch 
 
 ```txt
 ┌ PATCHWORK -- seed ? / setup 0 ───────────────────────────────────────────────┬───────────┬───────────┬──────────────────────────────────────────────── ▶ P1 ─┐
-│ Circle: 2v3jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │ P1 quilt  │ P2 quilt  │ Event log                                             │
+│ Circle: ZtLv3kuywJqUSOAXox41TzpedlsNHjm52                                    │ P1 quilt  │ P2 quilt  │ Event log                                             │
 │         ^                                                                    │ ????????? │ ????????? │ > P1 bought [2]                                       │
-│ [ 1] 2  cost  2  time  1  inc 0      [1/2/3]buy  [a]adv      [q]quit         │ ????????? │ ????????? │ > P2 advanced                                         │
-│ [ 2] v  cost  1  time  3  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
-│ [ 3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │ ????????? │ ????????? │                                                       │
-│ [ 4] j  cost  3  time  1  inc 0                                              │ ????????? │ ????????? │                                                       │
-│ [ 5] t  cost  2  time  2  inc 0                                              │ ????????? │ ????????? │                                                       │
-│ [ 6] 4  cost  3  time  3  inc 1                                              │ ????????? │ ????????? │                                                       │
+│ [ 1] Z  cost  4  time  2  inc 0      [1/2/3]buy  [a]adv      [q]quit         │ ????????? │ ????????? │ > P2 advanced                                         │
+│ [ 2] t  cost  2  time  2  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │ ????????? │ ????????? │                                                       │
+│ [ 3] L  cost  4  time  6  inc 2      [m]v [f]^ [h]^/2  [,]- [.]+             │ ????????? │ ????????? │                                                       │
+│ [ 4] v  cost  1  time  3  inc 0                                              │ ????????? │ ????????? │                                                       │
+│ [ 5] 3  cost  2  time  2  inc 0                                              │ ????????? │ ????????? │                                                       │
+│ [ 6] k  cost  2  time  1  inc 0                                              │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┬──────────────────────────────────────┤ ????????? │ ????????? │                                                       │
 │ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │ ????????? │ ????????? │                                                       │
 ├───────────────────────────────────────┴──────────────────────────────────────┴───────────┴───────────┴─ ndjson log (5 lines) ──────────[m]v [f]^ [h]^/2 [,.]─┤

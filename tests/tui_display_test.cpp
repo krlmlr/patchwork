@@ -2,10 +2,8 @@
 #include "tui/display.hpp"
 #include "simplified_game_state.hpp"
 #include "game_setup.hpp"
-#include "game_setups.hpp"
 
 using patchwork::SimplifiedGameState;
-using patchwork::make_setup;
 using patchwork::tui::LogState;
 using patchwork::tui::NdjsonState;
 using patchwork::tui::append_log;

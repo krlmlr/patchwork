@@ -1,32 +1,32 @@
 ┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
-│ Circle: 2..jt4sLloSuzpyxT5wJAUNkeZm1dqXHO                                    │
+│ Circle: Z..v3kuywJqUSOAXox41TzpedlsNHjm52                                    │
 │            ^                                                                 │
-│ [ 1] j  cost  3  time  1  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
-│ [ 2] t  cost  2  time  2  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
-│ [ 3] 4  cost  3  time  3  inc 1      [m]v [f]^ [h]^/2  [,]- [.]+             │
-│ [ 4] s  cost  3  time  2  inc 1                                              │
-│ [ 5] L  cost  4  time  6  inc 2                                              │
-│ [ 6] l  cost  4  time  2  inc 1                                              │
-│ [ 7] o  cost  6  time  5  inc 2                                              │
-│ [ 8] S  cost  7  time  6  inc 3                                              │
-│ [ 9] u  cost  1  time  2  inc 0                                              │
-│ [10] z  cost  2  time  3  inc 1                                              │
-│ [11] p  cost  2  time  2  inc 0                                              │
-│ [12] y  cost  3  time  4  inc 1                                              │
-│ [13] x  cost  5  time  4  inc 2                                              │
-│ [14] T  cost  5  time  5  inc 2                                              │
-│ [15] 5  cost  7  time  1  inc 1                                              │
-│ [16] w  cost 10  time  4  inc 3                                              │
-│ [17] J  cost 10  time  3  inc 2                                              │
-│ [18] A  cost  0  time  3  inc 1                                              │
+│ [ 1] v  cost  1  time  3  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
+│ [ 2] 3  cost  2  time  2  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [ 3] k  cost  2  time  1  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │
+│ [ 4] u  cost  1  time  2  inc 0                                              │
+│ [ 5] y  cost  3  time  4  inc 1                                              │
+│ [ 6] w  cost 10  time  4  inc 3                                              │
+│ [ 7] J  cost 10  time  3  inc 2                                              │
+│ [ 8] q  cost 10  time  5  inc 3                                              │
+│ [ 9] U  cost  1  time  5  inc 1                                              │
+│ [10] S  cost  7  time  6  inc 3                                              │
+│ [11] O  cost  5  time  3  inc 1                                              │
+│ [12] A  cost  0  time  3  inc 1                                              │
+│ [13] X  cost  1  time  4  inc 1                                              │
+│ [14] o  cost  6  time  5  inc 2                                              │
+│ [15] x  cost  5  time  4  inc 2                                              │
+│ [16] 4  cost  3  time  3  inc 1                                              │
+│ [17] 1  cost  7  time  2  inc 2                                              │
+│ [18] T  cost  5  time  5  inc 2                                              │
 ├───────────────────────────────────────┬──────────────────────────────────────┤
-│ P1  btn   6  inc  0  pos  5  fr 78    │ P2  btn   7  inc  0  pos  6  fr 78   │
+│ P1  btn   5  inc  0  pos  4  fr 77    │ P2  btn   6  inc  2  pos  9  fr 77   │
 ├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
 │ P1 quilt  │ P2 quilt  │ Event log                                            │
-│ ????????? │ ????????? │ > P1 bought [v]                                      │
+│ ????????? │ ????????? │ > P1 bought [t]                                      │
 │ ????????? │ ????????? │ > P2 advanced                                        │
 │ ????????? │ ????????? │ > P1 advanced                                        │
-│ ????????? │ ????????? │ > P2 bought [3]                                      │
+│ ????????? │ ????????? │ > P2 bought [L]                                      │
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │
 │ ????????? │ ????????? │                                                      │

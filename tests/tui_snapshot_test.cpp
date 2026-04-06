@@ -32,6 +32,7 @@
 #include "tui/history.hpp"
 #include "simplified_game_state.hpp"
 #include "game_setups.hpp"
+#include "generated/game_setups.hpp"
 #include "generated/patches.hpp"
 #include "move_application.hpp"
 #include "move_generation.hpp"
@@ -40,9 +41,11 @@
 
 namespace fs = std::filesystem;
 using patchwork::SimplifiedGameState;
+using patchwork::GameSetup;
 using patchwork::BuyPatch;
 using patchwork::Advance;
-using patchwork::make_setup;
+using patchwork::kGameSetups;
+using patchwork::kNumGameSetups;
 using patchwork::kPatches;
 using patchwork::random_move;
 using patchwork::apply_move;
@@ -204,7 +207,7 @@ TEST_CASE("Snapshot: 80-col narrow layout", "[tui_snapshot]") {
     LogState log;
     NdjsonState ndjson;
     setup_scene(state, log, ndjson);
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
 
     std::string actual = render_frame_to_string(state, setup, log, ndjson,
                                                 make_cfg(80));
@@ -216,7 +219,7 @@ TEST_CASE("Snapshot: 120-col narrow layout (wider log pane)", "[tui_snapshot]") 
     LogState log;
     NdjsonState ndjson;
     setup_scene(state, log, ndjson);
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
 
     std::string actual = render_frame_to_string(state, setup, log, ndjson,
                                                 make_cfg(120));
@@ -228,7 +231,7 @@ TEST_CASE("Snapshot: 160-col wide layout (two-column)", "[tui_snapshot]") {
     LogState log;
     NdjsonState ndjson;
     setup_scene(state, log, ndjson);
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
 
     std::string actual = render_frame_to_string(state, setup, log, ndjson,
                                                 make_cfg(160));
@@ -243,7 +246,7 @@ TEST_CASE("Snapshot: 80-col with ANSI color codes", "[tui_snapshot]") {
     append_ndjson(ndjson,
         R"({"event":"move","ply":2,"player":1,"move_type":"advance",)"
         R"("position":5,"buttons":5})");
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
 
     std::string actual = render_frame_to_string(state, setup, log, ndjson,
                                                 make_cfg(80, /*color=*/true));
@@ -257,7 +260,7 @@ TEST_CASE("Snapshot: 80-col, 40-row taller terminal with 12 log entries",
     NdjsonState ndjson{};
     ndjson.height = 5;
 
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
     auto cfg   = make_cfg_h(80, 40);
 
     // 12 log entries with single-char patch names to verify visual alignment.
@@ -284,7 +287,7 @@ TEST_CASE("Snapshot: 80-col, 40-row taller terminal with 12 log entries",
 
 TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
           "[tui_snapshot]") {
-    auto setup = make_setup(0);
+    auto setup = GameSetup(kGameSetups[0]);
     SimplifiedGameState state{};
     RngState agent_rng(42);  // random-agent RNG; separate from the game state
     LogState log{};
