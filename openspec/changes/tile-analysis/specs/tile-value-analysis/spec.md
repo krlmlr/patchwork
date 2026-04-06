@@ -19,34 +19,38 @@ The analysis script SHALL read `data/patches.yaml` and compute the following sha
 - **WHEN** shape features are extracted for any patch
 - **THEN** `perimeter` is a positive integer equal to the count of edges of occupied cells that border an empty or out-of-bounds cell
 
-### Requirement: Gain-per-time model is computed for every patch
-The analysis script SHALL compute, for each patch, a base gain-per-time metric defined as `income / time`. Patches with `time == 0` SHALL be excluded from this metric (no such patches exist in the current catalog, but the script SHALL handle this gracefully).
+### Requirement: Patch gain model is computed for every patch
+The analysis script SHALL compute patch gain for each patch using the definition from the glossary. **Placement gain** = 2 × cells − button cost. **Projected income at position 0** = button income × reachable_payouts(0) = button income × 9 (all nine payout spaces are reachable at the start). **Patch gain at position 0** = placement gain + projected income at position 0. **Patch gain per time cost** = patch gain / time cost. Patches with `time == 0` SHALL be excluded from the per-time-cost metric (no such patches exist in the current catalog, but the script SHALL handle this gracefully).
 
-#### Scenario: Gain-per-time computed for all income-earning patches
+#### Scenario: Placement gain is correct
+- **WHEN** placement gain is computed for any patch
+- **THEN** it equals 2 × cells − button cost (may be negative for expensive patches with few cells)
+
+#### Scenario: Patch gain at position 0 is correct
+- **WHEN** patch gain is computed for any patch at time-track position 0
+- **THEN** it equals placement gain + button income × 9
+
+#### Scenario: Patch gain per time cost computed for all patches
 - **WHEN** the analysis script is executed
-- **THEN** every patch with `income > 0` has a computed `gain_per_time` value equal to `income / time`
+- **THEN** every patch with `time > 0` has a computed `gain_per_time` value equal to its patch gain at position 0 divided by its time cost
 
-#### Scenario: Zero-income patches have gain-per-time of zero
-- **WHEN** the analysis script is executed
-- **THEN** every patch with `income == 0` has `gain_per_time` equal to 0
+### Requirement: Time-position-dependent patch gain is computed for every patch and position
+The analysis script SHALL compute `patch_gain(patch, pos)` for each patch and each time-track position `pos` in 0–53. `patch_gain(patch, pos)` = placement gain + button income × reachable_payouts(pos), where `reachable_payouts(pos)` counts how many of the nine payout spaces (time positions 5, 11, 17, 23, 29, 35, 41, 47, 53) are strictly greater than `pos`. A normalised value `gain_per_time(patch, pos)` = `patch_gain(patch, pos) / time cost` SHALL also be computed.
 
-### Requirement: Time-position-dependent value is computed for every patch and position
-The analysis script SHALL compute `total_gain(patch, pos)` for each patch and each time-track position `pos` in 0–53. `total_gain` is defined as `income * reachable_income_phases(pos)`, where `reachable_income_phases(pos)` counts how many of the five button-income thresholds (time positions 9, 18, 27, 36, 45) are strictly greater than `pos`. A normalised value `value_per_time(patch, pos) = total_gain(patch, pos) / time` SHALL also be computed.
+#### Scenario: Reachable payouts decrease monotonically
+- **WHEN** `reachable_payouts(pos)` is evaluated for pos = 0, 5, 11, 17, 23, 29, 35, 41, 47, 53
+- **THEN** the values are 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 respectively
 
-#### Scenario: Reachable income phases decrease monotonically
-- **WHEN** `reachable_income_phases(pos)` is evaluated for pos = 0, 9, 18, 27, 36, 45, 53
-- **THEN** the values are 5, 4, 3, 2, 1, 0, 0 respectively
+#### Scenario: Projected income is zero at or after last payout space
+- **WHEN** `patch_gain` is computed for any patch with `button income > 0` at `pos >= 53`
+- **THEN** projected income equals 0 and `patch_gain` equals placement gain
 
-#### Scenario: Total gain is zero at or after last income threshold
-- **WHEN** `total_gain` is computed for any patch with `income > 0` at `pos >= 45`
-- **THEN** `total_gain` equals 0
-
-#### Scenario: Value curve is non-increasing over time positions
-- **WHEN** `value_per_time(patch, pos)` is evaluated for any patch over all positions 0–53
+#### Scenario: Patch gain curve is non-increasing over time positions
+- **WHEN** `patch_gain(patch, pos)` is evaluated for any patch over all positions 0–53
 - **THEN** the sequence is non-increasing (each value is less than or equal to the previous)
 
 ### Requirement: Summary table is produced and committed
-The analysis script SHALL write a summary table to `analysis/output/tile_summary.csv` containing, for each patch: `id`, `name`, `buttons`, `time`, `income`, `cells`, `bbox_rows`, `bbox_cols`, `density`, `perimeter`, `gain_per_time`, and `total_gain_at_pos0` (total gain when starting from position 0).
+The analysis script SHALL write a summary table to `analysis/output/tile_summary.csv` containing, for each patch: `id`, `name`, `button_cost`, `time_cost`, `button_income`, `cells`, `placement_gain`, `bbox_rows`, `bbox_cols`, `density`, `perimeter`, `gain_per_time` (patch gain at position 0 / time cost), and `patch_gain_at_pos0`.
 
 #### Scenario: Summary CSV is produced
 - **WHEN** the analysis script is executed
@@ -54,17 +58,17 @@ The analysis script SHALL write a summary table to `analysis/output/tile_summary
 
 #### Scenario: Summary CSV values are consistent with source data
 - **WHEN** any row of `tile_summary.csv` is read
-- **THEN** the `buttons`, `time`, and `income` values match the corresponding entry in `data/patches.yaml`
+- **THEN** the `button_cost`, `time_cost`, and `button_income` values match the `buttons`, `time`, and `income` fields of the corresponding entry in `data/patches.yaml`
 
 ### Requirement: Plots are produced and committed
 The analysis script SHALL produce and save the following plots to `analysis/output/`:
-- `gain_per_time.png`: bar chart of `gain_per_time` for all 33 patches, sorted descending
-- `value_curves.png`: line plot of `value_per_time(patch, pos)` over time-track positions 0–53, with one line per patch that has `income > 0`
+- `gain_per_time.png`: bar chart of `gain_per_time` (patch gain at pos 0 / time cost) for all 33 patches, sorted descending
+- `gain_curves.png`: line plot of `patch_gain(patch, pos)` over time-track positions 0–53, with one line per patch that has `button income > 0`
 - `shape_density.png`: scatter plot of `density` vs. `cells`, with points labelled by patch `name`
 
 #### Scenario: All three plots are produced
 - **WHEN** the analysis script is executed
-- **THEN** files `gain_per_time.png`, `value_curves.png`, and `shape_density.png` exist under `analysis/output/`
+- **THEN** files `gain_per_time.png`, `gain_curves.png`, and `shape_density.png` exist under `analysis/output/`
 
 #### Scenario: Plots are non-empty images
 - **WHEN** any of the three plot files is opened

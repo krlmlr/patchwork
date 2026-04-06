@@ -1,20 +1,20 @@
 ## Why
 
-The patch catalog is the foundation of every game decision, but no quantitative analysis of tile value exists yet. Before building heuristic or search agents, we need data-driven models of gain-per-time and shape efficiency to inform their design.
+The patch catalog is the foundation of every game decision, but no quantitative analysis of patch value exists yet. Before building heuristic or search agents, we need data-driven models of patch gain per time cost and shape efficiency to inform their design.
 
 ## What Changes
 
 - New R analysis scripts that read `data/patches.yaml` and compute value metrics for each of the 33 patches
-- Shape feature extraction (cell count, circumference/perimeter, area-to-perimeter ratio, bounding-box density)
-- Gain-per-time model: income divided by time cost, with variants that account for early-game vs. late-game time-track position
-- Summary plots and tables (tile rankings, metric distributions, value curves over time)
+- Shape feature extraction (cell count, perimeter, area-to-perimeter ratio, bounding-box density)
+- Patch gain model: placement gain (2 × cells covered − button cost) plus projected income (button income × remaining payouts), normalised by time cost, with variants across time-track positions
+- Summary plots and tables (patch rankings, metric distributions, gain curves over time-track positions)
 - All analysis outputs committed as static artifacts for reference during agent development
 
 ## Capabilities
 
 ### New Capabilities
 
-- `tile-value-analysis`: R-based analysis of patch gain-per-time, shape features, and time-position-dependent value curves, producing committed plots and tables
+- `tile-value-analysis`: R-based analysis of patch gain per time cost, shape features, and time-position-dependent patch gain curves, producing committed plots and tables
 
 ### Modified Capabilities
 
