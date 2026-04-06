@@ -17,8 +17,6 @@ apt-get install -y --no-install-recommends \
     clang-format \
     r-base \
     r-cran-yaml \
-    nodejs \
-    npm
 
 # ---------------------------------------------------------------------------
 # R package manager: pak (from Posit Package Manager binary repo)
