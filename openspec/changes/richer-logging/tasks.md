@@ -1,7 +1,7 @@
 ## 1. Update Logger API
 
-- [ ] 1.1 Add `const GameSetup&` parameter to `log_game_start` in `game_logger.hpp` and `game_logger.cpp`
-- [ ] 1.2 Add `const GameSetup&` parameter to `log_move` in `game_logger.hpp` and `game_logger.cpp`
+- [ ] 1.1 Add `const GameSetup&` parameter to `log_game_start` in `cpp/game_logger.hpp` and `cpp/game_logger.cpp`
+- [ ] 1.2 Add `const GameSetup&` parameter to `log_move` in `cpp/game_logger.hpp` and `cpp/game_logger.cpp`
 
 ## 2. Implement game_start Enhancements
 
@@ -19,8 +19,9 @@
 
 ## 5. Update Call Sites
 
-- [ ] 5.1 Update `play_driver.cpp`: pass `setup` to `log_game_start`
-- [ ] 5.2 Update `play_driver.cpp`: pass `setup` to `log_move`
+- [ ] 5.1 Update `cpp/play_driver.cpp`: pass `setup` to `log_game_start`
+- [ ] 5.2 Update `cpp/play_driver.cpp`: pass `setup` to `log_move`
+- [ ] 5.3 Update `cpp/tui/tui_main.cpp`: pass setup to `log_game_start` and both `log_move` call sites
 
 ## 6. Update Tests
 

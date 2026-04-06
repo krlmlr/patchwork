@@ -14,7 +14,7 @@ The `patchwork` engine records every game as a sequence of NDJSON lines written 
 - Emit the full initial patch circle (33-char patch-name string) in `game_start`
 - Emit post-move per-player summary (`income`, `free_spaces`, `board_value`) and current patch circle snapshot in every `move` event
 - Emit final per-player `income` and `free_spaces` in `game_end`
-- Update all call sites (`play_driver.cpp`) to supply the new parameters
+- Update all call sites (`play_driver.cpp` and `tui/tui_main.cpp`) to supply the new parameters
 - Update existing Catch2 tests that assert NDJSON output
 
 **Non-Goals:**
@@ -32,7 +32,7 @@ The `patchwork` engine records every game as a sequence of NDJSON lines written 
 - Pre-compute a circle string and pass `std::string_view`: avoids the `GameSetup` header dependency in `game_logger.hpp` but forces callers to build the string themselves; adds ceremony without benefit.
 - Cache the circle string in a logging context object: premature abstraction for a single-game-per-process driver.
 
-**Decision:** Pass `const GameSetup&` directly. It's the simplest, zero-overhead option and the dependency is already present transitively in `play_driver.cpp`.
+**Decision:** Pass `const GameSetup&` directly. It's the simplest, zero-overhead option and the dependency is already present transitively in `play_driver.cpp` and `tui/tui_main.cpp`.
 
 ### Represent patch circle as a 33-char patch-name string in JSON
 

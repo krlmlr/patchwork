@@ -12,17 +12,16 @@ The current NDJSON game logs omit important context needed for R analysis: the i
 
 ### New Capabilities
 
-- `game-start-logging`: Extended `game_start` NDJSON event that includes the full initial patch circle (33-char patch-name string derived from `GameSetup`)
-- `move-logging`: Extended `move` NDJSON event that includes post-move per-player summary (income, free_spaces, board_value) and the current patch circle state (available patches in circle order using `SimplifiedGameState::patch_available` and the `GameSetup` circle)
-- `game-end-logging`: Extended `game_end` NDJSON event that includes final per-player `income` and `free_spaces`
+_(none)_
 
 ### Modified Capabilities
 
-_(none — no existing spec-level requirements are changing; this is additive)_
+- `game-logger`: All three NDJSON events gain richer fields — `game_start` adds the initial patch circle string; `move` adds `income`, `free_spaces`, `board_value`, and a circle snapshot; `game_end` adds per-player `income` and `free_spaces`
 
 ## Impact
 
-- `src/game_logger.hpp` / `src/game_logger.cpp`: All three logging functions gain new parameters or fields; `log_game_start` and `log_move` need access to the `GameSetup` to render circle strings
-- `src/play_driver.cpp`: Call sites updated to pass `GameSetup` through to logging functions
+- `cpp/game_logger.hpp` / `cpp/game_logger.cpp`: All three logging functions gain new parameters or fields; `log_game_start` and `log_move` need access to the `GameSetup` to render circle strings
+- `cpp/play_driver.cpp`: Call sites updated to pass `GameSetup` through to logging functions
+- `cpp/tui/tui_main.cpp`: Call sites updated to pass `GameSetup` through to logging functions
 - Existing log format changes are additive (new fields only) — no fields are removed or renamed
 - Tests in `tests/` that assert NDJSON output strings will need updating to match new fields
