@@ -31,6 +31,8 @@
 - [ ] 5.3 Create `shape_density.png`: scatter plot of `density` vs. `cells` with patch `name` labels, saved to `analysis/output/`
 - [ ] 5.4 Confirm all three PNG files are non-empty (file size > 0)
 
+## 6. Script Consolidation
+
 - [ ] 6.1 Consolidate all steps into `analysis/tile_analysis.R` with a comment block at the top listing required packages (`yaml`, `ggplot2`, `dplyr`) and a brief description
 - [ ] 6.2 Ensure the script is idempotent: run it twice and confirm output files are identical
 - [ ] 6.3 Commit `analysis/tile_analysis.R`, `analysis/output/tile_summary.csv`, and the three PNG plots
