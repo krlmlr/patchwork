@@ -1,3 +1,10 @@
+# game-setup Specification
+
+## Purpose
+Defines the `GameSetup` type that encodes the initial circular arrangement of all 33 patches at the start of a game.
+
+## Requirements
+
 ### Requirement: GameSetup encodes the initial patch circle arrangement
 
 `GameSetup` SHALL hold the initial circular arrangement of all 33 patches as a `std::array<uint8_t, 33>` of integer patch IDs (0–32). The constructor SHALL accept a 33-character `std::string_view` of single-char patch names and convert each character to its integer ID by looking up the patch catalog.

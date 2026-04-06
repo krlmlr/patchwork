@@ -1,3 +1,10 @@
+# tui-input Specification
+
+## Purpose
+Defines the TUI input module that reads single-keypress commands and maps them to typed `Command` variants without requiring Enter.
+
+## Requirements
+
 ### Requirement: Input loop reads single keypress commands
 
 The input module SHALL provide a blocking `read_command` function that returns a typed `Command` variant without requiring the user to press Enter. Valid commands are: `BuyPatch{int index}` (**keys `1`, `2`, `3` map to `BuyPatch{0}`, `BuyPatch{1}`, `BuyPatch{2}` respectively** — 1-indexed keys for the first three buyable patches), `Advance` (keys `a` or Space), `Undo` (keys `z` or `u`), `Redo` (keys `Z` or `r`), `ScrollLogLeft` (key `<`), `ScrollLogRight` (key `>`), `ToggleLogWrap` (key `w`), `NdjsonToggleMinimize` (key `m`), `NdjsonMaximize` (key `f`), `NdjsonSemiMaximize` (key `h`), `NdjsonDecrLines` (key `,`), `NdjsonIncrLines` (key `.`), and `Quit` (key `q` or `Q`). Any other key SHALL be silently ignored and `read_command` SHALL continue waiting.

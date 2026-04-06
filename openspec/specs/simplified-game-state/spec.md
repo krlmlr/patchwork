@@ -1,3 +1,10 @@
+# simplified-game-state Specification
+
+## Purpose
+Defines the `SimplifiedGameState` type that extends the core game state with active player tracking via a `next_player` bit.
+
+## Requirements
+
 ### Requirement: SimplifiedGameState tracks which player acts next
 
 `SimplifiedGameState` SHALL store a 1-bit `next_player` field (0 or 1) in the existing shared `uint64_t` word (bit 41, currently unused). It SHALL default to 0 (player 0 goes first). `active_player()` SHALL return this field. `apply_move` SHALL update it: if the moved player's new position strictly exceeds the opponent's position, the opponent becomes `next_player`; otherwise the moved player remains `next_player`.

@@ -1,3 +1,10 @@
+# patch-catalog Specification
+
+## Purpose
+Defines the YAML patch catalog as the single source of truth for all Patchwork patch data, and how it is consumed by the C++ engine via code generation.
+
+## Requirements
+
 ### Requirement: YAML catalog is single source of truth
 The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. No patch data SHALL be hardcoded anywhere in the C++ source directly.
 
