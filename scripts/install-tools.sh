@@ -14,9 +14,13 @@ apt-get install -y --no-install-recommends \
     git \
     ca-certificates \
     catch2 \
-    clang-format \
-    r-base \
-    r-cran-yaml \
+    clang-format
+
+# ---------------------------------------------------------------------------
+# R
+# ---------------------------------------------------------------------------
+curl -Ls https://github.com/r-lib/rig/releases/download/latest/rig-linux-$(arch)-latest.tar.gz | tar xz -C /usr/local
+rig add release
 
 # ---------------------------------------------------------------------------
 # R package manager: pak (from Posit Package Manager binary repo)
@@ -24,7 +28,7 @@ apt-get install -y --no-install-recommends \
 
 # https://github.com/r-lib/pak/issues/826
 echo 'options(repos = "https://p3m.dev/cran/__linux__/noble/latest", HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))' | sudo tee -a /etc/R/Rprofile.site
-Rscript -e 'install.packages("pak"); library(pak); pak::ppm_has_binaries()'
+Rscript -e 'library(pak); pak::ppm_has_binaries()'
 
 # ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
