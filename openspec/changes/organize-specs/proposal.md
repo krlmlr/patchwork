@@ -10,7 +10,7 @@ The `openspec/specs/` directory has grown organically across multiple changes an
   - States clear, unambiguous decision rules for assigning a new spec to exactly one domain
   - Lists all in-progress specs (simplified-rules) and their domains
   - Documents the kebab-case naming convention for spec folder names
-- No existing spec files are moved or renamed (the openspec tooling relies on stable flat paths).
+- No existing spec files are moved or renamed. The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) defines specs at one level deep (`openspec/specs/<name>/spec.md`); the current structure already matches this pattern. A two-level domain/spec nesting is not supported by the tooling.
 
 ## Capabilities
 

@@ -18,7 +18,7 @@ The fix is a `README.md` in `openspec/specs/` that acts as the authoritative cat
 - Document the kebab-case naming convention.
 
 **Non-Goals:**
-- Moving or renaming existing spec folders. The `openspec archive` command writes new specs to `openspec/specs/<name>/spec.md` (flat). Delta specs in active changes reference canonical spec names via that flat path. Reorganising the filesystem would break `openspec list --specs`, `openspec archive`, and any delta spec that targets an existing canonical spec (e.g. `simplified-game-state` in `simplified-rules`). The README provides logical grouping without touching file paths.
+- Moving spec folders into domain subdirectories (e.g. `openspec/specs/game-core/game-state/`). The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) shows specs at exactly one level deep under `openspec/specs/` — `auth/spec.md`, `payments/spec.md`, etc. The patchwork specs already follow this documented pattern. Furthermore, the `openspec archive` command's `findSpecUpdates` function uses a non-recursive `readdir` to map `changes/<change>/specs/<name>/spec.md` directly to `openspec/specs/<name>/spec.md`; a two-level structure would break this mapping and any active delta spec (e.g. `simplified-game-state` in `simplified-rules`). Domain organisation is therefore expressed through the README catalog, not the filesystem.
 - Automating spec discovery or generating the index programmatically.
 - Enforcing conventions via tooling (convention-by-documentation is sufficient at this scale).
 
