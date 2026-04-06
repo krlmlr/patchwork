@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: Game-start event is logged when a game begins
 
 The logger SHALL write a JSON object line (NDJSON) of type `"game_start"` immediately before the first move is applied. The event SHALL include: `event` (`"game_start"`), `seed` (integer), `setup_id` (integer or string), and initial state summary (both players' starting buttons, income, and free_spaces).

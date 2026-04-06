@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: Play driver runs a complete game between two random agents and writes a log
 
 The play driver executable SHALL accept `--seed <n>` and `--setup <id>` command-line arguments, run a full game between two random agents on the given setup starting with the given seed, and write the NDJSON game log to stdout. An optional `--output <file>` argument SHALL redirect the log to a file instead.

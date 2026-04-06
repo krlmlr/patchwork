@@ -1,5 +1,3 @@
-## ADDED Requirements
-
 ### Requirement: BuyPatch move updates buyer's state correctly
 
 `apply_move(state, BuyPatch{i})` SHALL return a state where the active player's buttons are reduced by the patch's button cost, position is advanced by the patch's time cost, income is increased by the patch's income value, and free_spaces is decreased by the patch's num_cells. The patch SHALL be marked unavailable in the shared state and the circle marker SHALL be updated to the position just after the purchased patch.
