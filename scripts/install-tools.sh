@@ -23,12 +23,6 @@ curl -Ls https://github.com/r-lib/rig/releases/download/latest/rig-linux-$(arch)
 rig add release
 
 # ---------------------------------------------------------------------------
-# R package manager: pak (from Posit Package Manager binary repo)
-# ---------------------------------------------------------------------------
-
-Rscript -e 'library(pak); pak::ppm_has_binaries()'
-
-# ---------------------------------------------------------------------------
 # Python-based build tools (pipx gives latest Meson/Ninja in isolated envs)
 # ---------------------------------------------------------------------------
 apt-get install -y --no-install-recommends pipx
