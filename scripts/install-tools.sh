@@ -21,7 +21,9 @@ apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 # R package manager: pak (from Posit Package Manager binary repo)
 # ---------------------------------------------------------------------------
-echo 'options(repos = c(CRAN = sprintf("https://p3m.dev/cran/latest/bin/linux/noble-%s/%s", R.version["arch"], substr(getRversion(), 1, 3))))' | sudo tee -a /etc/R/Rprofile.site
+
+# https://github.com/r-lib/pak/issues/826
+echo 'options(repos = "https://p3m.dev/cran/__linux__/noble/latest", HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)))' | sudo tee -a /etc/R/Rprofile.site
 Rscript -e 'install.packages("pak"); library(pak); pak::ppm_has_binaries()'
 
 # ---------------------------------------------------------------------------
