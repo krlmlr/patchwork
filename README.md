@@ -35,13 +35,15 @@ sudo bash scripts/install-tools.sh
 
 | Path | Purpose |
 |------|---------|
-| `src/` | C++ source and header files |
+| `cpp/` | C++ source and header files |
 | `tests/` | Catch2 unit tests |
 | `data/` | Patch data in YAML format |
-| `codegen/` | R script that generates `src/generated/patches.hpp` |
+| `codegen/` | R script that generates `cpp/generated/patches.hpp` |
 | `scripts/` | Helper scripts (tool installer, etc.) |
 | `.devcontainer/` | Devcontainer configuration for Codespaces / Copilot |
 | `.github/workflows/` | GitHub Actions CI and Copilot agent setup |
+| `docs/` | Project documentation |
+| `docs/glossary.md` | Game and engine terminology glossary |
 | `openspec/` | OpenSpec change artifacts (proposals, designs, tasks) |
 | `openspec/roadmap.md` | Human-maintained project roadmap (read by AI for context) |
 
@@ -67,6 +69,9 @@ structured change management. Change proposals, designs, and task lists live
 under `openspec/changes/`. The project roadmap lives at `openspec/roadmap.md`
 and is human-maintained — AI reads it automatically to align proposals and
 designs with current priorities. To interact with changes:
+
+See [docs/glossary.md](docs/glossary.md) for definitions of all game and
+engine terms used throughout the codebase, specs, and agent prompts.
 
 ```sh
 openspec status          # list all changes and their progress
