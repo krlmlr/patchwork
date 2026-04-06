@@ -1,6 +1,6 @@
 ## Context
 
-The patch catalog (`data/patches.yaml`) contains 33 patches, each with `buttons` (button cost), `time` (time cost), `income` (button income per payout), and `shape` (ASCII art). The `codegen/` directory holds existing R scripts that generate C++ headers from this data.
+The patch catalog (`data/patches.yaml`) contains 33 patches, each with `buttons` (button cost), `time` (time cost), `income` (button income per payout), and `shape` (ASCII art). The project's R package (`R/`) holds shared utilities — including `parse_cells()`, `count_x()`, and shape-manipulation functions — loaded via `pkgload::load_all()`. The `codegen/` scripts are thin wrappers that call those utilities to generate `cpp/generated/patches.hpp`.
 
 No quantitative analysis of patch value currently exists. The upcoming Heuristic & Search Agents and Reinforcement Learning phases will need value estimates to build evaluation functions. This change produces those estimates as committed R scripts and static artifacts.
 
@@ -22,7 +22,7 @@ No quantitative analysis of patch value currently exists. The upcoming Heuristic
 
 ### Analysis scripts location: `analysis/` over `codegen/`
 
-`codegen/` is reserved for scripts that produce committed C++ headers. Analysis scripts produce plots and tables, not source code. A separate `analysis/` directory makes the distinction clear and avoids cluttering the codegen pipeline.
+`codegen/` is reserved for scripts that produce committed C++ headers (currently thin wrappers over `R/` utilities). Analysis scripts produce plots and tables, not source code. A separate `analysis/` directory makes the distinction clear and avoids cluttering the codegen pipeline. Analysis scripts call `pkgload::load_all()` at startup to access the project R package utilities in `R/` (including `parse_cells()` and `count_x()`), so shape parsing does not need to be reimplemented.
 
 *Alternative considered:* Putting scripts in `codegen/` alongside existing R scripts. Rejected because it blurs the codegen/analysis boundary.
 
@@ -51,5 +51,5 @@ Perimeter of the occupied region (number of exposed edges of occupied cells) cap
 ## Risks / Trade-offs
 
 - [Risk] Output files become stale if `patches.yaml` is edited → Mitigation: README note that analysis must be re-run after catalog changes; script is idempotent.
-- [Risk] R environment differences produce non-reproducible outputs → Mitigation: Pin R package versions in a `renv.lock` if the project adopts renv; for now, document required packages (yaml, ggplot2, dplyr, knitr/kableExtra or gt).
+- [Risk] R environment differences produce non-reproducible outputs → Mitigation: The project `DESCRIPTION` already declares `yaml` as a dependency; `ggplot2` and `dplyr` must be installed separately. Document this in `analysis/README.md`.
 - [Trade-off] Static gain model ignores opponent state and placement context → Acceptable at this phase; refinement belongs in the Heuristic Agents phase once game logs are available.

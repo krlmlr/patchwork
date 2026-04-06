@@ -22,8 +22,7 @@ The patch catalog is the foundation of every game decision, but no quantitative 
 
 ## Impact
 
-- New R scripts under `analysis/` (or `codegen/` if collocated with existing R work)
-- New output artifacts (plots as PNG/PDF, summary tables as CSV or markdown) committed to the repository
-- No C++ code changes
-- No changes to `data/patches.yaml` or generated headers
+- New R scripts under `analysis/`; scripts reuse shape utilities from the project R package (`R/patches.R`) via `pkgload::load_all()`
+- New output artifacts (plots as PNG, summary table as CSV) committed to `analysis/output/`
+- No C++ changes; no changes to `data/patches.yaml` or `cpp/generated/` headers
 - Directly informs the design of the upcoming Heuristic & Search Agents phase

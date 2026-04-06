@@ -6,10 +6,10 @@
 
 ## 2. Shape Feature Extraction
 
-- [ ] 2.1 Write R function `parse_shape(shape_str)` that converts an ASCII-art shape string into a matrix of occupied cell coordinates `(row, col)`
-- [ ] 2.2 Write R function `shape_features(cells_df)` that computes `bbox_rows`, `bbox_cols`, `bbox_area`, `density`, and `perimeter` from a cell-coordinate data frame
+- [ ] 2.1 Call `pkgload::load_all()` to load the project R package; use the existing `parse_cells()` function from `R/patches.R` to convert ASCII-art shape strings to cell-coordinate matrices
+- [ ] 2.2 Write R function `shape_features(cells_mat)` that computes `bbox_rows`, `bbox_cols`, `bbox_area`, `density`, and `perimeter` from the cell-coordinate matrix returned by `parse_cells()`
 - [ ] 2.3 Verify `perimeter` calculation: for a 2-cell horizontal patch (`XX`), expected perimeter is 6
-- [ ] 2.4 Load `data/patches.yaml` and apply shape extraction to all 33 patches; confirm `cells` column matches `X` count for every entry
+- [ ] 2.4 Load `data/patches.yaml` and apply shape extraction to all 33 patches; confirm `cells` column matches `count_x()` result for every entry
 
 ## 3. Patch Gain Models
 
@@ -33,7 +33,7 @@
 
 ## 6. Script Consolidation
 
-- [ ] 6.1 Consolidate all steps into `analysis/tile_analysis.R` with a comment block at the top listing required packages (`yaml`, `ggplot2`, `dplyr`) and a brief description
+- [ ] 6.1 Consolidate all steps into `analysis/tile_analysis.R`; start with `pkgload::load_all()` and add a comment block listing packages beyond `DESCRIPTION` (`ggplot2`, `dplyr`)
 - [ ] 6.2 Ensure the script is idempotent: run it twice and confirm output files are identical
 - [ ] 6.3 Commit `analysis/tile_analysis.R`, `analysis/output/tile_summary.csv`, and the three PNG plots
 

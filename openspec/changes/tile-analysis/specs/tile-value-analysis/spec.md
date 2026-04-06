@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Shape features are extracted for every patch
-The analysis script SHALL read `data/patches.yaml` and compute the following shape features for each of the 33 patches: cell count (number of `X` cells), bounding-box rows, bounding-box columns, bounding-box area (rows × columns), density (cell count / bounding-box area), and perimeter (number of exposed cell edges — edges adjacent to `.` cells or outside the bounding box).
+The analysis script SHALL call `pkgload::load_all()` at startup to load the project R package utilities, then read `data/patches.yaml` and compute the following shape features for each of the 33 patches: cell count (number of `X` cells), bounding-box rows, bounding-box columns, bounding-box area (rows × columns), density (cell count / bounding-box area), and perimeter (number of exposed cell edges — edges adjacent to `.` cells or outside the bounding box). The script SHALL reuse `parse_cells()` and `count_x()` from `R/patches.R` rather than reimplementing them.
 
 #### Scenario: Shape features computed for all patches
 - **WHEN** the analysis script is executed
@@ -75,12 +75,12 @@ The analysis script SHALL produce and save the following plots to `analysis/outp
 - **THEN** it contains a visible chart (file size > 0 bytes)
 
 ### Requirement: Analysis script is reproducible
-The analysis script at `analysis/tile_analysis.R` SHALL be idempotent: running it multiple times on an unchanged `data/patches.yaml` SHALL produce identical output files. The script SHALL document its R package dependencies in a comment block at the top.
+The analysis script at `analysis/tile_analysis.R` SHALL be idempotent: running it multiple times on an unchanged `data/patches.yaml` SHALL produce identical output files. The script SHALL start with `pkgload::load_all()` to load project utilities and SHALL document any additional R package dependencies (beyond those declared in `DESCRIPTION`) in a comment block at the top.
 
 #### Scenario: Re-running produces identical outputs
 - **WHEN** `analysis/tile_analysis.R` is executed twice in succession without modifying `data/patches.yaml`
 - **THEN** the output CSV and PNG files are byte-for-byte identical between runs (or functionally equivalent for PNG, ignoring metadata timestamps)
 
-#### Scenario: Required packages are documented
+#### Scenario: Additional required packages are documented
 - **WHEN** the top of `analysis/tile_analysis.R` is read
-- **THEN** a comment block lists all required R packages (at minimum: `yaml`, `ggplot2`, `dplyr`)
+- **THEN** a comment block lists any R packages required beyond those in `DESCRIPTION` (at minimum: `ggplot2`, `dplyr`)
