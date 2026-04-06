@@ -1,8 +1,6 @@
-## ADDED Requirements
-
 ### Requirement: Game state is rendered as a responsive box-framed ASCII layout
 
-The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. **Every row in the rendered frame SHALL have the same visual display width equal to the terminal column count `W`; the right border character (or corner) SHALL appear at exactly the same horizontal position on every row.** The frame SHALL contain six sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side with the event log to the right, (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported.
+The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. **Every row in the rendered frame SHALL have the same visual display width equal to the terminal column count `W`; the right border character (or corner) SHALL appear at exactly the same horizontal position on every row.** The frame SHALL contain five sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side with the event log to the right, (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported.
 
 #### Scenario: All frame rows have the same visual width
 
@@ -13,16 +11,6 @@ The TUI SHALL render the full game state into a box-drawn frame on each display 
 
 - **WHEN** `render_frame` is called with a `GameState` where player 0 has 14 buttons / 3 income / 74 free spaces and player 1 has 11 buttons / 2 income / 81 free spaces
 - **THEN** the output contains the strings `"14"`, `"3"`, `"74"` for player 0 and `"11"`, `"2"`, `"81"` for player 1
-
-#### Scenario: Frame renders time-track positions
-
-- **WHEN** `render_frame` is called with a `GameState` where player 0 is at time position 12 and player 1 is at position 20
-- **THEN** the output contains markers for both positions on the time-track line, with the P1 marker appearing before the P2 marker
-
-#### Scenario: Time-track bar scales with terminal width
-
-- **WHEN** `render_frame` is called on an 80-column terminal and again on a 120-column terminal
-- **THEN** the time-track bar is wider on the 120-column terminal and both bars correctly place `P1` and `P2` markers at proportional positions
 
 ### Requirement: Full patch circle is displayed as a character sequence
 
@@ -45,7 +33,7 @@ The display SHALL always show the complete 33-character patch sequence on a sing
 
 ### Requirement: Patch circle shows adaptive detail lines
 
-The display SHALL render at least 3 detail lines below the circle marker, one per buyable patch, showing: circle index, patch name, cost, time cost, and income. **Detail lines SHALL use a fixed-width index format `[%2d]` (right-aligned within square brackets, minimum 2 digits) so that all entries are visually aligned regardless of the sequential index value.** When the terminal is wider than 80 columns the number of additional detail lines SHALL increase adaptively (approximately one extra line per 10 extra columns). If fewer than 3 patches remain buyable, only the available patches are listed.
+The display SHALL render at least 3 detail lines below the circle marker, one per buyable patch, showing: circle index, patch name, cost, time cost, and income. **Detail lines SHALL use a fixed-width index format `[%2d]` (right-aligned within square brackets, minimum 2 digits) so that all entries are visually aligned regardless of the sequential index value.** If fewer than 3 patches remain buyable, only the available patches are listed.
 
 **Event-log entries SHALL be visually aligned**: the patch name in `"Pn bought [c]"` entries is always a single character `c`, ensuring consistent column width across all log entries regardless of the number of moves played.
 
@@ -61,7 +49,7 @@ The display SHALL render at least 3 detail lines below the circle marker, one pe
 
 ### Requirement: Wide layout activates at ≥160 columns
 
-When the terminal is at least 160 columns wide, the TUI SHALL switch to a two-column layout: the left column (≈65 cols) contains the patch circle, adaptive detail lines, player stats, time-track bar, and keyboard-shortcut legend; the right column contains the two 9×9 quilts side by side and the event log. The NDJSON log pane spans the full terminal width below both columns.
+When the terminal is at least 160 columns wide, the TUI SHALL switch to a two-column layout: the left column (80 cols) contains the patch circle, adaptive detail lines, player stats, and keyboard-shortcut legend; the right column contains the two 9×9 quilts side by side and the event log. The NDJSON log pane spans the full terminal width below both columns.
 
 #### Scenario: Wide layout is used at 160 columns
 

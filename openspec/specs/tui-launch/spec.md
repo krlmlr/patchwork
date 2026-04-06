@@ -35,7 +35,7 @@ The launch screen SHALL call `init_display` before rendering, inheriting the ter
 
 ### Requirement: Game session ends with a result summary
 
-After the game reaches a terminal state (or the user presses `q`), the TUI SHALL clear the screen and print a summary showing each player's final score (buttons minus 2× free spaces, plus 7 for the bonus tile if claimed) and declare a winner or a tie.
+After the game reaches a terminal state (or the user presses `q`), the TUI SHALL clear the screen and print a summary showing each player's final score (buttons minus 2× free spaces, plus 7 for the bonus tile if claimed) and declare a winner.
 
 #### Scenario: Result summary shows correct scores
 
