@@ -240,7 +240,7 @@ reproducible experiments.
 
 **codegen**
 The R script (`codegen/generate_patches.R`) that reads `data/patches.yaml` and
-writes the committed C++ header `src/generated/patches.hpp`.
+writes the committed C++ header `cpp/generated/patches.hpp`.
 
 **NDJSON** (Newline-Delimited JSON)
 The format used for game logs: one JSON object per line, enabling streaming and

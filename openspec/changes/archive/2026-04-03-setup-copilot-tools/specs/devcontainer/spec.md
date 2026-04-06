@@ -11,7 +11,7 @@ The repository SHALL contain a `.devcontainer/devcontainer.json` that, when used
 #### Scenario: R codegen works in the container
 - **GIVEN** the devcontainer environment is active
 - **WHEN** a user or agent runs `Rscript codegen/generate_patches.R`
-- **THEN** the script completes without errors and `src/generated/patches.hpp` is produced
+- **THEN** the script completes without errors and `cpp/generated/patches.hpp` is produced
 
 ### Requirement: Toolchain is defined once
 The set of tools required to build and test the project (Meson, Ninja, GCC/C++23, R, yaml package,
@@ -41,12 +41,12 @@ The repository SHALL contain a `README.md` at the root that explains zero-effort
 - **THEN** they can build and test the project without consulting any other document
 
 ### Requirement: Formatting and linting available as mise tasks
-The repository SHALL expose `mise run format` (clang-format on all `src/` C++ files) and `mise run lint` (markdownlint-cli2 on all Markdown files) as named tasks in `.mise.toml`, so that formatting and linting are discoverable and invokable without memorizing the raw commands. Both tools SHALL be installed by `scripts/install-tools.sh` and their configuration committed to the repository (`.clang-format`, `.markdownlint.yml`).
+The repository SHALL expose `mise run format` (clang-format on all `cpp/` C++ files) and `mise run lint` (markdownlint-cli2 on all Markdown files) as named tasks in `.mise.toml`, so that formatting and linting are discoverable and invokable without memorizing the raw commands. Both tools SHALL be installed by `scripts/install-tools.sh` and their configuration committed to the repository (`.clang-format`, `.markdownlint.yml`).
 
 #### Scenario: Developer formats C++ files via mise
 - **GIVEN** the devcontainer environment is active and `mise` is available
 - **WHEN** a developer runs `mise run format`
-- **THEN** all C++ files in `src/` are formatted in place according to `.clang-format`
+- **THEN** all C++ files in `cpp/` are formatted in place according to `.clang-format`
 
 #### Scenario: Developer lints Markdown files via mise
 - **GIVEN** the devcontainer environment is active and `mise` is available

@@ -68,7 +68,7 @@ Rather than waiting for a separate `github-actions-ci` companion change, both `.
 
 ### mise tasks for formatting: `format` and `lint`
 
-Two new tasks are added to `.mise.toml` to satisfy the `mise-tasks` spec invariant (every useful action is runnable through mise): `format` runs clang-format on all C++ files in `src/`; `lint` runs markdownlint-cli2 on all Markdown files. Both tools are installed by `scripts/install-tools.sh`. README.md and BUILD.md reference `mise run format` / `mise run lint` as the canonical invocations.
+Two new tasks are added to `.mise.toml` to satisfy the `mise-tasks` spec invariant (every useful action is runnable through mise): `format` runs clang-format on all C++ files in `cpp/`; `lint` runs markdownlint-cli2 on all Markdown files. Both tools are installed by `scripts/install-tools.sh`. README.md and BUILD.md reference `mise run format` / `mise run lint` as the canonical invocations.
 
 ### Catch2 installed via apt for CI
 
