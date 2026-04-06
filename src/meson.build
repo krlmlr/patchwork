@@ -18,3 +18,13 @@ executable(
   'play_driver.cpp',
   dependencies : [patchwork_dep],
 )
+
+executable(
+  'patchwork-tui',
+  'tui/history.cpp',
+  'tui/display.cpp',
+  'tui/input.cpp',
+  'tui/launch.cpp',
+  'tui/tui_main.cpp',
+  dependencies : [patchwork_dep],
+)

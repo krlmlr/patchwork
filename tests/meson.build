@@ -76,3 +76,31 @@ test_random_agent = executable(
   dependencies : [patchwork_dep, catch2_dep],
 )
 test('random_agent', test_random_agent)
+
+test_tui_history = executable(
+  'test_tui_history',
+  'tui_history_test.cpp',
+  '../src/tui/history.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('tui_history', test_tui_history)
+
+test_tui_display = executable(
+  'test_tui_display',
+  'tui_display_test.cpp',
+  '../src/tui/display.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('tui_display', test_tui_display)
+
+test_tui_snapshot = executable(
+  'test_tui_snapshot',
+  'tui_snapshot_test.cpp',
+  '../src/tui/display.cpp',
+  '../src/tui/history.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+# Pass the absolute path to the snapshot directory so the test finds the
+# golden files regardless of the working directory meson uses.
+test('tui_snapshot', test_tui_snapshot,
+     env : ['SNAPSHOT_DIR=' + meson.project_source_root() / 'tests' / 'snapshots'])

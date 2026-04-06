@@ -134,6 +134,20 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
+### TUI refinements
+
+- JSON log scrolling does not work yet: horizontal broken, vertical unspecified
+- JSON log word wrapping broken
+- Each rendered frame adds to the terminal's output history; is there a way to avoid this and keep the terminal's scrollback clean?
+- Start in `NdjsonSemiMaximize` mode
+- Effectively unbounded event log, no truncation (games with many moves consist only of advances, adjust the max log size to accommodate)
+- Display bonus tile status and leather patch counts in the TUI
+- Display more stats in the TUI (current score, projected score, placement gain and projected income per patch, ...)
+- Faded out lines outside buying window
+- No winner when quitting early
+
+---
+
 ### Rust (Optional)
 
 - Reimplementation of the game engine and state types in Rust
