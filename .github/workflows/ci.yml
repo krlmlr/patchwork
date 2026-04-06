@@ -22,12 +22,6 @@ jobs:
       - name: Check if binaries are available
         run: Rscript -e 'getOption("repos"); pak::ppm_has_binaries()'
 
-      - name: Check R profile
-        run: cat ~/.Rprofile
-
-      - name: Install rlang
-        run: Rscript -e 'pak::pak("rlang")'
-
       - name: Install R package dependencies
         run: Rscript -e 'pak::pak()'
 
