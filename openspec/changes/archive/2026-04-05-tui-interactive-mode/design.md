@@ -83,7 +83,65 @@ At ≥160 columns a four-column layout is used: the left column holds the patch 
 └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Tall narrow layout — 80 columns, 40 rows
+
+When the terminal has more rows, the freed space is distributed between extra patch-circle detail lines and NDJSON pane height (they trade off; total frame height stays `terminal_height − 1`). Below: NDJSON pane at 5 lines, showing 16 detail lines ([ 1]–[16]) including the `[ 9]`/`[10]` alignment boundary.
+
+```txt
+┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
+│ Circle: ZtLv3kuywJqUSOAXox41TzpedlsNHjm52                                    │
+│         ^                                                                    │
+│ [ 1] Z  cost  4  time  2  inc 0      [1/2/3]buy  [a]adv      [q]quit         │
+│ [ 2] t  cost  2  time  2  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [ 3] L  cost  4  time  6  inc 2      [m]v [f]^ [h]^/2  [,]- [.]+             │
+│ [ 4] v  cost  1  time  3  inc 0                                              │
+│ [ 5] 3  cost  2  time  2  inc 0                                              │
+│ [ 6] k  cost  2  time  1  inc 0                                              │
+│ [ 7] u  cost  1  time  2  inc 0                                              │
+│ [ 8] y  cost  3  time  4  inc 1                                              │
+│ [ 9] w  cost 10  time  4  inc 3                                              │
+│ [10] J  cost 10  time  3  inc 2                                              │
+│ [11] q  cost 10  time  5  inc 3                                              │
+│ [12] U  cost  1  time  5  inc 1                                              │
+│ [13] S  cost  7  time  6  inc 3                                              │
+│ [14] O  cost  5  time  3  inc 1                                              │
+│ [15] A  cost  0  time  3  inc 1                                              │
+│ [16] X  cost  1  time  4  inc 1                                              │
+├───────────────────────────────────────┬──────────────────────────────────────┤
+│ P1  btn   5  inc  0  pos  0  fr 81    │ P2  btn   5  inc  0  pos  0  fr 81   │
+├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
+│ P1 quilt  │ P2 quilt  │ Event log                                            │
+│ ????????? │ ????????? │ > P2 bought [v]                                      │
+│ ????????? │ ????????? │ > P1 bought [3]                                      │
+│ ????????? │ ????????? │ > P2 advanced                                        │
+│ ????????? │ ????????? │ > P1 advanced                                        │
+│ ????????? │ ????????? │ > P2 bought [j]                                      │
+│ ????????? │ ????????? │ > P1 bought [t]                                      │
+│ ????????? │ ????????? │ > P2 advanced                                        │
+│ ????????? │ ????????? │ > P1 advanced                                        │
+│ ????????? │ ????????? │ > P2 bought [4]                                      │
+├───────────┴───────────┴─ ndjson log (5 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
+│ {"event":"move","ply":12,"player":1,"move_type":"advance"}                   │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
 Column budget at 80: each quilt col 11 wide, event log ~54 cols, ndjson rows adaptive (fills terminal height). At 120 cols the log pane gains ~40 columns. At ≥160 cols the four-column layout activates with explicit Q1/Q2/event columns and the stats sub-separator inside the left panel. Buy keys are `1`, `2`, `3` (1-indexed), mapping to `BuyPatch{0}`, `BuyPatch{1}`, `BuyPatch{2}` internally.
+
+### Relationship between specs, design mockups, and snapshot tests
+
+Reference outputs (ASCII renders) live at three distinct levels with different purposes:
+
+| Level | Location | Purpose |
+|---|---|---|
+| **Behavioral spec** | `openspec/specs/tui-display/spec.md` | WHEN/THEN requirements; stable, implementation-independent |
+| **Design mockups** | This document (`design.md`) | Illustrate layout intent; derived verbatim from snapshot tests |
+| **Golden files** | `tests/snapshots/*.txt` | Canonical pixel-accurate renders; CI-validated on every build |
+
+Reference outputs should **not** appear in `spec.md`: they couple the spec to cosmetic details and become stale on any minor rendering change. The textual requirements in `spec.md` (e.g., "all rows have the same visual width", "[%2d] format") are the authoritative contracts. Mockups in this design document explain *why* those requirements exist and what the design is supposed to look like; the snapshot golden files enforce *that* the implementation matches.
 
 ## Decisions
 
