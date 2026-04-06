@@ -38,12 +38,12 @@ Patch IDs are 0–32 (fit in `uint8_t`). `GameSetup` stores a `std::array<uint8_
 
 **Alternative considered:** Store the seed in `GameSetup` alongside the circle — would allow C++ to reproduce any setup independently, but that reproducing is already done by R and the result is committed; adding seed storage to C++ would be redundant and wasted bytes in the struct.
 
-### Canonical setups as `constexpr` string literals in `src/generated/game_setups.hpp`
+### Canonical setups as `constexpr` string literals in `cpp/generated/game_setups.hpp`
 
-R reads `data/patches.yaml` to obtain the ordered single-char patch names, generates 100 random permutations via `sample()`, and writes `src/generated/game_setups.hpp`. The header exposes a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` where `kNumGameSetups` is a named constant set to `100`. Generating additional setups later uses a larger `N_SETUPS` value in R but leaves the first 100 entries bit-for-bit identical. Including this file costs zero runtime I/O and the entire setup table is available as a compile-time constant.
+R reads `data/patches.yaml` to obtain the ordered single-char patch names, generates 100 random permutations via `sample()`, and writes `cpp/generated/game_setups.hpp`. The header exposes a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` where `kNumGameSetups` is a named constant set to `100`. Generating additional setups later uses a larger `N_SETUPS` value in R but leaves the first 100 entries bit-for-bit identical. Including this file costs zero runtime I/O and the entire setup table is available as a compile-time constant.
 
 ```cpp
-// src/generated/game_setups.hpp
+// cpp/generated/game_setups.hpp
 namespace patchwork {
 inline constexpr std::size_t kNumGameSetups = 100;
 constexpr std::array<std::string_view, kNumGameSetups> kGameSetups = {{
@@ -57,7 +57,7 @@ constexpr std::array<std::string_view, kNumGameSetups> kGameSetups = {{
 
 ### No runtime I/O: setups are `constexpr` string literals
 
-Because setups are embedded in `src/generated/game_setups.hpp`, no file loading is required at runtime. `GameSetup` has no `load()` method. Any function that needs a canonical setup indexes into `kGameSetups` directly. This eliminates a whole class of failure modes (missing files, path configuration, file format drift) and makes setup access zero-cost.
+Because setups are embedded in `cpp/generated/game_setups.hpp`, no file loading is required at runtime. `GameSetup` has no `load()` method. Any function that needs a canonical setup indexes into `kGameSetups` directly. This eliminates a whole class of failure modes (missing files, path configuration, file format drift) and makes setup access zero-cost.
 
 **Alternative considered:** A C++ YAML parser (hand-rolled or via `yaml-cpp`) — adds complexity and a runtime dependency for data that never changes between compilations.
 
@@ -67,7 +67,7 @@ The logging pipeline (NDJSON → DuckDB) is introduced in a later phase but shou
 
 **Alternative considered:** Include the seed in the NDJSON record for traceability — unnecessary since canonical setup index (position in `kGameSetups`) is the stable identifier, and seeds are available in the R script.
 
-### Initial batch: 100 canonical setups in `src/generated/game_setups.hpp`
+### Initial batch: 100 canonical setups in `cpp/generated/game_setups.hpp`
 
 100 setups are sufficient for unit tests, early game-tree analysis, and RL training warm-up without significantly increasing build times or binary size (`constexpr` data is essentially free). The batch is R-generated with seeds `[1, 2, …, 100]` for simplicity and reproducibility. More can be re-generated on demand with `mise run codegen:setups`.
 

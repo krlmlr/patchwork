@@ -20,7 +20,7 @@ The roadmap calls for a "Start Without Piece Placement" phase that defers spatia
 
 ### Decision: Hard-coded separate struct, not a template parameter
 
-**Chosen:** Introduce `SimplifiedPlayerState` as a standalone struct in `src/simplified_game_state.hpp`.
+**Chosen:** Introduce `SimplifiedPlayerState` as a standalone struct in `cpp/simplified_game_state.hpp`.
 
 **Rejected:** A `template <bool Placement> PlayerState` (or similar `PlacementMode` enum parameter).
 

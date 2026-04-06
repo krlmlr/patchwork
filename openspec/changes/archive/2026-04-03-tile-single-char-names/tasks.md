@@ -21,7 +21,7 @@
 - [x] 2.2 Add `char name` as the second field in the `PatchData` struct definition emitted into the header (after `int id`)
 - [x] 2.3 Emit the `name` value as a character literal (e.g. `'w'`) in each `PatchData` initialiser in the `kPatches` array
 
-## 3. Regenerate `src/generated/patches.hpp`
+## 3. Regenerate `cpp/generated/patches.hpp`
 
 - [x] 3.1 Run `Rscript codegen/generate_patches.R` to regenerate the header
 - [x] 3.2 Verify the generated file compiles without errors (`meson setup build && meson compile -C build`)

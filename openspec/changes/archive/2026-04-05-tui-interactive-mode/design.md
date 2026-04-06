@@ -15,7 +15,7 @@ The engine has complete game logic (move generation, application, terminal detec
 - Minimum terminal width 80 columns; layout expands to use additional width when available
 - Launch screen: pick game setup index and random seed before starting
 - TUI preview (ASCII mockup) included in this design document
-- New Meson executable target `patchwork-tui` linking `src/tui/` against the engine static library
+- New Meson executable target `patchwork-tui` linking `cpp/tui/` against the engine static library
 - Catch2 unit tests for history stack and display helpers
 
 **Non-Goals:**
@@ -198,7 +198,7 @@ The default height is 5 lines. The event log and horizontal scroll behaviour are
 
 ### 3. Single-file `tui_main.cpp` entry point, modular headers
 
-**Decision:** Four translation units under `src/tui/`: `display.cpp`, `input.cpp`, `history.cpp`, `launch.cpp`, plus a `tui_main.cpp` entry point. Each has a corresponding `.hpp`.
+**Decision:** Four translation units under `cpp/tui/`: `display.cpp`, `input.cpp`, `history.cpp`, `launch.cpp`, plus a `tui_main.cpp` entry point. Each has a corresponding `.hpp`.
 
 **Rationale:** Keeps each concern independently testable. `history.cpp` and `display.cpp` have no terminal I/O and are straightforward to unit-test with Catch2.
 
@@ -262,8 +262,8 @@ Color is suppressed when: `TERM=dumb`, `NO_COLOR` environment variable is set, o
 
 ## Migration Plan
 
-1. Add `src/tui/` directory with four modules and entry point
-2. Add new Meson executable in `src/meson.build` depending on `patchwork_lib`
+1. Add `cpp/tui/` directory with four modules and entry point
+2. Add new Meson executable in `cpp/meson.build` depending on `patchwork_lib`
 3. Add Catch2 test file `tests/tui_history_test.cpp`
 4. No changes to existing targets; existing tests continue to pass
 

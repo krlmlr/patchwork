@@ -8,7 +8,7 @@ Patches are currently identified only by their integer ID (1–33) in logs and d
 - **Canonicalise** all `shape` values in `data/patches.yaml` to the lexicographically minimal grid representation across all rotations and reflections
 - **Add a `name` field** (single ASCII letter or digit) to every entry — placed immediately after `id`
 - Update **`codegen/generate_patches.R`** to read the new field and emit it into the generated C++ header
-- Update **`src/generated/patches.hpp`** (regenerated) to include a `char name` field in `PatchData`
+- Update **`cpp/generated/patches.hpp`** (regenerated) to include a `char name` field in `PatchData`
 - Update **`openspec/specs/patch-catalog/spec.md`** to require the `name` field, canonical shapes, and the ordering
 
 ## Capabilities
@@ -21,7 +21,7 @@ Patches are currently identified only by their integer ID (1–33) in logs and d
 
 - `patch_catalog_yaml`: `data/patches.yaml` now requires a `name` field alongside `id`, `buttons`, `time`, `income`, and `shape`; entries are ordered by size → cost → income and shapes are canonical
 - `patch_codegen`: `codegen/generate_patches.R` emits the `name` field into the generated struct
-- `patch_header`: `src/generated/patches.hpp` exposes `char name` in `PatchData`
+- `patch_header`: `cpp/generated/patches.hpp` exposes `char name` in `PatchData`
 
 ## Ordering
 
@@ -99,4 +99,4 @@ The **Recommended** column is a conflict-free set of 33 unique characters:
 - Logging and debug output can reference `patch.name` instead of `patch.id`
 - All 33 names are unique ASCII characters (letters or digits); case is significant
 - `data/patches.yaml` gains one required field per patch entry; entries are reordered and shapes normalised
-- `src/generated/patches.hpp` gains one `char` field per struct — zero run-time cost
+- `cpp/generated/patches.hpp` gains one `char` field per struct — zero run-time cost

@@ -35,10 +35,10 @@ sudo bash scripts/install-tools.sh
 
 | Path | Purpose |
 |------|---------|
-| `src/` | C++ source and header files |
+| `cpp/` | C++ source and header files |
 | `tests/` | Catch2 unit tests |
 | `data/` | Patch data in YAML format |
-| `codegen/` | R script that generates `src/generated/patches.hpp` |
+| `codegen/` | R script that generates `cpp/generated/patches.hpp` |
 | `scripts/` | Helper scripts (tool installer, etc.) |
 | `.devcontainer/` | Devcontainer configuration for Codespaces / Copilot |
 | `.github/workflows/` | GitHub Actions CI and Copilot agent setup |
