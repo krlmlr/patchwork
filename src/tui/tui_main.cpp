@@ -191,34 +191,37 @@ int main(int argc, char** argv) {
         }
         ++ply;
 
-        // If game not terminal, let opponent move (random agent).
+        // Let CPU take all its consecutive turns (may be multiple if human advanced
+        // far ahead on the time track).  Restore RNG once before the CPU sequence
+        // so that redo can reproduce the identical CPU moves deterministically.
         if (!is_terminal(new_state)) {
-            // Restore RNG from before this player's move for determinism on redo.
             rng = rng_before;
-            Move opp_move = random_move(new_state, setup, rng);
-            SimplifiedGameState after_opp = apply_move(new_state, opp_move, setup);
-            {
-                std::ostringstream oss;
-                log_move(oss, ply, new_state.active_player(), opp_move, after_opp);
-                std::string line = oss.str();
-                if (!line.empty() && line.back() == '\n') line.pop_back();
-                append_ndjson(ndjson, line);
-                if (std::holds_alternative<BuyPatch>(opp_move)) {
-                    int pid = std::get<BuyPatch>(opp_move).patch_index;
-                    char pname = kPatches[static_cast<std::size_t>(pid)].name;
-                    char buf[60];
-                    std::snprintf(buf, sizeof(buf), "P%d (cpu) bought [%c]",
-                                  new_state.active_player() + 1, pname);
-                    append_log(log, buf);
-                } else {
-                    char buf[40];
-                    std::snprintf(buf, sizeof(buf), "P%d (cpu) advanced",
-                                  new_state.active_player() + 1);
-                    append_log(log, buf);
+            while (!is_terminal(new_state) && new_state.active_player() != 0) {
+                Move opp_move = random_move(new_state, setup, rng);
+                SimplifiedGameState after_opp = apply_move(new_state, opp_move, setup);
+                {
+                    std::ostringstream oss;
+                    log_move(oss, ply, new_state.active_player(), opp_move, after_opp);
+                    std::string line = oss.str();
+                    if (!line.empty() && line.back() == '\n') line.pop_back();
+                    append_ndjson(ndjson, line);
+                    if (std::holds_alternative<BuyPatch>(opp_move)) {
+                        int pid = std::get<BuyPatch>(opp_move).patch_index;
+                        char pname = kPatches[static_cast<std::size_t>(pid)].name;
+                        char buf[60];
+                        std::snprintf(buf, sizeof(buf), "P%d (cpu) bought [%c]",
+                                      new_state.active_player() + 1, pname);
+                        append_log(log, buf);
+                    } else {
+                        char buf[40];
+                        std::snprintf(buf, sizeof(buf), "P%d (cpu) advanced",
+                                      new_state.active_player() + 1);
+                        append_log(log, buf);
+                    }
                 }
+                ++ply;
+                new_state = after_opp;
             }
-            ++ply;
-            new_state = after_opp;
         }
 
         // Push new state + RNG snapshot + log snapshot to history.

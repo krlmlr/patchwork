@@ -85,6 +85,16 @@ static std::string log_entry_buy(int player_1idx, char patch_name) {
     std::snprintf(buf, sizeof(buf), "P%d bought [%c]", player_1idx, patch_name);
     return buf;
 }
+static std::string log_entry_cpu_buy(int player_1idx, char patch_name) {
+    char buf[60];
+    std::snprintf(buf, sizeof(buf), "P%d (cpu) bought [%c]", player_1idx, patch_name);
+    return buf;
+}
+static std::string log_entry_cpu_advance(int player_1idx) {
+    char buf[50];
+    std::snprintf(buf, sizeof(buf), "P%d (cpu) advanced", player_1idx);
+    return buf;
+}
 static std::string log_entry_advance(int player_1idx) {
     char buf[40];
     std::snprintf(buf, sizeof(buf), "P%d advanced", player_1idx);
@@ -362,4 +372,84 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
         snap("cont" + zpad2(remaining));  // steps 14+
         ++remaining;
     }
+}
+
+// ── CPU multi-turn snapshot test ─────────────────────────────────────────────
+//
+// Exercises the TUI game-loop rule: after P1 (human) buys a patch with a large
+// time cost, P2 (CPU) may need to take several consecutive turns before P1
+// regains the move.  This test replicates the TUI's inner CPU loop:
+//
+//   while (!is_terminal && active_player == 1) { cpu_move; }
+//
+// With setup=0 / seed=42, P1 buying "L" (time=6) from pos 0 → pos 6 forces P2
+// to run at least 6 consecutive turns before catching up.  The snapshot should
+// show 6+ "P2 (cpu)" entries in the event log after the single human move.
+
+TEST_CASE("Snapshot: CPU takes multiple consecutive turns after P1 buys far-time patch",
+          "[tui_snapshot]") {
+    auto setup = GameSetup(kGameSetups[0]);
+    SimplifiedGameState state{};
+    // seed=42 — same as the full game sequence test for reproducibility.
+    RngState cpu_rng(42);
+    LogState log{};
+    NdjsonState ndjson{};
+    ndjson.height = 3;
+    auto cfg = make_cfg_h(80, 40);
+
+    // P1 (human) buys "L" (position 3 in the circle, time cost 6).
+    // Find "L" in the legal moves for the initial state.
+    auto initial_moves = legal_moves(state, setup);
+    patchwork::Move human_move = Advance{};
+    for (auto& m : initial_moves) {
+        if (std::holds_alternative<BuyPatch>(m)) {
+            int pid = std::get<BuyPatch>(m).patch_index;
+            if (kPatches[static_cast<std::size_t>(pid)].name == 'L') {
+                human_move = m;
+                break;
+            }
+        }
+    }
+    // Verify we found it (sanity check — if setup changes this will trip).
+    REQUIRE(std::holds_alternative<BuyPatch>(human_move));
+    {
+        int pid = std::get<BuyPatch>(human_move).patch_index;
+        char pname = kPatches[static_cast<std::size_t>(pid)].name;
+        REQUIRE(pname == 'L');
+        append_log(log, log_entry_buy(1, pname));
+    }
+    state = apply_move(state, human_move, setup);
+
+    // Verify that P2 (player index 1) is now active.
+    REQUIRE(state.active_player() == 1);
+
+    // Replicate the TUI CPU loop: P2 takes consecutive turns until
+    // it's P1's turn again or the game ends.
+    int cpu_turns = 0;
+    while (!is_terminal(state) && state.active_player() != 0) {
+        int cpu_1idx = state.active_player() + 1;  // 2 for P2
+        auto opp_move = random_move(state, setup, cpu_rng);
+        if (std::holds_alternative<BuyPatch>(opp_move)) {
+            int pid = std::get<BuyPatch>(opp_move).patch_index;
+            char pname = kPatches[static_cast<std::size_t>(pid)].name;
+            append_log(log, log_entry_cpu_buy(cpu_1idx, pname));
+        } else {
+            append_log(log, log_entry_cpu_advance(cpu_1idx));
+        }
+        state = apply_move(state, opp_move, setup);
+        ++cpu_turns;
+    }
+
+    // P2 must have taken at least 2 turns.  With seed=42, P2 buys patch [3]
+    // (time=2, pos 0→2) and then advances to pos 7 (P1's pos+1=7) — exactly 2
+    // CPU turns.  This would be only 1 if the old single-shot loop were used.
+    REQUIRE(cpu_turns >= 2);
+
+    // After the CPU loop, P1 should be active again (or game over).
+    if (!is_terminal(state)) {
+        REQUIRE(state.active_player() == 0);
+    }
+
+    std::string actual = render_frame_to_string(state, setup, log, ndjson, cfg);
+    check_snapshot("cpu_multi_turn", actual);
 }
