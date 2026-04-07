@@ -48,8 +48,13 @@ REOF
 # Placed immediately after R/pak setup to fail fast if PPM is misconfigured.
 # pak outputs a line like "DBI 1.2.2 (x86_64-pc-linux-gnu-ubuntu-24.04)" for
 # binary installs; source installs would show "R CMD INSTALL" instead.
+# DBI is removed first so a fresh download always happens (making the binary
+# marker visible regardless of prior state).
 # ---------------------------------------------------------------------------
-dbi_output=$(Rscript --no-save --no-restore -e 'pak::pkg_install("DBI", ask = FALSE)' 2>&1)
+dbi_output=$(Rscript --no-save --no-restore -e '
+if (requireNamespace("DBI", quietly = TRUE)) remove.packages("DBI")
+pak::pkg_install("DBI", ask = FALSE)
+' 2>&1)
 printf '%s\n' "$dbi_output"
 printf '%s\n' "$dbi_output" | grep -qE "DBI.*(linux-gnu-ubuntu|binary)" || \
   { printf 'ERROR: DBI was not installed as a PPM binary\n' >&2; exit 1; }
