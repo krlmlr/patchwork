@@ -35,4 +35,4 @@ jobs:
         run: Rscript codegen/generate_patches.R
 
       - name: Validate specs and changes
-        run: openspec validate --all || openspec validate --all --json || true
+        run: openspec validate --all || openspec validate --all --json
