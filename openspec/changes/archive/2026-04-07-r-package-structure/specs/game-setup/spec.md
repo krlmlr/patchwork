@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: R codegen script is a thin entry point
 The file `codegen/generate_setups.R` SHALL contain only: a call to `pkgload::load_all(quiet = TRUE)`, any path or argument setup, and a single call to the top-level `generate_setups()` function defined in `R/setups.R`. All logic (spec assertions, permutation generation, code emission) SHALL reside in `R/setups.R`.
