@@ -1,7 +1,7 @@
-# random-agent Specification
+# Agents Specification
 
 ## Purpose
-Defines the random agent that selects legal moves uniformly at random, serving as a baseline opponent for game play and testing.
+Defines concrete decision-making strategies. Each agent implements a shared interface and can be plugged into the play driver or TUI.
 
 ## Requirements
 
