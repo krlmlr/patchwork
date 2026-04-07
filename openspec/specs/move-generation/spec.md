@@ -1,3 +1,10 @@
+# move-generation Specification
+
+## Purpose
+Defines the `Move` type and legal move generation for the simplified Patchwork ruleset, covering BuyPatch and Advance variants.
+
+## Requirements
+
 ### Requirement: Move type represents all legal actions
 
 A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch by its index in `kPatches`) and `Advance` (advancing past the leading player and earning 1 button per space moved). No other move variants are valid in the simplified ruleset.

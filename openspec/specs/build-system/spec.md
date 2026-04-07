@@ -1,3 +1,10 @@
+# build-system Specification
+
+## Purpose
+Defines the Meson-based build system, standard directory layout, and project infrastructure required to build and test the Patchwork engine.
+
+## Requirements
+
 ### Requirement: Project builds with Meson
 The project SHALL use Meson as its build system. Running `meson setup build && ninja -C build` SHALL produce a working test binary without errors or warnings.
 

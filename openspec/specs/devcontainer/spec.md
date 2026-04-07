@@ -1,3 +1,10 @@
+# devcontainer Specification
+
+## Purpose
+Defines the devcontainer configuration and toolchain setup that provides a complete, reproducible build environment for the Patchwork project.
+
+## Requirements
+
 ### Requirement: Devcontainer provides a complete build environment
 The repository SHALL contain a `.devcontainer/devcontainer.json` that, when used to create a container, results in an environment where `meson setup build && meson test -C build` succeeds without any additional manual installation steps.
 
@@ -12,10 +19,7 @@ The repository SHALL contain a `.devcontainer/devcontainer.json` that, when used
 - **THEN** the script completes without errors and `cpp/generated/patches.hpp` is produced
 
 ### Requirement: Toolchain is defined once
-The set of tools required to build and test the project (Meson, Ninja, GCC/C++23, R, yaml package,
-clang-format, OpenSpec CLI, markdownlint-cli2) SHALL be listed in exactly one place
-(`scripts/install-tools.sh`). The devcontainer configuration and all GitHub Actions workflows SHALL
-invoke this script rather than restating the install commands.
+The toolchain required to build and test the project SHALL be defined in exactly one place (`scripts/install-tools.sh`). All tools (Meson, Ninja, GCC/C++23, R, yaml package, clang-format, OpenSpec CLI, markdownlint-cli2) SHALL be listed there, and the devcontainer configuration and all GitHub Actions workflows SHALL invoke this script rather than restating the install commands.
 
 #### Scenario: Adding a new tool requires one change
 - **GIVEN** a new build dependency is added to the project

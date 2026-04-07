@@ -1,3 +1,10 @@
+# tui-undo-redo Specification
+
+## Purpose
+Defines the undo/redo history stack that stores `(GameState, RngState)` pairs to support stepping backward and forward through game moves in the TUI.
+
+## Requirements
+
 ### Requirement: History stack stores `(GameState, RngState)` pairs
 
 The `History` class SHALL store a sequence of `HistoryEntry` values, where each entry pairs a `GameState` snapshot with an `RngState` snapshot capturing the full `std::mt19937_64` state of the random agent at that point. The initial entry is pushed at construction. Each call to `push` appends a new entry and advances the cursor to it. When `push` is called with a cursor that is not at the end (i.e., after one or more undos), all entries above the cursor SHALL be discarded before appending.
