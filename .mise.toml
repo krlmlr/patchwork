@@ -1,5 +1,5 @@
 [env]
-_.path = ["{{config_root}}/build/src"]
+_.path = ["{{config_root}}/build/cpp"]
 
 [tasks.setup]
 description = "Configure the build directory"
@@ -18,12 +18,12 @@ description = "Regenerate committed C++ headers from data files"
 run = "Rscript codegen/generate_patches.R"
 
 [tasks."codegen:setups"]
-description = "Generate canonical game setups in src/generated/game_setups.hpp"
+description = "Generate canonical game setups in cpp/generated/game_setups.hpp"
 run = "Rscript codegen/generate_setups.R"
 
 [tasks.format]
 description = "Format C++ source files with clang-format"
-run = "find src \\( -name '*.cpp' -o -name '*.hpp' \\) -print0 | xargs -0 clang-format -i"
+run = "find cpp \\( -name '*.cpp' -o -name '*.hpp' \\) -print0 | xargs -0 clang-format -i"
 
 [tasks.lint]
 description = "Lint Markdown files with markdownlint-cli2"

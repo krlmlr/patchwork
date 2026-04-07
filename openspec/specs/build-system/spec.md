@@ -1,3 +1,10 @@
+# build-system Specification
+
+## Purpose
+Defines the Meson-based build system, standard directory layout, and project infrastructure required to build and test the Patchwork engine.
+
+## Requirements
+
 ### Requirement: Project builds with Meson
 The project SHALL use Meson as its build system. Running `meson setup build && ninja -C build` SHALL produce a working test binary without errors or warnings.
 
@@ -25,8 +32,8 @@ At least one test SHALL exist from the initial commit and SHALL pass.
 
 ### Requirement: Standard directory layout
 The project SHALL use the following top-level layout:
-- `src/` — C++ source files
-- `src/generated/` — committed generated C++ headers
+- `cpp/` — C++ source files
+- `cpp/generated/` — committed generated C++ headers
 - `tests/` — Catch2 test files
 - `data/` — canonical data files (patch catalog)
 - `codegen/` — R codegen scripts
@@ -34,4 +41,4 @@ The project SHALL use the following top-level layout:
 
 #### Scenario: Directory structure is present
 - **WHEN** a developer clones the repository
-- **THEN** `src/`, `tests/`, `data/`, `codegen/` directories exist with at least one file each
+- **THEN** `cpp/`, `tests/`, `data/`, `codegen/` directories exist with at least one file each

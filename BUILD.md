@@ -77,7 +77,7 @@ For verbose output: `meson test -C build -v`
 
 ## Code Generation
 
-Patch data in `src/generated/patches.hpp` is auto-generated from `data/patches.yaml`.
+Patch data in `cpp/generated/patches.hpp` is auto-generated from `data/patches.yaml`.
 To regenerate it:
 
 ```sh
@@ -90,6 +90,6 @@ mise run codegen
 Rscript codegen/generate_patches.R
 ```
 
-Requires R with the `yaml` package (`install.packages("yaml")`).
+Requires R with `yaml` and `pkgload` packages (installed automatically by `pak::pak()`).
 
 </details>

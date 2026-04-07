@@ -1,3 +1,10 @@
+# game-state Specification
+
+## Purpose
+Defines the compact bit-packed `PlayerState` and `GameState` data structures that represent the complete state of a Patchwork game.
+
+## Requirements
+
 ### Requirement: PlayerState fits in 128 bits
 
 `PlayerState` SHALL encode all per-player game state in no more than 128 bits (16 bytes). Fields SHALL be: quilt board (81 bits, 9×9 grid), time track position (6 bits, 0–53), button balance (7 bits, 0–127), button income (5 bits, 0–31).

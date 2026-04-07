@@ -1,6 +1,6 @@
 ## 1. Header Definition
 
-- [x] 1.1 Create `src/simplified_game_state.hpp` with `SimplifiedPlayerState` packed into 32 bits (free_spaces 7 bits, position 6 bits, buttons 7 bits, income 5 bits)
+- [x] 1.1 Create `cpp/simplified_game_state.hpp` with `SimplifiedPlayerState` packed into 32 bits (free_spaces 7 bits, position 6 bits, buttons 7 bits, income 5 bits)
 - [x] 1.2 Add default constructor to `SimplifiedPlayerState` initialising free_spaces to 81, position to 0, buttons to 5, income to 0
 - [x] 1.3 Add accessors and mutators for all four fields with range assertions
 - [x] 1.4 Add `SimplifiedGameState` struct with two `SimplifiedPlayerState` members and the same shared-state fields as `GameState` (patch availability bitmask, circle marker, 7×7 bonus)
@@ -13,7 +13,7 @@
 
 ## 3. Build Integration
 
-- [x] 3.1 Register `src/simplified_game_state.hpp` as a Meson header source so it is included in the build
+- [x] 3.1 Register `cpp/simplified_game_state.hpp` as a Meson header source so it is included in the build
 - [x] 3.2 Verify `meson setup build && meson compile -C build` succeeds with no new warnings
 
 ## 4. Unit Tests

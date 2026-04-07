@@ -1,24 +1,24 @@
 ## 1. `GameSetup` C++ Type
 
-- [x] 1.1 Create `src/game_setup.hpp` declaring the `GameSetup` struct in namespace `patchwork`:
+- [x] 1.1 Create `cpp/game_setup.hpp` declaring the `GameSetup` struct in namespace `patchwork`:
   - `std::array<uint8_t, 33> circle` — integer patch IDs (0–32) in circle order
   - Constructor `GameSetup(std::string_view sv)` that accepts a 33-char string of single-char patch names and converts each to its integer ID via the patch catalog
 - [x] 1.2 Add `void GameSetup::to_ndjson(std::ostream& out) const` that writes one JSON line: `{"type":"setup","circle":"<33-char-string>"}` (converting IDs back to single-char names for output)
-- [x] 1.3 Add `GameSetup` to the umbrella header `src/patchwork.hpp`
+- [x] 1.3 Add `GameSetup` to the umbrella header `cpp/patchwork.hpp`
 
 ## 2. R Setup Generator
 
 - [x] 2.1 Create `codegen/generate_setups.R` that:
   - Reads `data/patches.yaml` to obtain the ordered single-char patch names (33 chars)
   - Uses a named constant `N_SETUPS <- 100L`; for each setup `i` in `seq_len(N_SETUPS)`, calls `set.seed(i)` and `sample(33)` to produce the permutation, then maps indices to patch names to form a 33-char string
-- [x] 2.2 Write all results to `src/generated/game_setups.hpp` as `constexpr std::array<std::string_view, kNumGameSetups> kGameSetups` with `inline constexpr std::size_t kNumGameSetups = 100`; no seeds or struct definition in the header
+- [x] 2.2 Write all results to `cpp/generated/game_setups.hpp` as `constexpr std::array<std::string_view, kNumGameSetups> kGameSetups` with `inline constexpr std::size_t kNumGameSetups = 100`; no seeds or struct definition in the header
 - [x] 2.3 Ensure that re-running the script with a larger `N_SETUPS` produces a longer array whose first 100 entries are bit-for-bit identical to the previous output
-- [x] 2.4 Run the script (`Rscript codegen/generate_setups.R`) and commit the resulting `src/generated/game_setups.hpp`
+- [x] 2.4 Run the script (`Rscript codegen/generate_setups.R`) and commit the resulting `cpp/generated/game_setups.hpp`
 
 ## 3. Mise Task
 
 - [x] 3.1 Add a `[tasks.codegen:setups]` entry to `.mise.toml`:
-  - `description = "Generate canonical game setups in src/generated/game_setups.hpp"`
+  - `description = "Generate canonical game setups in cpp/generated/game_setups.hpp"`
   - `run = "Rscript codegen/generate_setups.R"`
 
 ## 4. Unit Tests

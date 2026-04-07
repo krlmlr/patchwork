@@ -20,7 +20,7 @@ The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork 
 - **THEN** they appear in non-decreasing order of cell count, and within each cell-count group in non-decreasing order of button cost, and within each button-cost group in non-increasing order of income
 
 ### Requirement: Generated header exposes patch array
-`src/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
+`cpp/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
 
 #### Scenario: All patches accessible at compile time *(updated)*
 - **WHEN** the generated header is included

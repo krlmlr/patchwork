@@ -1,3 +1,10 @@
+# patch-catalog Specification
+
+## Purpose
+Defines the YAML patch catalog as the single source of truth for all Patchwork patch data, and how it is consumed by the C++ engine via code generation.
+
+## Requirements
+
 ### Requirement: YAML catalog is single source of truth
 The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. No patch data SHALL be hardcoded anywhere in the C++ source directly.
 
@@ -37,18 +44,18 @@ Each patch shape SHALL be encoded as a multiline string of `.` (empty) and `X` (
 - **THEN** all rows have equal length
 
 ### Requirement: R codegen produces committed C++ header
-The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write `src/generated/patches.hpp`. The generated file SHALL be committed to version control.
+The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write `cpp/generated/patches.hpp`. The generated file SHALL be committed to version control.
 
 #### Scenario: Codegen runs without errors
 - **WHEN** `codegen/generate_patches.R` is executed with R
-- **THEN** it exits without error and `src/generated/patches.hpp` is created or updated
+- **THEN** it exits without error and `cpp/generated/patches.hpp` is created or updated
 
 #### Scenario: Generated header is valid C++
-- **WHEN** `src/generated/patches.hpp` is included in a C++ translation unit
+- **WHEN** `cpp/generated/patches.hpp` is included in a C++ translation unit
 - **THEN** it compiles without errors
 
 ### Requirement: Generated header exposes patch array
-`src/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
+`cpp/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
 
 #### Scenario: All patches accessible at compile time
 - **WHEN** the generated header is included

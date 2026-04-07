@@ -26,4 +26,4 @@ Developers and Copilot coding agents who have [mise](https://mise.jdx.dev/) inst
 - Developers with mise installed can run any project workflow step by name instead of memorizing raw commands
 - The `build/` directory is on `$PATH` in mise-managed shells, so compiled binaries are directly accessible
 - Every new useful project action added in the future SHALL be accompanied by a corresponding mise task
-- No changes to `src/`, `tests/`, `data/`, `codegen/`, or any build configuration
+- No changes to `cpp/`, `tests/`, `data/`, `codegen/`, or any build configuration

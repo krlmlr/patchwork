@@ -1,3 +1,10 @@
+# game-setup Specification
+
+## Purpose
+Defines the `GameSetup` type that encodes the initial circular arrangement of all 33 patches at the start of a game.
+
+## Requirements
+
 ### Requirement: GameSetup encodes the initial patch circle arrangement
 
 `GameSetup` SHALL hold the initial circular arrangement of all 33 patches as a `std::array<uint8_t, 33>` of integer patch IDs (0–32). The constructor SHALL accept a 33-character `std::string_view` of single-char patch names and convert each character to its integer ID by looking up the patch catalog.
@@ -22,14 +29,14 @@
 - **THEN** the output contains a single newline-terminated JSON object
 - **AND** the object has `"type": "setup"` and `"circle": "<33-char-string>"`
 
-### Requirement: Canonical setups are embedded in `src/generated/game_setups.hpp`
+### Requirement: Canonical setups are embedded in `cpp/generated/game_setups.hpp`
 
-The repository SHALL contain a committed generated header `src/generated/game_setups.hpp` produced by `codegen/generate_setups.R`, defining a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` in namespace `patchwork`, where `kNumGameSetups` is a named constant matching the value hard-coded in the R script (initially `100`). Generating more setups in future SHALL leave the first 100 entries unchanged.
+The repository SHALL contain a committed generated header `cpp/generated/game_setups.hpp` produced by `codegen/generate_setups.R`, defining a `constexpr std::array<std::string_view, kNumGameSetups>` named `kGameSetups` in namespace `patchwork`, where `kNumGameSetups` is a named constant matching the value hard-coded in the R script (initially `100`). Generating more setups in future SHALL leave the first 100 entries unchanged.
 
 #### Scenario: Generated header is present and contains 100 entries
 
 - **WHEN** the repository is cloned
-- **THEN** `src/generated/game_setups.hpp` exists and `patchwork::kGameSetups` has exactly 100 entries
+- **THEN** `cpp/generated/game_setups.hpp` exists and `patchwork::kGameSetups` has exactly 100 entries
 
 #### Scenario: Each entry is a valid permutation of patch names
 
