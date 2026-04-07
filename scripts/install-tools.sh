@@ -29,10 +29,10 @@ rig system add-pak
 # Configure R to use PPM pre-built binaries for Ubuntu 24.04 (noble)
 # Both options are required: repos tells R where to download from; HTTPUserAgent
 # tells PPM this is a Linux R client so it serves binaries instead of sources.
-# rig sets up ACLs on the R installation for the current user, so no sudo needed.
+# Rprofile.site is owned by root, so sudo tee -a is required.
 # ---------------------------------------------------------------------------
 R_PROFILE_SITE=$(Rscript --no-save --no-restore -e 'cat(file.path(R.home("etc"), "Rprofile.site"))')
-cat >> "$R_PROFILE_SITE" <<'REOF'
+sudo tee -a "$R_PROFILE_SITE" > /dev/null <<'REOF'
 options(
   repos = c(PPM = "https://packagemanager.posit.co/cran/__linux__/noble/latest"),
   HTTPUserAgent = sprintf(
