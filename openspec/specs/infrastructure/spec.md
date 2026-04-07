@@ -2,9 +2,7 @@
 
 ## Purpose
 Defines the build system, developer environment, task automation, and R toolchain setup that enable every contributor and AI agent to build, test, and run the project reproducibly.
-
 ## Requirements
-
 ### Requirement: Project builds with Meson
 The project SHALL use Meson as its build system. Running `meson setup build && ninja -C build` SHALL produce a working test binary without errors or warnings.
 
@@ -224,3 +222,43 @@ An `R/` directory SHALL exist at the project root and contain at minimum `patche
 #### Scenario: Setup helper functions are defined in R/setups.R
 - **WHEN** `pkgload::load_all()` is called
 - **THEN** the functions `generate_setups` and `generate_patches` (or equivalently named top-level generators) are available
+
+### Requirement: Spec catalog index exists
+The file `openspec/specs/README.md` SHALL exist and SHALL list every spec currently in `openspec/specs/`, grouped by domain.
+
+#### Scenario: Every spec folder is represented
+- **WHEN** a developer opens `openspec/specs/README.md`
+- **THEN** every subdirectory of `openspec/specs/` (excluding `README.md` itself) SHALL have an entry in the catalog under its assigned domain
+
+### Requirement: Domain taxonomy is defined
+The catalog SHALL define all domains with a one-sentence description of each. Domains SHALL cover at minimum: **Infrastructure**, **Data**, **Game Core**, **Game Logic**, **Engine**, **TUI**, **Agents**, **Analysis**.
+
+#### Scenario: Each domain has a description
+- **WHEN** a developer reads the catalog
+- **THEN** each domain heading SHALL be accompanied by a description explaining what kinds of specs belong there
+
+### Requirement: Decision rules assign each spec to exactly one domain
+The catalog SHALL provide numbered, unambiguous decision rules so that a new spec can be assigned to exactly one domain without discussion. The rules SHALL cover all defined domains and SHALL specify a tiebreaker for ambiguous cases.
+
+#### Scenario: Unambiguous assignment for a new spec
+- **WHEN** a developer needs to assign a new spec to a domain
+- **THEN** following the decision rules in order SHALL yield exactly one domain with no remaining ambiguity
+
+#### Scenario: Cross-cutting specs have a defined tiebreaker
+- **WHEN** a spec appears to fit two domains
+- **THEN** the decision rules SHALL specify which domain wins
+
+### Requirement: Naming convention is documented
+The catalog SHALL document the kebab-case naming convention for spec folders and provide guidance on deriving a spec name from a capability description.
+
+#### Scenario: New spec name can be determined without ambiguity
+- **WHEN** a developer is creating a new spec for a capability
+- **THEN** the catalog SHALL provide enough guidance to choose a spec folder name without needing to ask someone else
+
+### Requirement: Catalog is kept up to date
+Every change that adds or removes a spec SHALL include a task step to update `openspec/specs/README.md`.
+
+#### Scenario: Change tasks include a catalog update step
+- **WHEN** a change's `tasks.md` introduces a new spec
+- **THEN** the tasks list SHALL include an explicit step: "Update `openspec/specs/README.md` to add the new spec under its domain"
+
