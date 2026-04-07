@@ -16,7 +16,7 @@ _(none)_
 
 ### Modified Capabilities
 
-- `game-logger`: All three NDJSON events gain richer fields — `game_start` adds the initial patch circle string; `move` adds `income`, `free_spaces`, `board_value`, and a circle snapshot; `game_end` adds per-player `income` and `free_spaces`
+- `engine`: All three NDJSON events gain richer fields — `game_start` adds the initial patch circle string; `move` adds `income`, `free_spaces`, `board_value`, and a circle snapshot; `game_end` adds per-player `income` and `free_spaces`
 
 ## Impact
 
