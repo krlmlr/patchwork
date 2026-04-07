@@ -1,3 +1,10 @@
+# mise-tasks Specification
+
+## Purpose
+Defines the convention that every useful developer or agent project action is accessible via a `mise run <task>` entry in `.mise.toml`.
+
+## Requirements
+
 ### Requirement: Every useful project action is runnable through mise
 The repository SHALL maintain the invariant that every useful developer or agent action has a corresponding `mise run <task>` entry in `.mise.toml`. Whenever a new useful action is introduced to the project, a mise task for it SHALL be added in the same change.
 
@@ -38,9 +45,9 @@ The `.mise.toml` SHALL configure `[env] _.path` to include `{{config_root}}/buil
 - **THEN** the shell resolves the binary from the `build/` directory
 
 ### Requirement: mise tasks are the primary entry point in project documentation
-> **Note:** This requirement applies once project documentation specs are written. It is a cross-cutting constraint to be enforced when documentation specs are created or updated.
+Project documentation SHALL reference `mise run <task>` as the canonical invocation for every documented project action. The underlying raw commands MAY be shown as secondary details, but mise tasks SHALL be presented first.
 
-When developer or end-user documentation for this project exists, that documentation SHALL reference `mise run <task>` as the canonical invocation for every documented project action. The underlying raw commands MAY be shown as secondary details, but mise tasks SHALL be presented first.
+> **Note:** This requirement applies once project documentation specs are written. It is a cross-cutting constraint to be enforced when documentation specs are created or updated.
 
 #### Scenario: documentation references mise for build steps
 - **GIVEN** project documentation describes how to build or test the project

@@ -1,3 +1,10 @@
+# tui-display Specification
+
+## Purpose
+Defines the TUI display module that renders the full game state as a responsive box-framed layout in the terminal.
+
+## Requirements
+
 ### Requirement: Game state is rendered as a responsive box-framed ASCII layout
 
 The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. **Every row in the rendered frame SHALL have the same visual display width equal to the terminal column count `W`; the right border character (or corner) SHALL appear at exactly the same horizontal position on every row.** The frame SHALL contain five sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side with the event log to the right, (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported.
@@ -77,7 +84,7 @@ The display SHALL apply ANSI 16-color codes using named constants defined in `di
 
 ### Requirement: NDJSON log pane is resizable
 
-The bottom NDJSON log pane height (in lines) is controlled at runtime. **The initial height is set so that the frame fills the entire terminal minus the last line** (i.e., `cfg.height - 1` total rows). Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `,` / `.` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts. **When the NDJSON pane height decreases the freed rows are used for additional patch-circle detail lines, and vice versa** (the total frame height stays constant at `cfg.height - 1`). The NDJSON height is clamped at render time so it never overflows the terminal.
+The NDJSON log pane height SHALL be controllable at runtime via keyboard shortcuts. The bottom NDJSON log pane height (in lines) is controlled at runtime. **The initial height is set so that the frame fills the entire terminal minus the last line** (i.e., `cfg.height - 1` total rows). Four keyboard shortcuts adjust the height: `m` (toggle minimize/restore), `f` (maximize to fill available rows), `h` (semi-maximize to `floor(max / 2)` lines), and `,` / `.` (decrement / increment by 1, clamped to 0 … max). A header bar for the NDJSON pane is always visible (1 line) even when the height is 0, showing the current height and the shortcuts. **When the NDJSON pane height decreases the freed rows are used for additional patch-circle detail lines, and vice versa** (the total frame height stays constant at `cfg.height - 1`). The NDJSON height is clamped at render time so it never overflows the terminal.
 
 #### Scenario: Minimize hides all NDJSON lines
 

@@ -1,3 +1,10 @@
+# play-driver Specification
+
+## Purpose
+Defines the play driver executable that runs a complete game between two random agents and writes the NDJSON game log to stdout or a file.
+
+## Requirements
+
 ### Requirement: Play driver runs a complete game between two random agents and writes a log
 
 The play driver executable SHALL accept `--seed <n>` and `--setup <id>` command-line arguments, run a full game between two random agents on the given setup starting with the given seed, and write the NDJSON game log to stdout. An optional `--output <file>` argument SHALL redirect the log to a file instead.
@@ -18,6 +25,7 @@ The play driver executable SHALL accept `--seed <n>` and `--setup <id>` command-
 - **THEN** the log is written to `game.ndjson` and nothing is written to stdout
 
 ### Requirement: Play driver reports an error for invalid arguments
+The play driver SHALL print a usage message to stderr and exit with a non-zero code when `--seed` or `--setup` is missing or non-numeric.
 
 - **WHEN** `--seed` or `--setup` is missing or non-numeric
 - **THEN** the play driver prints a usage message to stderr and exits with a non-zero code
