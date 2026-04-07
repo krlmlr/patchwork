@@ -21,6 +21,10 @@ apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 curl -Ls https://github.com/r-lib/rig/releases/download/latest/rig-linux-$(arch)-latest.tar.gz | tar xz -C /usr/local
 rig add release
+# Set up the per-user R library and install pak into the system library so
+# that pak is available when running as root (e.g. during sudo invocations).
+rig system setup-user-lib
+rig system add-pak
 
 # ---------------------------------------------------------------------------
 # Configure R to use PPM pre-built binaries for Ubuntu 24.04 (noble)

@@ -1,5 +1,8 @@
 ## ADDED Requirements
 
+### Requirement: rig user library and pak are set up system-wide
+After installing R via `rig add release`, `install-tools.sh` SHALL call `rig system setup-user-lib` and `rig system add-pak` so that pak is available in the system R library (accessible when the script runs as root via `sudo`) before any `Rscript -e 'pak::...'` call is made.
+
 ### Requirement: PPM binary repository is configured for all R package installs
 `install-tools.sh` SHALL write a site-wide `Rprofile.site` entry that sets the necessary options for the PPM binary CRAN mirror for Ubuntu 24.04 (`noble`) (perhaps `repos` **and** the `HTTPUserAgent` string that PPM requires to serve Linux binaries), before any R package installation occurs.
 
