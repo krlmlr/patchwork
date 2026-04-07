@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: R codegen script is a thin entry point
 The file `codegen/generate_patches.R` SHALL contain only: a call to `pkgload::load_all(quiet = TRUE)`, any path or argument setup, and a single call to the top-level `generate_patches()` function defined in `R/patches.R`. All logic (spec assertions, shape helpers, code emission) SHALL reside in `R/patches.R`.
