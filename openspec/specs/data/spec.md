@@ -4,7 +4,6 @@
 Defines the canonical data files that are the single source of truth for game content, the code-generation pipelines that produce committed C++ headers from those files, and the shared game terminology glossary.
 
 ## Requirements
-
 ### Requirement: YAML catalog is single source of truth
 The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. No patch data SHALL be hardcoded anywhere in the C++ source directly.
 
@@ -68,6 +67,14 @@ The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write
 #### Scenario: Patch name matches catalog
 - **WHEN** any patch is accessed from the generated array
 - **THEN** its `name` field contains the single character specified in the corresponding entry in `data/patches.yaml`
+
+### Requirement: R codegen script for patches is a thin entry point
+The file `codegen/generate_patches.R` SHALL contain only: a call to `pkgload::load_all(quiet = TRUE)`, any path or argument setup, and a single call to the top-level `generate_patches()` function defined in `R/patches.R`. All logic (spec assertions, shape helpers, code emission) SHALL reside in `R/patches.R`.
+
+#### Scenario: Script delegates to package function
+- **WHEN** `Rscript codegen/generate_patches.R` is run from the project root
+- **THEN** `pkgload::load_all()` is called first and then `generate_patches()` is invoked
+- **AND** the generated `cpp/generated/patches.hpp` is byte-for-byte identical to what the original script produced
 
 ### Requirement: Glossary Markdown file is the single source of truth for game terminology
 
