@@ -7,4 +7,4 @@
 
 ## 2. Validation
 
-- [ ] 2.1 Manual: Trigger a CI run and confirm the "Install R package dependencies" step completes faster than before
+- [x] 2.1 Manual: Trigger a CI run and confirm the "Install R package dependencies" step completes faster than before
