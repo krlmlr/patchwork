@@ -1,41 +1,15 @@
 ## ADDED Requirements
 
 ### Requirement: PPM binary repository is configured for all R package installs
-`install-tools.sh` SHALL write a site-wide `Rprofile.site` entry that sets both the PPM binary CRAN mirror for Ubuntu 24.04 (`noble`) **and** the `HTTPUserAgent` string that PPM requires to serve Linux binaries, before any R package installation occurs.
-
-#### Scenario: PPM URL is present after install-tools.sh runs
-- **WHEN** `install-tools.sh` completes on Ubuntu 24.04
-- **THEN** `Rscript -e 'getOption("repos")'` returns a URL containing `packagemanager.posit.co` and `noble`
-
-#### Scenario: HTTPUserAgent is set after install-tools.sh runs
-- **WHEN** `install-tools.sh` completes on Ubuntu 24.04
-- **THEN** `Rscript -e 'getOption("HTTPUserAgent")'` returns a string of the form `R/<version> R (<version> <platform> <arch> <os>)`
+`install-tools.sh` SHALL write a site-wide `Rprofile.site` entry that sets the necessary options for the PPM binary CRAN mirror for Ubuntu 24.04 (`noble`) (perhaps `repos` **and** the `HTTPUserAgent` string that PPM requires to serve Linux binaries), before any R package installation occurs.
 
 ### Requirement: Binary installation is verified by a smoke test
-The smoke-test section of `install-tools.sh` SHALL install `DBI` using `pak::pkg_install("DBI", ask = FALSE)` and assert that no C compiler or `R CMD INSTALL` from source was invoked, confirming PPM served a pre-built binary.
+The smoke-test section of `install-tools.sh` SHALL install `DBI` using `pak::pkg_install("DBI", ask = FALSE)` and assert that no install from source was invoked, confirming PPM served a pre-built binary.
 
 #### Scenario: DBI installs as binary without source compilation
 - **WHEN** `install-tools.sh` runs the DBI smoke test on Ubuntu 24.04 with PPM configured
-- **THEN** `pak::pkg_install("DBI", ask = FALSE)` completes without printing any `gcc`/`g++`/`R CMD INSTALL` compilation output, and DBI appears in the installed packages list
+- **THEN** `pak::pkg_install("DBI", ask = FALSE)` completes without printing any reference to source install, and DBI appears in the installed packages list
 
 #### Scenario: pak uses PPM when installing packages
 - **WHEN** `Rscript -e 'pak::pak()'` is executed after `install-tools.sh`
 - **THEN** packages are downloaded as pre-built binaries (no compilation from source for packages with available binaries)
-
-### Requirement: GHA CI workflow caches the R package library
-The `ci.yml` workflow SHALL include an `actions/cache` step for the R package library path, keyed on the hash of `DESCRIPTION`, placed before the R package installation step.
-
-#### Scenario: Cache hit skips package installation network requests
-- **WHEN** `DESCRIPTION` has not changed since the last successful CI run
-- **THEN** the `actions/cache` step reports a cache hit and the install step completes without downloading packages
-
-#### Scenario: Cache miss triggers fresh install
-- **WHEN** `DESCRIPTION` has changed or no cache exists
-- **THEN** packages are installed (using PPM binaries) and the result is saved to the cache
-
-### Requirement: Copilot setup workflow caches the R package library
-The `copilot-setup-steps.yml` workflow SHALL include the same `actions/cache` configuration as `ci.yml` for the R package library.
-
-#### Scenario: Copilot setup uses cached packages on repeated runs
-- **WHEN** the Copilot setup workflow is triggered and `DESCRIPTION` is unchanged
-- **THEN** the cache step reports a hit and R packages are not re-downloaded
