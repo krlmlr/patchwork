@@ -1,29 +1,32 @@
 ## Why
 
-The `openspec/specs/` directory has grown organically across multiple changes and now contains specs from different domains (infrastructure, game core, game logic, agents) with no grouping or discovery aid. As more specs are added each phase, navigating and understanding the full capability surface becomes harder. Without explicit decision rules, new specs end up with inconsistent names and arbitrary domain assignments, making it harder for both humans and AI agents to reason about the spec surface.
+The `openspec/specs/` directory had grown to 19 capability-level spec files with no domain grouping. The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) shows specs organised **by domain** (`auth/spec.md`, `payments/spec.md`), not by individual capability. Without domain-level organisation, it is hard to navigate, requirements are scattered across many small files, and AI agents have no context about which requirements belong together. Without explicit decision rules, new requirements end up in inconsistent places.
 
 ## What Changes
 
-- Add `openspec/specs/README.md` — a human- and AI-readable catalog that:
-  - Groups every existing spec under a named domain
-  - Provides a one-sentence description of each domain
-  - States clear, unambiguous decision rules for assigning a new spec to exactly one domain
-  - Lists all in-progress specs (simplified-rules) and their domains
-  - Documents the kebab-case naming convention for spec folder names
-- No existing spec files are moved or renamed. The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) defines specs at one level deep (`openspec/specs/<name>/spec.md`); the current structure already matches this pattern. A two-level domain/spec nesting is not supported by the tooling.
+- **Restructure `openspec/specs/` to domain-level spec files** — one `spec.md` per domain, following the OpenSpec-documented pattern. The 19 old capability-level specs are merged into 7 domain spec files:
+  - `infrastructure/spec.md` (build system, devcontainer, mise tasks, R toolchain)
+  - `data/spec.md` (patch catalog, glossary)
+  - `game-core/spec.md` (game state types, game setup)
+  - `game-logic/spec.md` (move generation, move application, terminal/scoring)
+  - `engine/spec.md` (play driver, game logger)
+  - `tui/spec.md` (display, input, launch, undo/redo)
+  - `agents/spec.md` (random agent)
+- **Add `openspec/specs/README.md`** — catalog with domain descriptions, decision rules, and naming convention.
+- **Add TUI as an eighth domain** — the four TUI specs (`tui-display`, `tui-input`, `tui-launch`, `tui-undo-redo`) are a coherent interactive UI layer distinct from the engine, matching OpenSpec's `ui/` domain example.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `spec-catalog`: An index document at `openspec/specs/README.md` that organises all specs by domain, defines the domain taxonomy with decision rules, and serves as the authoritative guide for naming and placing future specs.
+- Requirements about the spec catalog (index, taxonomy, decision rules, naming convention) are added to `infrastructure/spec.md` via the `organize-specs/specs/infrastructure/spec.md` delta.
 
 ### Modified Capabilities
 
-_(none)_
+- All 19 capability-level spec folders replaced by 7 domain-level spec folders.
 
 ## Impact
 
-- Documentation only. No code, build, or test changes.
-- Every future change MUST consult `openspec/specs/README.md` before choosing a spec name or domain.
-- Every future change that adds a spec MUST also update the catalog.
+- The `openspec archive` CLI maps `changes/<change>/specs/<entry>/spec.md` to `openspec/specs/<entry>/spec.md`. Domain-level spec names (`infrastructure`, `data`, `game-core`, etc.) work identically — new changes simply target the domain spec folder instead of a capability folder.
+- Active change `r-package-structure` has had its delta specs updated to target the new domain names.
+- Every future change MUST target the appropriate domain spec and update `openspec/specs/README.md`.

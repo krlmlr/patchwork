@@ -1,7 +1,7 @@
-# tui-display Specification
+# TUI Specification
 
 ## Purpose
-Defines the TUI display module that renders the full game state as a responsive box-framed layout in the terminal.
+Defines the terminal user interface: display rendering, keyboard input handling, game session launch, and undo/redo history. The TUI lets a human play interactively against the random agent.
 
 ## Requirements
 
@@ -158,3 +158,223 @@ The display module SHALL maintain a bounded event log buffer of at most 50 entri
 
 - **WHEN** wrap mode is active and the horizontal scroll offset is non-zero
 - **THEN** rendered log lines are wrapped to the pane width and the offset has no effect on the output
+
+### Requirement: Input loop reads single keypress commands
+
+The input module SHALL provide a blocking `read_command` function that returns a typed `Command` variant without requiring the user to press Enter. Valid commands are: `BuyPatch{int index}` (**keys `1`, `2`, `3` map to `BuyPatch{0}`, `BuyPatch{1}`, `BuyPatch{2}` respectively** — 1-indexed keys for the first three buyable patches), `Advance` (keys `a` or Space), `Undo` (keys `z` or `u`), `Redo` (keys `Z` or `r`), `ScrollLogLeft` (key `<`), `ScrollLogRight` (key `>`), `ToggleLogWrap` (key `w`), `NdjsonToggleMinimize` (key `m`), `NdjsonMaximize` (key `f`), `NdjsonSemiMaximize` (key `h`), `NdjsonDecrLines` (key `,`), `NdjsonIncrLines` (key `.`), and `Quit` (key `q` or `Q`). Any other key SHALL be silently ignored and `read_command` SHALL continue waiting.
+
+#### Scenario: Digit key produces BuyPatch command
+
+- **WHEN** the user presses key `2`
+- **THEN** `read_command` returns `BuyPatch{1}` (second buyable patch, 0-indexed internally)
+
+#### Scenario: 'a' key produces Advance command
+
+- **WHEN** the user presses key `a`
+- **THEN** `read_command` returns `Advance{}`
+
+#### Scenario: Space key also produces Advance command
+
+- **WHEN** the user presses the Space key
+- **THEN** `read_command` returns `Advance{}`
+
+#### Scenario: 'z' key produces Undo command
+
+- **WHEN** the user presses key `z`
+- **THEN** `read_command` returns `Undo{}`
+
+#### Scenario: 'Z' key produces Redo command
+
+- **WHEN** the user presses key `Z`
+- **THEN** `read_command` returns `Redo{}`
+
+#### Scenario: 'q' key produces Quit command
+
+- **WHEN** the user presses key `q`
+- **THEN** `read_command` returns `Quit{}`
+
+#### Scenario: Unrecognised keys are ignored
+
+- **WHEN** the user presses key `x`
+- **THEN** `read_command` does not return and continues waiting for a valid key
+
+#### Scenario: '<' key produces ScrollLogLeft command
+
+- **WHEN** the user presses key `<`
+- **THEN** `read_command` returns `ScrollLogLeft{}`
+
+#### Scenario: '>' key produces ScrollLogRight command
+
+- **WHEN** the user presses key `>`
+- **THEN** `read_command` returns `ScrollLogRight{}`
+
+#### Scenario: 'w' key produces ToggleLogWrap command
+
+- **WHEN** the user presses key `w`
+- **THEN** `read_command` returns `ToggleLogWrap{}`
+
+#### Scenario: 'm' key produces NdjsonToggleMinimize command
+
+- **WHEN** the user presses key `m`
+- **THEN** `read_command` returns `NdjsonToggleMinimize{}`
+
+#### Scenario: 'f' key produces NdjsonMaximize command
+
+- **WHEN** the user presses key `f`
+- **THEN** `read_command` returns `NdjsonMaximize{}`
+
+#### Scenario: 'h' key produces NdjsonSemiMaximize command
+
+- **WHEN** the user presses key `h`
+- **THEN** `read_command` returns `NdjsonSemiMaximize{}`
+
+#### Scenario: ',' key produces NdjsonDecrLines command
+
+- **WHEN** the user presses key `,`
+- **THEN** `read_command` returns `NdjsonDecrLines{}`
+
+#### Scenario: '.' key produces NdjsonIncrLines command
+
+- **WHEN** the user presses key `.`
+- **THEN** `read_command` returns `NdjsonIncrLines{}`
+
+### Requirement: RawMode guard enables and restores terminal raw mode
+
+The input module SHALL provide a `RawMode` RAII class. Its constructor SHALL switch the terminal to raw mode (no echo, no line buffering). Its destructor SHALL restore the original `termios` settings unconditionally. The guard SHALL also register an `atexit` handler to restore settings if the process exits abnormally.
+
+#### Scenario: Terminal is in raw mode while guard is alive
+
+- **WHEN** a `RawMode` object is constructed
+- **THEN** subsequent reads from `stdin` return each character immediately without waiting for Enter
+
+#### Scenario: Terminal is restored when guard is destroyed
+
+- **WHEN** a `RawMode` object goes out of scope
+- **THEN** the terminal's `termios` settings match the saved settings captured at construction time
+
+### Requirement: Command is only dispatched when it is legal
+
+The input loop SHALL check whether the resolved `Move` is present in the legal moves list returned by `generate_moves` before applying it. Illegal commands (e.g., `BuyPatch{3}` when fewer than 4 patches are in the circle, or any move when the game is terminal) SHALL be silently ignored; the display SHALL be refreshed with no state change.
+
+#### Scenario: Illegal BuyPatch index is ignored
+
+- **WHEN** only 2 patches are visible in the circle and the user presses `3`
+- **THEN** the game state is unchanged and no error is shown
+
+#### Scenario: Any move after game end is ignored
+
+- **WHEN** the game is in a terminal state
+- **THEN** any key press except `z` (undo) or `q` (quit) is silently ignored
+
+### Requirement: Launch screen collects game configuration before starting
+
+When `patchwork-tui` starts, it SHALL display a launch screen that prompts the user to enter: (1) a game setup index (0–99, default 0), (2) a random seed (any non-negative integer, default 42). The opponent is always the built-in random agent for this phase. The user confirms with Enter. Invalid input SHALL display an inline error and re-prompt the same field without clearing earlier entries.
+
+#### Scenario: Valid input starts the game with the given configuration
+
+- **WHEN** the user enters setup index `3` and seed `100` and presses Enter
+- **THEN** the game session starts with `kGameSetups[3]` and the `RandomAgent` seeded with `100`
+
+#### Scenario: Out-of-range setup index is rejected
+
+- **WHEN** the user enters setup index `200` (out of range 0–99)
+- **THEN** an error message is shown and the setup index prompt is re-displayed
+
+#### Scenario: Non-numeric seed input is rejected
+
+- **WHEN** the user enters a non-numeric string for the seed field
+- **THEN** an error message is shown and the seed prompt is re-displayed
+
+#### Scenario: Empty input uses default values
+
+- **WHEN** the user presses Enter without typing a value for setup index or seed
+- **THEN** setup index defaults to `0` and seed defaults to `42`
+
+### Requirement: Launch screen displays minimum terminal size check
+
+The launch screen SHALL call `init_display` before rendering, inheriting the terminal-size guard: if the terminal is too small the process exits with an error before showing any prompt.
+
+#### Scenario: Small terminal exits before launch screen
+
+- **WHEN** the terminal has fewer than 80 columns
+- **THEN** the process exits with a non-zero status and a message naming the minimum dimensions, without displaying the launch screen
+
+### Requirement: Game session ends with a result summary
+
+After the game reaches a terminal state (or the user presses `q`), the TUI SHALL clear the screen and print a summary showing each player's final score (buttons minus 2× free spaces, plus 7 for the bonus tile if claimed) and declare a winner.
+
+#### Scenario: Result summary shows correct scores
+
+- **WHEN** the game ends with player 0 having 14 buttons and 0 free spaces (no bonus) and player 1 having 10 buttons and 4 free spaces (no bonus)
+- **THEN** the summary shows player 0 score `14`, player 1 score `2`, and declares player 0 the winner
+
+#### Scenario: Bonus tile is reflected in summary
+
+- **WHEN** player 1 claimed the 7×7 bonus tile
+- **THEN** player 1's displayed score includes an additional `+7`
+
+### Requirement: History stack stores `(GameState, RngState)` pairs
+
+The `History` class SHALL store a sequence of `HistoryEntry` values, where each entry pairs a `GameState` snapshot with an `RngState` snapshot capturing the full `std::mt19937_64` state of the random agent at that point. The initial entry is pushed at construction. Each call to `push` appends a new entry and advances the cursor to it. When `push` is called with a cursor that is not at the end (i.e., after one or more undos), all entries above the cursor SHALL be discarded before appending.
+
+#### Scenario: Initial entry is stored at construction
+
+- **WHEN** a `History` is constructed with a given `GameState` and initial `RngState`
+- **THEN** `current_state()` returns that `GameState`, `current_rng()` returns that `RngState`, and `can_undo()` returns `false`
+
+#### Scenario: Push advances the cursor
+
+- **WHEN** `push` is called with a new `GameState` and `RngState`
+- **THEN** `current_state()` returns the new `GameState` and `can_undo()` returns `true`
+
+#### Scenario: Push after undo discards future entries
+
+- **WHEN** the history has entries [E0, E1, E2] with cursor at E1 (after one undo) and `push(E3)` is called
+- **THEN** the history contains [E0, E1, E3], `current_state()` returns E3's state, and `can_redo()` returns `false`
+
+### Requirement: Undo and redo move the cursor without losing entries
+
+`undo` SHALL decrement the cursor by one if `can_undo()` is true, otherwise it SHALL be a no-op. `redo` SHALL increment the cursor by one if `can_redo()` is true, otherwise it SHALL be a no-op. Neither operation SHALL modify stored entries.
+
+#### Scenario: Undo moves cursor back
+
+- **WHEN** history has [E0, E1] with cursor at E1 and `undo` is called
+- **THEN** `current_state()` returns E0's state and `can_redo()` returns `true`
+
+#### Scenario: Redo moves cursor forward
+
+- **WHEN** history has [E0, E1] with cursor at E0 (after undo) and `redo` is called
+- **THEN** `current_state()` returns E1's state and `can_undo()` returns `true`
+
+#### Scenario: Undo at beginning is a no-op
+
+- **WHEN** `can_undo()` returns `false` and `undo` is called
+- **THEN** `current_state()` is unchanged and no exception is thrown
+
+#### Scenario: Redo at end is a no-op
+
+- **WHEN** `can_redo()` returns `false` and `redo` is called
+- **THEN** `current_state()` is unchanged and no exception is thrown
+
+### Requirement: Redo produces deterministic opponent moves via saved RNG state
+
+After redo, the random agent SHALL be reseeded with the `RngState` saved in the restored entry, ensuring that the opponent's next move is identical to the move that was originally played after that position.
+
+#### Scenario: Opponent move after redo matches original
+
+- **WHEN** a move sequence [player move, opponent move] has been recorded, the player undoes to before the player move, and then redoes
+- **THEN** the opponent's subsequent move is identical to the original opponent move that was recorded
+
+#### Scenario: Opponent move after new branch differs from original
+
+- **WHEN** the player undoes and then makes a different player move (creating a new branch)
+- **THEN** the opponent's move after the new branch need not match any previously recorded opponent move (it depends on the RNG state at the branch point)
+
+### Requirement: History is unit tested
+
+All `History` behaviours SHALL have Catch2 unit tests covering construction, push, push-after-undo truncation, undo, redo, boundary no-ops, and deterministic redo via saved `RngState`.
+
+#### Scenario: Tests exist and pass
+
+- **WHEN** `meson test -C build` is run
+- **THEN** all history tests pass with exit code 0

@@ -1,60 +1,66 @@
 ## Context
 
-The `openspec/specs/` directory holds the canonical, living specification of every system capability. Specs accumulate as phases are completed — each archived change promotes its specs into `openspec/specs/`. With seven specs already present and more arriving each phase, the flat directory is increasingly hard to navigate and gives AI agents no signal about domain groupings, naming conventions, or where to place new specs.
+The `openspec/specs/` directory had grown to 19 capability-level spec files (`build-system`, `game-state`, `move-generation`, `tui-display`, etc.) with no domain grouping. The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) is explicit: specs should be organised by domain (`auth/spec.md`, `payments/spec.md`), not by individual capability. Domain-level specs serve as coherent contracts — a single document describes all behavior within a domain, and changes produce targeted deltas against it. Capability-level specs fragment related requirements and make `MODIFIED Requirements` deltas harder to issue because an author must find the right small file rather than the right domain.
 
-Without explicit decision rules, a contributor proposing a new spec (human or AI) must guess which domain applies, resulting in:
-- Inconsistent spec names (no signal whether a spec is about the engine, an agent, or the data layer)
-- Ambiguous domain placement for cross-cutting concerns (e.g. "does a logging spec go in Engine or Infrastructure?")
-- No single reference that enumerates all current capabilities in one place
+Without domain organisation, contributors and AI agents:
+- Scatter related requirements across many small files
+- Create redundant specs that partially overlap with existing ones
+- Have no single reference for the current full capability surface
 
-The fix is a `README.md` in `openspec/specs/` that acts as the authoritative catalog and decision guide.
+The fix is to merge all 19 capability-level specs into 7 domain-level spec files, add a `README.md` catalog, and update the active `r-package-structure` change to target the new domain names.
 
 ## Goals / Non-Goals
 
 **Goals:**
+- Restructure `openspec/specs/` to one `spec.md` per domain following the OpenSpec-documented pattern.
 - Define a fixed domain taxonomy aligned with roadmap phases.
-- State unambiguous decision rules so any new spec can be assigned to exactly one domain without discussion.
-- List every current spec (including in-progress `simplified-rules` specs) with its domain.
-- Document the kebab-case naming convention.
+- Add TUI as a distinct domain (the four TUI specs are a coherent interactive UI layer).
+- State unambiguous decision rules so any new requirement can be assigned to exactly one domain.
+- Document the naming convention.
+- Update active change deltas to target domain names.
 
 **Non-Goals:**
-- Moving spec folders into domain subdirectories (e.g. `openspec/specs/game-core/game-state/`). The [OpenSpec documentation](https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md#specs) shows specs at exactly one level deep under `openspec/specs/` — `auth/spec.md`, `payments/spec.md`, etc. The patchwork specs already follow this documented pattern. Furthermore, the `openspec archive` command's `findSpecUpdates` function uses a non-recursive `readdir` to map `changes/<change>/specs/<name>/spec.md` directly to `openspec/specs/<name>/spec.md`; a two-level structure would break this mapping and any active delta spec (e.g. `simplified-game-state` in `simplified-rules`). Domain organisation is therefore expressed through the README catalog, not the filesystem.
+- Two-level nesting (`openspec/specs/game-core/game-state/`). The OpenSpec `archive` CLI maps `changes/<change>/specs/<entry>/spec.md` one-to-one to `openspec/specs/<entry>/spec.md` — the entry is just the domain folder name.
 - Automating spec discovery or generating the index programmatically.
-- Enforcing conventions via tooling (convention-by-documentation is sufficient at this scale).
 
 ## Decisions
 
-**Decision: README.md in `openspec/specs/`**
-A plain Markdown file is the lightest possible solution. It is human-readable in editors and on GitHub, AI-readable as plain text, and requires no tooling. Alternatives (a YAML manifest, a generated HTML page) add complexity with no benefit at the current scale.
+**Decision: Domain-level spec files**
+One `spec.md` per domain, not per capability. Requirements within a domain are collected in a flat `## Requirements` section. This is the OpenSpec-documented pattern and enables `MODIFIED Requirements` deltas to target a single file per domain.
 
-**Decision: Domain taxonomy based on roadmap phases**
-The roadmap already partitions the project into coherent phases. Using the same language makes it easy to trace roadmap phase → change → specs. Seven domains are defined:
+**Decision: Flat `## Requirements` section within each domain spec**
+The OpenSpec CLI (`specs-apply.js`) parses requirements from a single `## Requirements` section, stopped at the next `## ` header. Sub-grouping within Requirements via additional `##` headers would truncate the section or cause other requirements to be invisible to the archive command. Requirements remain flat; their names provide enough context (e.g., "Project builds with Meson" vs "Devcontainer provides a complete build environment").
 
-| Domain | What belongs here |
-|--------|------------------|
-| **Infrastructure** | Build system, developer tooling, devcontainer, task runners |
-| **Data** | Canonical data files, code-generation pipelines, patch catalog |
-| **Game Core** | Fundamental game-state types and initial setup structures |
-| **Game Logic** | Rules: legal moves, move application, terminal detection, scoring |
-| **Engine** | Game loop, play drivers, logging, reproducibility plumbing |
-| **Agents** | Any concrete agent (random, heuristic, MCTS, RL) |
-| **Analysis** | R analysis scripts, plot outputs, statistical summaries |
+**Decision: Eight domains (adding TUI)**
+The original seven-domain taxonomy omitted TUI. The four TUI specs (`tui-display`, `tui-input`, `tui-launch`, `tui-undo-redo`) form a coherent interactive UI layer matching OpenSpec's `ui/` domain example. TUI is added as the sixth domain (between Engine and Agents).
 
-**Decision rules (one domain per spec)**
-1. If the spec is about build, CI, developer environment, or task automation → **Infrastructure**
-2. If the spec is about canonical data files or code generation from data → **Data**
-3. If the spec defines a game-state *type* or the initial arrangement of the game → **Game Core**
-4. If the spec defines *what is legal* or *what happens* when a move is applied, or how the game ends → **Game Logic**
-5. If the spec is about running a game end-to-end (loop, driver, logging, seed/setup plumbing) → **Engine**
-6. If the spec defines a concrete decision-making strategy or agent interface → **Agents**
-7. If the spec is about offline analysis, plotting, or statistical summaries of game data → **Analysis**
+| Domain | Spec file | What belongs here |
+|--------|-----------|------------------|
+| **Infrastructure** | `infrastructure/spec.md` | Build system, developer tooling, devcontainer, task runners, R toolchain, spec catalog |
+| **Data** | `data/spec.md` | Canonical data files, code-generation pipelines, glossary |
+| **Game Core** | `game-core/spec.md` | Game-state types, initial setup structures |
+| **Game Logic** | `game-logic/spec.md` | Legal moves, move application, terminal detection, scoring |
+| **Engine** | `engine/spec.md` | Play drivers, NDJSON logging, seed/setup plumbing |
+| **TUI** | `tui/spec.md` | Terminal display, keyboard input, launch screen, undo/redo history |
+| **Agents** | `agents/spec.md` | Concrete decision-making strategies |
+| **Analysis** | *(future)* | Offline analysis scripts, plots, statistical summaries |
 
-If a spec seems to fit two domains, apply the highest-numbered rule that fits (rules are listed in specificity order, most specific last). If still ambiguous, prefer the narrower domain.
+**Decision rules (one domain per requirement)**
+1. Build, CI, developer environment, task automation, R toolchain, spec catalog governance → **Infrastructure**
+2. Canonical data files, code-generation pipelines, glossary → **Data**
+3. Game-state *type* (struct, encoding) or initial arrangement of game components → **Game Core**
+4. What is legal, what happens when a move is applied, game end, scoring → **Game Logic**
+5. Interactive terminal rendering, keyboard input, launch screen, undo/redo → **TUI**
+6. Running a game end-to-end non-interactively (loop, driver, logging, reproducibility) → **Engine**
+7. Concrete decision strategy or agent interface → **Agents**
+8. Offline analysis, plots, statistical summaries → **Analysis**
 
-**Decision: Flat spec folders remain unchanged**
-See Non-Goals above for the technical rationale.
+Tiebreaker: if a requirement fits two domains, apply the higher-numbered rule that fits (more specific wins). If still ambiguous, prefer the narrower domain.
+
+**Decision: Update r-package-structure deltas to target domain names**
+The active `r-package-structure` change had deltas using `## MODIFIED Requirements` targeting `game-setup` and `patch-catalog` — but those requirements did not exist in those specs. The deltas have been updated to `## ADDED Requirements` targeting `game-core` and `data` respectively, and the `r-package-infra` delta now targets `infrastructure`.
 
 ## Risks / Trade-offs
 
-- [Risk] README can drift out of sync as new specs are added. → Mitigation: each future change's `tasks.md` MUST include a step to update the catalog.
-- [Risk] Domain boundaries are sometimes ambiguous. → Mitigation: numbered decision rules are the tiebreaker; edge cases can be re-classified cheaply since only the README changes.
+- [Risk] README can drift out of sync as new requirements are added. → Mitigation: each future change's `tasks.md` MUST include a step to update the catalog.
+- [Risk] Domain boundaries are sometimes ambiguous. → Mitigation: numbered decision rules with a tiebreaker; edge cases are cheap to re-classify since only the domain spec and README change.

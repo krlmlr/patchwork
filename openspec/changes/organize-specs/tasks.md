@@ -1,13 +1,29 @@
-## 1. Create Spec Catalog
+## 1. Restructure Specs to Domain-Level
 
-- [ ] 1.1 Create `openspec/specs/README.md` with domain taxonomy headings: Infrastructure, Data, Game Core, Game Logic, Engine, Agents, Analysis
-- [ ] 1.2 Add a one-sentence description for each domain
-- [ ] 1.3 Add numbered decision rules (one per domain) for assigning any new spec to exactly one domain; include a tiebreaker rule for ambiguous cases
-- [ ] 1.4 List every existing spec under its domain with a one-line description: build-system, devcontainer, mise-tasks → Infrastructure; patch-catalog → Data; game-setup, game-state, simplified-game-state → Game Core
-- [ ] 1.5 List in-progress specs from `simplified-rules` with their domains: move-generation, move-application, terminal-and-scoring → Game Logic; game-logger, play-driver → Engine; random-agent → Agents; simplified-game-state (delta) → Game Core
-- [ ] 1.6 Document the kebab-case naming convention and guidance for deriving a spec name from a capability description
+- [x] 1.1 Create `openspec/specs/infrastructure/spec.md` (merge: build-system, devcontainer, mise-tasks, r-ppm-install)
+- [x] 1.2 Create `openspec/specs/data/spec.md` (merge: patch-catalog, game-glossary)
+- [x] 1.3 Create `openspec/specs/game-core/spec.md` (merge: game-state, simplified-game-state, game-setup)
+- [x] 1.4 Create `openspec/specs/game-logic/spec.md` (merge: move-generation, move-application, terminal-and-scoring)
+- [x] 1.5 Create `openspec/specs/engine/spec.md` (merge: play-driver, game-logger)
+- [x] 1.6 Create `openspec/specs/tui/spec.md` (merge: tui-display, tui-input, tui-launch, tui-undo-redo)
+- [x] 1.7 Create `openspec/specs/agents/spec.md` (merge: random-agent)
+- [x] 1.8 Remove all 19 old capability-level spec folders
 
-## 2. Verify Completeness
+## 2. Update Active Change Deltas
 
-- [ ] 2.1 Check that every subdirectory in `openspec/specs/` has an entry in the README
-- [ ] 2.2 Confirm README renders correctly on GitHub (check headings, links, formatting)
+- [x] 2.1 Update `r-package-structure/specs/game-setup/` → `r-package-structure/specs/game-core/` (ADDED requirement for setups codegen script)
+- [x] 2.2 Update `r-package-structure/specs/patch-catalog/` → `r-package-structure/specs/data/` (ADDED requirement for patches codegen script)
+- [x] 2.3 Update `r-package-structure/specs/r-package-infra/` → `r-package-structure/specs/infrastructure/` (ADDED requirements for DESCRIPTION, NAMESPACE, R/ directory)
+- [x] 2.4 Update `organize-specs/specs/spec-catalog/` → `organize-specs/specs/infrastructure/` (ADDED requirements for spec catalog index, taxonomy, decision rules, naming convention)
+
+## 3. Create Spec Catalog README
+
+- [x] 3.1 Update `openspec/specs/README.md` with 8-domain table (add TUI) linking to domain spec files
+- [x] 3.2 Add summary description for each domain
+- [x] 3.3 Add 8 numbered decision rules including TUI rule
+- [x] 3.4 Update naming convention section
+
+## 4. Verify Completeness
+
+- [x] 4.1 Confirm every subdirectory in `openspec/specs/` has an entry in the README
+- [x] 4.2 Confirm no old capability-level spec folder names remain in `openspec/specs/`
