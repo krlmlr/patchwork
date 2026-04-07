@@ -3,6 +3,7 @@
 - [ ] 1.1 Create `analysis/` directory at the repository root
 - [ ] 1.2 Create `analysis/output/` directory (add `.gitkeep` so it is tracked)
 - [ ] 1.3 Add a brief `analysis/README.md` documenting the purpose of the directory, required R packages, and how to re-run the script
+- [ ] 1.4 Update `openspec/specs/README.md` to link `analysis/spec.md` under the Analysis domain
 
 ## 2. Shape Feature Extraction
 

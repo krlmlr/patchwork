@@ -14,7 +14,7 @@ The patch catalog is the foundation of every game decision, but no quantitative 
 
 ### New Capabilities
 
-- `tile-value-analysis`: R-based analysis of patch gain per time cost, shape features, and time-position-dependent patch gain curves, producing committed plots and tables
+- `analysis`: R-based analysis of patch gain per time cost, shape features, and time-position-dependent patch gain curves, producing committed plots and tables. Adds `openspec/specs/analysis/spec.md` as the new Analysis domain spec.
 
 ### Modified Capabilities
 

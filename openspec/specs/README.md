@@ -19,7 +19,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 | [Engine](#engine) | [`engine/spec.md`](engine/spec.md) | Game loop, play drivers, NDJSON logging, seed/setup plumbing |
 | [TUI](#tui) | [`tui/spec.md`](tui/spec.md) | Terminal display rendering, keyboard input, game session launch, undo/redo history |
 | [Agents](#agents) | [`agents/spec.md`](agents/spec.md) | Concrete decision-making strategies and the agent interface |
-| [Analysis](#analysis) | *(no spec yet)* | R analysis scripts, plot outputs, statistical summaries of game data |
+| [Analysis](#analysis) | [`analysis/spec.md`](analysis/spec.md) | R analysis scripts, plot outputs, statistical summaries of game data |
 
 ---
 
@@ -83,7 +83,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > Offline analysis: R scripts, DuckDB queries, plots, and statistical tables produced from game logs or the patch catalog.
 
-*(No spec yet — arriving with Tile Analysis phase)*
+[`analysis/spec.md`](analysis/spec.md) covers: shape feature extraction (cells, perimeter, density), patch gain model (placement gain + projected income, normalised by time cost), time-position-dependent patch gain curves, summary CSV, and plots.
 
 ---
 
