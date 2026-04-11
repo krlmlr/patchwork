@@ -72,14 +72,14 @@ int main(int argc, char** argv) {
     }
     std::ostream& out = output_file.empty() ? std::cout : fout;
 
-    patchwork::log_game_start(out, seed, setup_id, state);
+    patchwork::log_game_start(out, seed, setup_id, state, setup);
 
     int ply = 0;
     while (!patchwork::is_terminal(state)) {
         int player = state.active_player();
         patchwork::Move mv = patchwork::random_move(state, setup, rng);
         state = patchwork::apply_move(state, mv, setup);
-        patchwork::log_move(out, ply, player, mv, state);
+        patchwork::log_move(out, ply, player, mv, state, setup);
         ++ply;
     }
 
