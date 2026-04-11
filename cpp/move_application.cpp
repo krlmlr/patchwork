@@ -1,15 +1,16 @@
 #include "move_application.hpp"
-#include "generated/patches.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cassert>
 
+#include "generated/patches.hpp"
+
 namespace patchwork {
 
 namespace {
 
-static constexpr std::array<int, 9> kIncomeSpaces      = {5, 11, 17, 23, 29, 35, 41, 47, 53};
+static constexpr std::array<int, 9> kIncomeSpaces = {5, 11, 17, 23, 29, 35, 41, 47, 53};
 static constexpr std::array<int, 5> kLeatherThresholds = {26, 32, 38, 44, 50};
 
 void apply_income_spaces(SimplifiedGameState& state, int player, int old_pos, int new_pos) {
@@ -21,13 +22,11 @@ void apply_income_spaces(SimplifiedGameState& state, int player, int old_pos, in
     }
 }
 
-void apply_leather_patches(SimplifiedGameState& state, int player,
-                           int old_pos, int new_pos,
+void apply_leather_patches(SimplifiedGameState& state, int player, int old_pos, int new_pos,
                            int pre_pos_0, int pre_pos_1) {
     for (int t : kLeatherThresholds) {
         if (old_pos < t && new_pos >= t && pre_pos_0 < t && pre_pos_1 < t) {
-            state.player(player).set_free_spaces(
-                state.player(player).free_spaces() - 1);
+            state.player(player).set_free_spaces(state.player(player).free_spaces() - 1);
         }
     }
 }
@@ -40,25 +39,23 @@ int next_active_player(int active, int active_pos, int opp, int opp_pos) noexcep
 }  // namespace
 
 SimplifiedGameState apply_move(SimplifiedGameState state, Move move, const GameSetup& setup) {
-    int active    = state.active_player();
-    int opp       = 1 - active;
+    int active = state.active_player();
+    int opp = 1 - active;
     int pre_pos_0 = state.player(0).position();
     int pre_pos_1 = state.player(1).position();
-    int old_pos   = state.player(active).position();
-    int opp_pos   = state.player(opp).position();
+    int old_pos = state.player(active).position();
+    int opp_pos = state.player(opp).position();
 
     if (std::holds_alternative<BuyPatch>(move)) {
-        int patch_id  = std::get<BuyPatch>(move).patch_index;
+        int patch_id = std::get<BuyPatch>(move).patch_index;
         const auto& p = kPatches[static_cast<std::size_t>(patch_id)];
 
         // Deduct button cost
         state.player(active).set_buttons(state.player(active).buttons() - p.buttons);
         // Add patch income (before income-space payout so payout uses updated income)
-        state.player(active).set_income(
-            std::min(state.player(active).income() + p.income, 31));
+        state.player(active).set_income(std::min(state.player(active).income() + p.income, 31));
         // Reduce free spaces by patch cell count
-        state.player(active).set_free_spaces(
-            state.player(active).free_spaces() - p.num_cells);
+        state.player(active).set_free_spaces(state.player(active).free_spaces() - p.num_cells);
         // Advance position (cap at 63 — the field is 6 bits)
         int new_pos = std::min(old_pos + p.time, 63);
         state.player(active).set_position(new_pos);
@@ -85,8 +82,7 @@ SimplifiedGameState apply_move(SimplifiedGameState state, Move move, const GameS
         if (state.bonus_status() == BonusStatus::kUnclaimed) {
             int occupied = 81 - state.player(active).free_spaces();
             if (occupied >= 56) {
-                state.set_bonus_status(
-                    active == 0 ? BonusStatus::kPlayer0 : BonusStatus::kPlayer1);
+                state.set_bonus_status(active == 0 ? BonusStatus::kPlayer0 : BonusStatus::kPlayer1);
             }
         }
 
@@ -103,9 +99,8 @@ SimplifiedGameState apply_move(SimplifiedGameState state, Move move, const GameS
     } else {
         // Advance: move to opponent_pos + 1, earn 1 button per space advanced
         int new_pos = std::min(opp_pos + 1, 63);
-        int spaces  = new_pos - old_pos;
-        state.player(active).set_buttons(
-            std::min(state.player(active).buttons() + spaces, 127));
+        int spaces = new_pos - old_pos;
+        state.player(active).set_buttons(std::min(state.player(active).buttons() + spaces, 127));
         state.player(active).set_position(new_pos);
 
         // Button income-space payouts

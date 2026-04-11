@@ -5,7 +5,9 @@
 
 namespace patchwork {
 
-struct BuyPatch { int patch_index; };
+struct BuyPatch {
+    int patch_index;
+};
 struct Advance {};
 
 using Move = std::variant<BuyPatch, Advance>;

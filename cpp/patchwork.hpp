@@ -5,4 +5,4 @@
 #include "game_state.hpp"
 #include "player_state.hpp"
 
-#endif // PATCHWORK_PATCHWORK_HPP
+#endif  // PATCHWORK_PATCHWORK_HPP

@@ -1,11 +1,11 @@
 #ifndef PATCHWORK_MOVE_GENERATION_HPP
 #define PATCHWORK_MOVE_GENERATION_HPP
 
+#include <vector>
+
+#include "game_setup.hpp"
 #include "move.hpp"
 #include "simplified_game_state.hpp"
-#include "game_setup.hpp"
-
-#include <vector>
 
 namespace patchwork {
 

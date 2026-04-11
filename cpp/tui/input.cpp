@@ -1,10 +1,12 @@
 #include "input.hpp"
-#include "../move_generation.hpp"
-#include "../terminal_and_scoring.hpp"
 
-#include <cstdio>
 #include <termios.h>
 #include <unistd.h>
+
+#include <cstdio>
+
+#include "../move_generation.hpp"
+#include "../terminal_and_scoring.hpp"
 
 namespace patchwork::tui {
 
@@ -29,7 +31,7 @@ RawMode::RawMode() : saved_(new SavedTermios{}) {
 
     struct termios raw = saved_->orig;
     raw.c_lflag &= ~static_cast<tcflag_t>(ICANON | ECHO);
-    raw.c_cc[VMIN]  = 1;
+    raw.c_cc[VMIN] = 1;
     raw.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
@@ -51,23 +53,21 @@ Command read_command() {
         if (c == 'a' || c == ' ') return AdvanceCmd{};
         if (c == 'z' || c == 'u') return UndoCmd{};
         if (c == 'Z' || c == 'r') return RedoCmd{};
-        if (c == '<')              return ScrollLogLeft{};
-        if (c == '>')              return ScrollLogRight{};
-        if (c == 'w')              return ToggleLogWrap{};
-        if (c == 'm')              return NdjsonToggleMinimize{};
-        if (c == 'f')              return NdjsonMaximize{};
-        if (c == 'h')              return NdjsonSemiMaximize{};
-        if (c == ',')              return NdjsonDecrLines{};
-        if (c == '.')              return NdjsonIncrLines{};
+        if (c == '<') return ScrollLogLeft{};
+        if (c == '>') return ScrollLogRight{};
+        if (c == 'w') return ToggleLogWrap{};
+        if (c == 'm') return NdjsonToggleMinimize{};
+        if (c == 'f') return NdjsonMaximize{};
+        if (c == 'h') return NdjsonSemiMaximize{};
+        if (c == ',') return NdjsonDecrLines{};
+        if (c == '.') return NdjsonIncrLines{};
         if (c == 'q' || c == 'Q') return QuitCmd{};
     }
 }
 
 // ── is_legal ─────────────────────────────────────────────────────────────
 
-bool is_legal(const Command& cmd,
-              const SimplifiedGameState& state,
-              const GameSetup& setup) {
+bool is_legal(const Command& cmd, const SimplifiedGameState& state, const GameSetup& setup) {
     if (is_terminal(state)) return false;
     auto moves = legal_moves(state, setup);
     if (std::holds_alternative<BuyPatchCmd>(cmd)) {

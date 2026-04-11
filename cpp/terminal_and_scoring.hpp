@@ -1,8 +1,8 @@
 #ifndef PATCHWORK_TERMINAL_AND_SCORING_HPP
 #define PATCHWORK_TERMINAL_AND_SCORING_HPP
 
-#include "simplified_game_state.hpp"
 #include "game_state.hpp"
+#include "simplified_game_state.hpp"
 
 namespace patchwork {
 

@@ -1,18 +1,18 @@
 #ifndef PATCHWORK_GAME_STATE_HPP
 #define PATCHWORK_GAME_STATE_HPP
 
-#include "player_state.hpp"
-
 #include <cassert>
 #include <cstdint>
+
+#include "player_state.hpp"
 
 namespace patchwork {
 
 /// Bonus tile status (2 bits).
 enum class BonusStatus : uint8_t {
     kUnclaimed = 0,
-    kPlayer0   = 1,
-    kPlayer1   = 2,
+    kPlayer0 = 1,
+    kPlayer1 = 2,
 };
 
 /// Full game state: two PlayerStates (2×128 bits) + shared state (64 bits).
@@ -22,10 +22,10 @@ enum class BonusStatus : uint8_t {
 ///   bits 33–38 : circle marker position (6 bits, 0–32)
 ///   bits 39–40 : 7×7 bonus status (2 bits)
 class GameState {
-public:
+   public:
     constexpr GameState() noexcept
-        : players_{}
-        , shared_{kAllPatchesMask}  // all 33 patches available
+        : players_{},
+          shared_{kAllPatchesMask}  // all 33 patches available
     {}
 
     // ── Player accessors ──
@@ -49,8 +49,7 @@ public:
 
     constexpr void set_patch_available(int idx, bool v) noexcept {
         assert(idx >= 0 && idx < 33);
-        shared_ = v ? (shared_ | (uint64_t{1} << idx))
-                     : (shared_ & ~(uint64_t{1} << idx));
+        shared_ = v ? (shared_ | (uint64_t{1} << idx)) : (shared_ & ~(uint64_t{1} << idx));
     }
 
     // ── Circle marker (6 bits, range 0–32) ──
@@ -61,8 +60,8 @@ public:
 
     constexpr void set_circle_marker(int v) noexcept {
         assert(v >= 0 && v <= 32);
-        shared_ = (shared_ & ~(kCircleMask << kCircleShift))
-                | (static_cast<uint64_t>(v) << kCircleShift);
+        shared_ =
+            (shared_ & ~(kCircleMask << kCircleShift)) | (static_cast<uint64_t>(v) << kCircleShift);
     }
 
     // ── 7×7 bonus status (2 bits) ──
@@ -72,11 +71,11 @@ public:
     }
 
     constexpr void set_bonus_status(BonusStatus s) noexcept {
-        shared_ = (shared_ & ~(kBonusMask << kBonusShift))
-                | (static_cast<uint64_t>(s) << kBonusShift);
+        shared_ =
+            (shared_ & ~(kBonusMask << kBonusShift)) | (static_cast<uint64_t>(s) << kBonusShift);
     }
 
-private:
+   private:
     static constexpr uint64_t kAllPatchesMask = (uint64_t{1} << 33) - 1;  // bits 0..32 set
 
     static constexpr int kCircleShift = 33;

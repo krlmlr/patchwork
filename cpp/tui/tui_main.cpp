@@ -1,7 +1,9 @@
-#include "display.hpp"
-#include "history.hpp"
-#include "input.hpp"
-#include "launch.hpp"
+#include <unistd.h>
+
+#include <cstdio>
+#include <cstring>
+#include <sstream>
+#include <variant>
 
 #include "../game_logger.hpp"
 #include "../game_setups.hpp"
@@ -12,12 +14,10 @@
 #include "../move_generation.hpp"
 #include "../random_agent.hpp"
 #include "../terminal_and_scoring.hpp"
-
-#include <cstdio>
-#include <cstring>
-#include <sstream>
-#include <unistd.h>
-#include <variant>
+#include "display.hpp"
+#include "history.hpp"
+#include "input.hpp"
+#include "launch.hpp"
 
 using namespace patchwork;
 using namespace patchwork::tui;
@@ -57,8 +57,7 @@ int main(int argc, char** argv) {
     // Log game-start to ndjson.
     {
         std::ostringstream oss;
-        log_game_start(oss, static_cast<long long>(launch.seed),
-                       launch.setup_index, initial_state);
+        log_game_start(oss, static_cast<long long>(launch.seed), launch.setup_index, initial_state);
         append_ndjson(ndjson, oss.str());
     }
 
@@ -73,8 +72,7 @@ int main(int argc, char** argv) {
     // Wide: top(1)+body(10)+ndjson-sep(1)+bottom(1) = 13 + ndjson
     // max_ndjson_wide   = (cfg.height - 1) - 13 = cfg.height - 14
     auto max_ndjson = [&]() -> int {
-        if (cfg.width >= 160)
-            return std::max(0, cfg.height - 14);
+        if (cfg.width >= 160) return std::max(0, cfg.height - 14);
         return std::max(0, cfg.height - 22);
     };
 
@@ -155,7 +153,10 @@ int main(int argc, char** argv) {
             int bc = 0;
             for (auto& m : legal) {
                 if (std::holds_alternative<BuyPatch>(m)) {
-                    if (bc == seq) { move = m; break; }
+                    if (bc == seq) {
+                        move = m;
+                        break;
+                    }
                     ++bc;
                 }
             }
@@ -179,13 +180,12 @@ int main(int argc, char** argv) {
                 int pid = std::get<BuyPatch>(move).patch_index;
                 char pname = kPatches[static_cast<std::size_t>(pid)].name;
                 char buf[60];
-                std::snprintf(buf, sizeof(buf), "P%d bought [%c]",
-                              state.active_player() + 1, pname);
+                std::snprintf(buf, sizeof(buf), "P%d bought [%c]", state.active_player() + 1,
+                              pname);
                 append_log(log, buf);
             } else {
                 char buf[40];
-                std::snprintf(buf, sizeof(buf), "P%d advanced",
-                              state.active_player() + 1);
+                std::snprintf(buf, sizeof(buf), "P%d advanced", state.active_player() + 1);
                 append_log(log, buf);
             }
         }
@@ -244,14 +244,16 @@ int main(int argc, char** argv) {
     // Print result summary below frame.
     int s0 = score(final_state, 0);
     int s1 = score(final_state, 1);
-    int w  = winner(final_state);
+    int w = winner(final_state);
     bool bonus0 = (final_state.bonus_status() == BonusStatus::kPlayer0);
     bool bonus1 = (final_state.bonus_status() == BonusStatus::kPlayer1);
     std::printf("\n  Game over!\n");
     std::printf("  P1 score: %d%s\n", s0, bonus0 ? " (+7 bonus)" : "");
     std::printf("  P2 score: %d%s\n", s1, bonus1 ? " (+7 bonus)" : "");
-    if (w == 0) std::printf("  Winner: P1\n\n");
-    else        std::printf("  Winner: P2\n\n");
+    if (w == 0)
+        std::printf("  Winner: P1\n\n");
+    else
+        std::printf("  Winner: P2\n\n");
 
     return 0;
 }

@@ -7,12 +7,10 @@ History::History(SimplifiedGameState initial_state, RngState initial_rng) {
     cursor_ = 0;
 }
 
-void History::push(SimplifiedGameState state, RngState rng,
-                   std::vector<std::string> log_entries) {
+void History::push(SimplifiedGameState state, RngState rng, std::vector<std::string> log_entries) {
     // Truncate redo branch.
     entries_.erase(entries_.begin() + cursor_ + 1, entries_.end());
-    entries_.push_back({std::move(state), std::move(rng),
-                        std::move(log_entries)});
+    entries_.push_back({std::move(state), std::move(rng), std::move(log_entries)});
     cursor_ = static_cast<int>(entries_.size()) - 1;
 }
 
@@ -37,8 +35,6 @@ const std::vector<std::string>& History::current_log_entries() const {
 }
 
 bool History::can_undo() const { return cursor_ > 0; }
-bool History::can_redo() const {
-    return cursor_ < static_cast<int>(entries_.size()) - 1;
-}
+bool History::can_redo() const { return cursor_ < static_cast<int>(entries_.size()) - 1; }
 
 }  // namespace patchwork::tui

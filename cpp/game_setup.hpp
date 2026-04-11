@@ -1,13 +1,13 @@
 #ifndef PATCHWORK_GAME_SETUP_HPP
 #define PATCHWORK_GAME_SETUP_HPP
 
-#include "generated/patches.hpp"
-
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <ostream>
 #include <string_view>
+
+#include "generated/patches.hpp"
 
 namespace patchwork {
 
@@ -16,7 +16,7 @@ namespace patchwork {
 /// Stores patch IDs (0–32, indices into kPatches) in circle order.
 /// Constructed from a 33-character string_view of single-char patch names.
 class GameSetup {
-public:
+   public:
     /// Construct from a 33-char string of single-char patch names.
     /// Each character must be a valid patch name from kPatches.
     explicit constexpr GameSetup(std::string_view sv) noexcept : circle_{} {
@@ -41,7 +41,7 @@ public:
         out << "\"}\n";
     }
 
-private:
+   private:
     static constexpr uint8_t name_to_id(char name) noexcept {
         for (int i = 0; i < 33; ++i) {
             if (kPatches[i].name == name) {

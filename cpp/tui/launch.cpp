@@ -22,11 +22,18 @@ LaunchConfig run_launch_screen() {
         std::fflush(stdout);
         std::string line;
         if (!std::getline(std::cin, line)) break;
-        if (line.empty()) { cfg.setup_index = 0; break; }
+        if (line.empty()) {
+            cfg.setup_index = 0;
+            break;
+        }
         try {
             int v = std::stoi(line);
-            if (v >= 0 && v <= 99) { cfg.setup_index = v; break; }
-        } catch (...) {}
+            if (v >= 0 && v <= 99) {
+                cfg.setup_index = v;
+                break;
+            }
+        } catch (...) {
+        }
         std::printf("  Invalid input — enter a number 0–99.\n");
     }
 
@@ -36,17 +43,21 @@ LaunchConfig run_launch_screen() {
         std::fflush(stdout);
         std::string line;
         if (!std::getline(std::cin, line)) break;
-        if (line.empty()) { cfg.seed = 42; break; }
+        if (line.empty()) {
+            cfg.seed = 42;
+            break;
+        }
         try {
             unsigned long long v = std::stoull(line);
             cfg.seed = static_cast<std::uint64_t>(v);
             break;
-        } catch (...) {}
+        } catch (...) {
+        }
         std::printf("  Invalid input — enter a non-negative integer.\n");
     }
 
-    std::printf("\n  Starting game: setup %d, seed %llu\n\n",
-                cfg.setup_index, static_cast<unsigned long long>(cfg.seed));
+    std::printf("\n  Starting game: setup %d, seed %llu\n\n", cfg.setup_index,
+                static_cast<unsigned long long>(cfg.seed));
     return cfg;
 }
 

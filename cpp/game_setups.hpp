@@ -1,10 +1,10 @@
 #ifndef PATCHWORK_GAME_SETUPS_HPP
 #define PATCHWORK_GAME_SETUPS_HPP
 
+#include <string>
+
 #include "game_setup.hpp"
 #include "generated/patches.hpp"
-
-#include <string>
 
 namespace patchwork {
 
