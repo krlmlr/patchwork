@@ -47,4 +47,4 @@
 - [x] 7.1 Run `analysis/tile_analysis.R` from a clean working directory and confirm no errors
 - [x] 7.2 Verify `tile_summary.csv` has exactly 33 rows (plus header)
 - [x] 7.3 Verify `advance_breakeven.csv` is sorted correctly and contains no impossible `advance_breakeven_pos` values (all values must be in 0–53 or `NA`)
-- [ ] 7.4 Confirm the existing `codegen/` scripts and C++ build are unaffected (run `meson compile` or equivalent)
+- [x] 7.4 Confirm the existing `codegen/` scripts and C++ build are unaffected (run `meson compile` or equivalent)
