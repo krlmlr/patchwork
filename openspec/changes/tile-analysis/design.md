@@ -26,11 +26,20 @@ No quantitative analysis of patch value currently exists. The upcoming Heuristic
 
 *Alternative considered:* Putting scripts in `codegen/` alongside existing R scripts. Rejected because it blurs the codegen/analysis boundary.
 
-### Output artifacts location: `analysis/output/`
+### Output artifacts: two tables and four plots
 
-Plots (PNG) and tables (CSV/markdown) are committed to `analysis/output/` so they are always accessible without re-running R.
+The analysis script produces:
 
-*Alternative considered:* Not committing outputs and generating on demand. Rejected because it requires R to be installed and run before the artifacts are usable as a reference.
+- `analysis/output/tile_summary.csv` — one row per patch with base metrics plus `gain_per_time` at three positions (0, 18, 36) and `advance_breakeven_pos`. Covers the full picture in one file.
+- `analysis/output/advance_breakeven.csv` — sorted by `advance_breakeven_pos` descending; a compact decision table showing which patches remain worth buying and until when.
+- `analysis/output/gain_per_time.png` — bar chart ranked at pos 0 with the advance threshold (≥ 1.0) highlighted; quick patch priority at game start.
+- `analysis/output/gain_curves.png` — `gain_per_time(patch, pos)` line plot for income-generating patches with a 1.0 reference line; shows how patch value erodes over time.
+- `analysis/output/gain_heatmap.png` — heatmap of `gain_per_time` for all 33 patches × 54 positions, coloured with a diverging palette centred at 1.0. This is the primary artifact for machine-agent development: it encodes in one image exactly which patches are profitable at every board state.
+- `analysis/output/shape_density.png` — density vs. cells scatter for shape-fit considerations.
+
+### Advance break-even threshold: 1.0
+
+The advance move earns 1 button per time unit (advancing by k spaces earns k buttons). A patch is strictly worth buying when `gain_per_time(patch, pos) > 1.0`. The `advance_breakeven_pos` column captures the latest position where this holds, giving a concrete cutoff for human and agent decision logic.
 
 ### Value model: patch-gain-per-time-cost
 

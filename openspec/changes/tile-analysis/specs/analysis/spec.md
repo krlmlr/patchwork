@@ -9,99 +9,81 @@ The analysis script SHALL call `pkgload::load_all()` at startup to load the proj
 - **WHEN** the analysis script is executed
 - **THEN** it produces a data frame with exactly 33 rows, one per patch, containing columns `id`, `name`, `cells`, `bbox_rows`, `bbox_cols`, `bbox_area`, `density`, and `perimeter`
 
-#### Scenario: Cell count matches catalog
-
-- **WHEN** shape features are extracted for any patch
-- **THEN** the `cells` value equals the number of `X` characters in that patch's `shape` field in `data/patches.yaml`
-
 #### Scenario: Density is within (0, 1]
 
 - **WHEN** shape features are extracted for any patch
 - **THEN** `density` equals `cells / bbox_area` and lies in the range (0, 1]
 
-#### Scenario: Perimeter is a positive integer
+### Requirement: Patch gain model is computed for every patch at three key positions
 
-- **WHEN** shape features are extracted for any patch
-- **THEN** `perimeter` is a positive integer equal to the count of edges of occupied cells that border an empty or out-of-bounds cell
+The analysis script SHALL compute patch gain for each patch at three representative time-track positions: `pos = 0` (early), `pos = 18` (mid), `pos = 36` (late), using the definitions from the glossary. **Placement gain** = 2 × cells − button cost. **Projected income at pos** = button income × `reachable_payouts(pos)`. **Patch gain at pos** = placement gain + projected income at pos. **Patch gain per time cost at pos** = patch gain at pos / time cost. Patches with `time == 0` SHALL be excluded from the per-time-cost metric.
 
-### Requirement: Patch gain model is computed for every patch
+`reachable_payouts(pos)` counts how many of the nine payout spaces (time positions 5, 11, 17, 23, 29, 35, 41, 47, 53) are strictly greater than `pos`.
 
-The analysis script SHALL compute patch gain for each patch using the definition from the glossary. **Placement gain** = 2 × cells − button cost. **Projected income at position 0** = button income × reachable_payouts(0) = button income × 9 (all nine payout spaces are reachable at the start). **Patch gain at position 0** = placement gain + projected income at position 0. **Patch gain per time cost** = patch gain / time cost. Patches with `time == 0` SHALL be excluded from the per-time-cost metric (no such patches exist in the current catalog, but the script SHALL handle this gracefully).
+#### Scenario: Reachable payouts at key positions
 
-#### Scenario: Placement gain is correct
+- **WHEN** `reachable_payouts(pos)` is evaluated for pos = 0, 18, 36, 53
+- **THEN** the values are 9, 6, 3, 0 respectively
 
-- **WHEN** placement gain is computed for any patch
-- **THEN** it equals 2 × cells − button cost (may be negative for expensive patches with few cells)
-
-#### Scenario: Patch gain at position 0 is correct
-
-- **WHEN** patch gain is computed for any patch at time-track position 0
-- **THEN** it equals placement gain + button income × 9
-
-#### Scenario: Patch gain per time cost computed for all patches
-
-- **WHEN** the analysis script is executed
-- **THEN** every patch with `time > 0` has a computed `gain_per_time` value equal to its patch gain at position 0 divided by its time cost
-
-### Requirement: Time-position-dependent patch gain is computed for every patch and position
-
-The analysis script SHALL compute `patch_gain(patch, pos)` for each patch and each time-track position `pos` in 0–53. `patch_gain(patch, pos)` = placement gain + button income × reachable_payouts(pos), where `reachable_payouts(pos)` counts how many of the nine payout spaces (time positions 5, 11, 17, 23, 29, 35, 41, 47, 53) are strictly greater than `pos`. A normalised value `gain_per_time(patch, pos)` = `patch_gain(patch, pos) / time cost` SHALL also be computed.
-
-#### Scenario: Reachable payouts decrease monotonically
-
-- **WHEN** `reachable_payouts(pos)` is evaluated for pos = 0, 5, 11, 17, 23, 29, 35, 41, 47, 53
-- **THEN** the values are 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 respectively
-
-#### Scenario: Projected income is zero at or after last payout space
-
-- **WHEN** `patch_gain` is computed for any patch with `button income > 0` at `pos >= 53`
-- **THEN** projected income equals 0 and `patch_gain` equals placement gain
-
-#### Scenario: Patch gain curve is non-increasing over time positions
+#### Scenario: Patch gain curves are non-increasing
 
 - **WHEN** `patch_gain(patch, pos)` is evaluated for any patch over all positions 0–53
 - **THEN** the sequence is non-increasing (each value is less than or equal to the previous)
 
+### Requirement: Advance break-even position is computed for every patch
+
+For each patch, the analysis script SHALL compute `advance_breakeven_pos`: the latest time-track position at which buying the patch is at least as beneficial as advancing (`gain_per_time(patch, pos) ≥ 1.0`). The threshold of 1.0 corresponds to the advance move's nominal value of 1 button per time unit. For any patch whose `gain_per_time` never rises above 1.0 at any position, `advance_breakeven_pos` is `NA`. This metric directly tells an agent or human player past which point a given patch is no longer worth buying.
+
+#### Scenario: Break-even position matches gain model
+
+- **WHEN** `advance_breakeven_pos` is computed for any patch
+- **THEN** `gain_per_time(patch, advance_breakeven_pos) ≥ 1.0` and `gain_per_time(patch, advance_breakeven_pos + 1) < 1.0` (or it is the maximum position if `gain_per_time` never drops below 1.0)
+
+#### Scenario: Patches with zero income and low placement gain have NA break-even
+
+- **WHEN** a patch has `button_income == 0` and `placement_gain < time_cost` (i.e., `gain_per_time < 1.0` at every position)
+- **THEN** its `advance_breakeven_pos` is `NA`
+
 ### Requirement: Summary table is produced and committed
 
-The analysis script SHALL write a summary table to `analysis/output/tile_summary.csv` containing, for each patch: `id`, `name`, `button_cost`, `time_cost`, `button_income`, `cells`, `placement_gain`, `bbox_rows`, `bbox_cols`, `density`, `perimeter`, `gain_per_time` (patch gain at position 0 / time cost), and `patch_gain_at_pos0`.
+The analysis script SHALL write a summary table to `analysis/output/tile_summary.csv` containing, for each patch: `id`, `name`, `button_cost`, `time_cost`, `button_income`, `cells`, `placement_gain`, `bbox_rows`, `bbox_cols`, `density`, `perimeter`, `gain_per_time_pos0`, `gain_per_time_pos18`, `gain_per_time_pos36`, and `advance_breakeven_pos`.
 
 #### Scenario: Summary CSV is produced
 
 - **WHEN** the analysis script is executed
 - **THEN** `analysis/output/tile_summary.csv` is created or overwritten with exactly 33 data rows and the required column headers
 
-#### Scenario: Summary CSV values are consistent with source data
+### Requirement: Advance break-even table is produced and committed
 
-- **WHEN** any row of `tile_summary.csv` is read
-- **THEN** the `button_cost`, `time_cost`, and `button_income` values match the `buttons`, `time`, and `income` fields of the corresponding entry in `data/patches.yaml`
+The analysis script SHALL write `analysis/output/advance_breakeven.csv` containing, for each patch: `id`, `name`, `button_cost`, `time_cost`, `button_income`, `placement_gain`, `gain_per_time_pos0`, and `advance_breakeven_pos`, sorted by `advance_breakeven_pos` descending (patches useful for longest remain at the top; `NA` entries last). This table is a compact decision aid for both human players and agents.
+
+#### Scenario: Break-even table is sorted correctly
+
+- **WHEN** `advance_breakeven.csv` is read
+- **THEN** rows appear in descending order of `advance_breakeven_pos`, with `NA` rows at the bottom
 
 ### Requirement: Plots are produced and committed
 
 The analysis script SHALL produce and save the following plots to `analysis/output/`:
 
-- `gain_per_time.png`: bar chart of `gain_per_time` (patch gain at pos 0 / time cost) for all 33 patches, sorted descending
-- `gain_curves.png`: line plot of `patch_gain(patch, pos)` over time-track positions 0–53, with one line per patch that has `button income > 0`
-- `shape_density.png`: scatter plot of `density` vs. `cells`, with points labelled by patch `name`
+- **`gain_per_time.png`** — bar chart of `gain_per_time_pos0` (patch gain at pos 0 / time cost) for all 33 patches, sorted descending; patches above the advance threshold (≥ 1.0) are coloured differently from those below it.
+- **`gain_curves.png`** — line plot of `gain_per_time(patch, pos)` over time-track positions 0–53, one curve per patch, with a horizontal reference line at `gain_per_time = 1.0` marking the advance threshold. Only patches with `button_income > 0` are included (their curves decline; zero-income patches are horizontal and plotted separately if desired).
+- **`gain_heatmap.png`** — filled-tile heatmap with time-track position (0–53) on the x-axis and patches (sorted by `gain_per_time_pos0` descending) on the y-axis; fill colour encodes `gain_per_time(patch, pos)`, with a diverging palette centred at 1.0 (the advance threshold). This provides a complete strategic overview for agent development.
+- **`shape_density.png`** — scatter plot of `density` vs. `cells`, with points labelled by patch `name`; helps identify compact high-coverage patches suitable for tight quilt-board placements.
 
-#### Scenario: All three plots are produced
+#### Scenario: All four plots are produced
 
 - **WHEN** the analysis script is executed
-- **THEN** files `gain_per_time.png`, `gain_curves.png`, and `shape_density.png` exist under `analysis/output/`
+- **THEN** files `gain_per_time.png`, `gain_curves.png`, `gain_heatmap.png`, and `shape_density.png` exist under `analysis/output/`
 
-#### Scenario: Plots are non-empty images
+#### Scenario: Gain heatmap encodes the full position range
 
-- **WHEN** any of the three plot files is opened
-- **THEN** it contains a visible chart (file size > 0 bytes)
+- **WHEN** `gain_heatmap.png` is inspected
+- **THEN** the x-axis covers positions 0–53 and all 33 patches appear on the y-axis
 
 ### Requirement: Analysis script is reproducible
 
 The analysis script at `analysis/tile_analysis.R` SHALL be idempotent: running it multiple times on an unchanged `data/patches.yaml` SHALL produce identical output files. The script SHALL start with `pkgload::load_all()` to load project utilities and SHALL document any additional R package dependencies (beyond those declared in `DESCRIPTION`) in a comment block at the top.
-
-#### Scenario: Re-running produces identical outputs
-
-- **WHEN** `analysis/tile_analysis.R` is executed twice in succession without modifying `data/patches.yaml`
-- **THEN** the output CSV and PNG files are byte-for-byte identical between runs (or functionally equivalent for PNG, ignoring metadata timestamps)
 
 #### Scenario: Additional required packages are documented
 
