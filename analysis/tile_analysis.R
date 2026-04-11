@@ -121,12 +121,10 @@ gain_curves_list <- lapply(seq_len(nrow(patch_df)), function(i) {
     gain_per_time_at(row$placement_gain, row$button_income, row$time_cost, pos)
   }, numeric(1))
   # Verify non-increasing (patch gain can only decrease or stay flat as pos rises).
-  valid <- is.na(gpt) | !is.finite(gpt)
-  if (!all(valid)) {
-    finite_gpt <- gpt[!valid | is.finite(gpt)]
-    # Actual check: for consecutive finite values the sequence is non-increasing.
-    diffs <- diff(gpt[is.finite(gpt)])
-    stopifnot(all(diffs <= 1e-9))
+  finite_idx <- is.finite(gpt)
+  if (any(finite_idx)) {
+    diffs <- diff(gpt[finite_idx])
+    stopifnot(all(diffs <= 0))
   }
   data.frame(
     id            = row$id,
