@@ -36,9 +36,9 @@ void log_move(std::ostream& out, int ply, int player, const Move& move,
     int marker = new_state.circle_marker();
     for (int i = 0; i < 33; ++i) {
         int pos = (marker + i) % 33;
-        int id = setup.circle()[static_cast<std::size_t>(pos)];
+        int id = setup.circle()[pos];
         if (new_state.patch_available(id)) {
-            out << kPatches[static_cast<std::size_t>(id)].name;
+            out << kPatches[id].name;
         }
     }
     out << "\"}\n";
