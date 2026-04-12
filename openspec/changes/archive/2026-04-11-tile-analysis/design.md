@@ -32,10 +32,13 @@ The analysis script produces:
 
 - `analysis/output/tile_summary.csv` — one row per patch with base metrics plus `gain_per_time` at three positions (0, 18, 36) and `advance_breakeven_pos`. Covers the full picture in one file.
 - `analysis/output/advance_breakeven.csv` — sorted by `advance_breakeven_pos` descending; a compact decision table showing which patches remain worth buying and until when.
-- `analysis/output/gain_per_time.png` — bar chart ranked at pos 0 with the advance threshold (≥ 1.0) highlighted; quick patch priority at game start.
-- `analysis/output/gain_curves.png` — `gain_per_time(patch, pos)` line plot for income-generating patches with a 1.0 reference line; shows how patch value erodes over time.
-- `analysis/output/gain_heatmap.png` — heatmap of `gain_per_time` for all 33 patches × 54 positions, coloured with a diverging palette centred at 1.0. This is the primary artifact for machine-agent development: it encodes in one image exactly which patches are profitable at every board state.
+- `analysis/output/gain_per_time.png` — faceted bar chart of `gain_per_time` across position bands (0–4, 5–10, …, 53), fill by income (0–3), with advance threshold line at 1.0 and whole-number y-axis breaks.
+- `analysis/output/gain_curves.png` — `gain_per_time(patch, pos)` line plot for income-generating patches with colored `geom_text_repel()` name labels, a 1.0 reference line, and whole-number y-axis breaks.
+- `analysis/output/gain_heatmap.png` — heatmap of `gain_per_time` with patches on x-axis and positions (0–53) on y-axis, coloured with a diverging palette centred at 1.0.
 - `analysis/output/shape_density.png` — density vs. cells scatter for shape-fit considerations.
+- `analysis/output/total_gain.png` — faceted bar chart of total gain (not normalised by time) across position bands, fill by income, with whole-number y-axis breaks.
+- `analysis/output/shape_corners.png` — faceted scatter of convex and concave corner counts vs. cell count, annotated with the Gauss-Bonnet identity (convex − concave = 4).
+- `analysis/output/circumference_vs_cells.png` — scatter of perimeter (= circumference) vs. cells with point size encoding total corners.
 
 ### Advance break-even threshold: 1.0
 
@@ -53,9 +56,9 @@ Payout spaces on the time track are at positions 5, 11, 17, 23, 29, 35, 41, 47, 
 
 *Alternative considered:* Discounted future income (NPV-style). Deferred as over-engineered for the current phase; can be revisited when RL baselines are available.
 
-### Shape features: perimeter-based circumference
+### Shape features: perimeter, circumference, and corners
 
-Perimeter of the occupied region (number of exposed edges of occupied cells) captures how "border-heavy" a shape is, which relates to placement difficulty. Density = cells / (bounding-box rows × bounding-box cols).
+Perimeter of the occupied region (number of exposed edges of occupied cells) captures how "border-heavy" a shape is, which relates to placement difficulty. **Circumference** is identical to perimeter for grid-cell shapes — both count the same set of exposed cell edges along the boundary. **Corners** are a vertex-level property counted at grid vertices: a convex corner occurs at a vertex shared by exactly 1 occupied cell; a concave corner at a vertex shared by 3 occupied cells; at a saddle point (2 diagonally opposite occupied cells) each vertex contributes 2 convex corners. For simply-connected shapes the discrete Gauss-Bonnet theorem guarantees `convex_corners − concave_corners = 4`, validated as a script assertion. The relationship between the three variables: circumference = perimeter (edge-based boundary length), while corners characterise vertex-level boundary complexity. Density = cells / (bounding-box rows × bounding-box cols).
 
 ## Risks / Trade-offs
 

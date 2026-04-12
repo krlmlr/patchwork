@@ -42,12 +42,15 @@ All outputs are written to `analysis/output/`:
 
 | File | Description |
 |------|-------------|
-| `tile_summary.csv` | One row per patch with shape features, gain metrics at positions 0/18/36, and advance break-even position |
+| `tile_summary.csv` | One row per patch with shape features (incl. circumference, corners), gain metrics at positions 0/18/36, and advance break-even position |
 | `advance_breakeven.csv` | Compact decision table sorted by `advance_breakeven_pos` descending (`NA` last) |
-| `gain_per_time.png` | Bar chart of `gain_per_time` at position 0, coloured by whether the patch beats the advance threshold (≥ 1.0) |
-| `gain_curves.png` | Line plot of `gain_per_time(pos)` over positions 0–53 for income-generating patches |
-| `gain_heatmap.png` | Heatmap of `gain_per_time(pos)` for all 33 patches × 54 positions |
+| `gain_per_time.png` | Faceted bar chart of `gain_per_time` across position bands, filled by income (0–3) |
+| `gain_curves.png` | Line plot of `gain_per_time(pos)` for income patches with colored name labels |
+| `gain_heatmap.png` | Heatmap of `gain_per_time(pos)` — patches on x-axis, positions on y-axis |
 | `shape_density.png` | Scatter plot of `density` vs. `cells` with patch labels |
+| `total_gain.png` | Faceted bar chart of total gain (not normalised by time) across position bands |
+| `shape_corners.png` | Faceted scatter of convex/concave corners vs. cells (Gauss-Bonnet identity) |
+| `circumference_vs_cells.png` | Perimeter (= circumference) vs. cells, point size = total corners |
 
 ## Notes
 
