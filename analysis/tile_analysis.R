@@ -313,7 +313,7 @@ p1 <- ggplot(band_df[!is.na(band_df$gain_per_time), ],
              aes(x = name_f, y = gain_per_time, fill = income_f)) +
   geom_col() +
   geom_hline(yintercept = 1.0, linetype = "dashed", colour = "black") +
-  scale_y_continuous(breaks = scales::breaks_extended(Q = c(1, 2, 5))) +
+  scale_y_continuous(breaks = scales::breaks_width(1)) +
   facet_wrap(~ band, nrow = 2, scales = "free_y") +
   labs(title = "Patch gain per time cost by position band",
        x = "Patch", y = "gain / time", fill = "Income") +
@@ -339,7 +339,7 @@ p2 <- ggplot(curves_subset, aes(x = pos, y = gain_per_time,
   geom_text_repel(aes(label = name), size = 2.5, max.overlaps = 100,
                   segment.alpha = 0.3, show.legend = FALSE, seed = 42L) +
   geom_hline(yintercept = 1.0, linetype = "dashed", colour = "black") +
-  scale_y_continuous(breaks = scales::breaks_extended(Q = c(1, 2, 5))) +
+  scale_y_continuous(breaks = scales::breaks_width(1)) +
   labs(title = "Gain per time cost over time-track positions (income patches)",
        x = "Time-track position", y = "gain / time", colour = "Patch") +
   theme_minimal()
@@ -377,7 +377,7 @@ band_df$name_tg <- factor(band_df$name, levels = patch_order_tg)
 p5 <- ggplot(band_df, aes(x = name_tg, y = total_gain, fill = income_f)) +
   geom_col() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
-  scale_y_continuous(breaks = scales::breaks_extended(Q = c(1, 2, 5))) +
+  scale_y_continuous(breaks = scales::breaks_width(1)) +
   facet_wrap(~ band, nrow = 2, scales = "free_y") +
   labs(title = "Total patch gain by position band",
        x = "Patch", y = "Total gain", fill = "Income") +
