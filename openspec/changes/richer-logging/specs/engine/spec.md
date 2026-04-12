@@ -26,7 +26,7 @@ The logger SHALL write a JSON object line (NDJSON) of type `"game_start"` immedi
 
 ### Requirement: Move event is logged for each move applied
 
-The logger SHALL write a JSON object line of type `"move"` after each move is applied. The event SHALL include: `event` (`"move"`), `ply` (0-based move counter), `player` (0 or 1), `move_type` (`"buy_patch"` or `"advance"`), and for buy-patch moves the `patch_index` and `patch_symbol` (single-character patch name). The active player's post-move `position`, `buttons`, `income`, `free_spaces`, and `board_value` SHALL be recorded. A `circle` field SHALL contain the currently available patches in circle order starting from the current marker position as a string of patch-name characters.
+The logger SHALL write a JSON object line of type `"move"` after each move is applied. The event SHALL include: `event` (`"move"`), `ply` (0-based move counter), `player` (0 or 1), `move_type` (`"buy_patch"` or `"advance"`), and for buy-patch moves the `patch_index` and `patch_symbol` (single-character patch name). The active player's post-move `position`, `buttons`, `income`, `free_spaces`, `board_value`, `projected_income`, and `projected_score` SHALL be recorded (see glossary for definitions). A `circle` field SHALL contain the currently available patches in circle order starting from the current marker position as a string of patch-name characters.
 
 #### Scenario: Move line contains expected fields for BuyPatch
 
@@ -52,6 +52,18 @@ The logger SHALL write a JSON object line of type `"move"` after each move is ap
 
 - **WHEN** a player holds exactly 5 buttons and 81 free spaces (starting state)
 - **THEN** `"board_value"` SHALL be `5 - 2*81 = -157`
+
+#### Scenario: Move line includes projected_income and projected_score
+
+- **WHEN** `log_move` is called after any move
+- **THEN** the emitted JSON line contains `"projected_income"` and `"projected_score"` fields
+- **AND** `projected_income` equals `income × (number of income spaces ahead of the player's position)`
+- **AND** `projected_score` equals `buttons + projected_income - 2 × free_spaces`
+
+#### Scenario: projected_income is zero at or past the last income space
+
+- **WHEN** a player's position is ≥ 53 (last income space)
+- **THEN** `"projected_income"` SHALL be 0 regardless of the player's income rate
 
 #### Scenario: Move circle shrinks after buy
 
