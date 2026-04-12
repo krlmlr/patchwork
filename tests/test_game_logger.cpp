@@ -82,6 +82,8 @@ TEST_CASE("log_move: BuyPatch fields present", "[game_logger]") {
     REQUIRE(contains(line, R"("player":0)"));
     REQUIRE(contains(line, R"("move_type":"buy_patch")"));
     REQUIRE(contains(line, R"("patch_index":5)"));
+    // kPatches[5].name = '4'
+    REQUIRE(contains(line, R"("patch_symbol":"4")"));
 }
 
 TEST_CASE("log_move: Advance fields present", "[game_logger]") {
@@ -121,22 +123,23 @@ TEST_CASE("log_move: income and free_spaces present", "[game_logger]") {
     REQUIRE(contains(line, R"("free_spaces":)"));
 }
 
-TEST_CASE("log_move: board_value is 0 for fresh player (5 buttons)", "[game_logger]") {
+TEST_CASE("log_move: board_value equals buttons minus 2x free_spaces", "[game_logger]") {
     SimplifiedGameState state;
-    // Fresh player has 5 buttons by default -> board_value = 5 - 5 = 0
+    // Fresh player: buttons=5, free_spaces=81 -> board_value = 5 - 2*81 = -157
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
     Move mv = Advance{};
     log_move(oss, 0, 0, mv, state, setup);
     auto line = oss.str();
-    REQUIRE(contains(line, R"("board_value":0)"));
+    REQUIRE(contains(line, R"("board_value":-157)"));
 }
 
 TEST_CASE("log_move: circle shrinks after buy_patch move", "[game_logger]") {
     GameSetup setup = make_setup(0);
     SimplifiedGameState state;
-    // Buy patch at index 0 (first patch in the circle)
-    Move mv = BuyPatch{0};
+    // With make_setup(0), circle[0] = kPatches[1] ('v', cost=1 button).
+    // Buy that patch; the player starts with 5 buttons so it is affordable.
+    Move mv = BuyPatch{1};
     SimplifiedGameState new_state = apply_move(state, mv, setup);
     std::ostringstream oss;
     log_move(oss, 0, 0, mv, new_state, setup);

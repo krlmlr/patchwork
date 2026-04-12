@@ -43,15 +43,21 @@ The `patchwork` engine records every game as a sequence of NDJSON lines written 
 
 **Decision:** 33-char string of patch names, matching existing `GameSetup` convention.
 
-### Define `board_value` as cumulative button-income payouts received
+### Define `board_value` as the current game score proxy (`buttons - 2 × free_spaces`)
 
-The roadmap calls for "total board value" in move logs. In the simplified ruleset, "total board value" of a player's quilt is best approximated by the number of button-income payouts they have received multiplied by their current income — but income changes over time. The simplest self-contained metric available in `SimplifiedPlayerState` is **buttons** minus initial buttons (5) minus advance payments: this is complex to compute post-hoc. Instead, we define `board_value` as the number of buttons **currently held** that exceed the starting count of 5, which is a reasonable proxy already present without additional tracking. This aligns with the roadmap's intent (inform heuristic design) without adding new fields to `SimplifiedPlayerState`.
+The roadmap calls for "total board value" in move logs. In Patchwork the final score for a player is `buttons - 2 × free_spaces`. Logging this same formula per-move gives an immediate, self-contained signal of how a player's board is performing relative to a fully covered board. For a fresh player (5 buttons, 81 free spaces) this yields −157, close to −2×9×9 = −162, reflecting the starting "debt" of an empty quilt.
 
 **Alternatives considered:**
 - Add a new `cumulative_income_received` field to `SimplifiedPlayerState`: correct but invasive; deferred.
-- Omit `board_value` entirely and just log `buttons`: consistent with current approach but misses roadmap requirement.
+- `buttons - 5` (buttons above starting amount): easy to compute but lacks the spatial component; reviewed and rejected in favour of the game-score formula.
 
-**Decision:** Log `board_value` as `buttons - 5` (buttons above the starting amount) for now. A comment in the code and in specs will note this is a proxy.
+**Decision:** Log `board_value` as `buttons - 2 * free_spaces` — the same formula used at end of game.
+
+### Include `patch_symbol` for buy-patch moves
+
+When a player buys a patch, downstream R analysis needs to identify the patch without joining against a separate patch table. Including the single-character patch name (e.g. `"t"`) directly in the move line avoids that join and keeps the log self-contained.
+
+**Decision:** Emit `"patch_symbol":"<char>"` immediately after `"patch_index"` in `buy_patch` move lines.
 
 ### Emit circle snapshot as remaining available patches in circle order
 
@@ -67,4 +73,4 @@ After each move the circle has been modified (one patch removed if a buy occurre
 
 - **Existing log consumers break on new fields** → JSON libraries that use strict key validation would reject new fields; NDJSON is additive by convention and R's `jsonlite`/`ndjson` ignores unknown fields. No migration needed.
 - **Test assertions need updating** → Any Catch2 test comparing exact NDJSON strings will fail after this change. Mitigation: update all such tests as part of the implementation tasks.
-- **`board_value` proxy is imprecise** → `buttons - 5` conflates earned income payouts with patches purchased with buttons. Mitigation: document the definition clearly in specs and code comments; replace with an accurate field when `SimplifiedPlayerState` is extended.
+- **`board_value` uses game-score formula** → `buttons - 2 × free_spaces` matches the end-game scoring rule exactly and produces a meaningful negative value at game start (~−157), unlike `buttons - 5` which ignores the quilt board state.

@@ -23,14 +23,15 @@ void log_move(std::ostream& out, int ply, int player, const Move& move,
     out << R"({"event":"move","ply":)" << ply << R"(,"player":)" << player;
     if (std::holds_alternative<BuyPatch>(move)) {
         int idx = std::get<BuyPatch>(move).patch_index;
-        out << R"(,"move_type":"buy_patch","patch_index":)" << idx;
+        out << R"(,"move_type":"buy_patch","patch_index":)" << idx
+            << R"(,"patch_symbol":")" << kPatches[static_cast<std::size_t>(idx)].name << '"';
     } else {
         out << R"(,"move_type":"advance")";
     }
     out << R"(,"position":)" << new_state.player(player).position() << R"(,"buttons":)"
         << new_state.player(player).buttons() << R"(,"income":)" << new_state.player(player).income()
         << R"(,"free_spaces":)" << new_state.player(player).free_spaces()
-        << R"(,"board_value":)" << (new_state.player(player).buttons() - 5)
+        << R"(,"board_value":)" << (new_state.player(player).buttons() - 2 * new_state.player(player).free_spaces())
         << R"(,"circle":")";
     // Emit available patches in circle order starting from circle_marker, wrapping mod 33.
     int marker = new_state.circle_marker();

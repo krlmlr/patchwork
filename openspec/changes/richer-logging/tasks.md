@@ -5,13 +5,14 @@
 
 ## 2. Implement game_start Enhancements
 
-- [x] 2.1 In `log_game_start`, emit a `"circle"` field: iterate `GameSetup::circle()` and write each patch name character to produce a 33-char string
+- [x] 2.1 In `log_game_start`, emit a `"circle"` field: iterate `GameSetup::circle()` and write each patch name character to produce a 33-char string (ending with '2' by convention)
 
 ## 3. Implement move Enhancements
 
 - [x] 3.1 In `log_move`, emit `"income"` and `"free_spaces"` for the active player from `new_state.player(player)`
-- [x] 3.2 In `log_move`, emit `"board_value"` as `new_state.player(player).buttons() - 5`
+- [x] 3.2 In `log_move`, emit `"board_value"` as `buttons - 2 * free_spaces` (game-score formula)
 - [x] 3.3 In `log_move`, emit `"circle"` by iterating from `new_state.circle_marker()` through all 33 positions (mod 33), appending the patch name for each position where `new_state.patch_available(id)` is true using the `GameSetup` circle
+- [x] 3.4 In `log_move`, emit `"patch_symbol"` (single-character patch name) for `buy_patch` moves
 
 ## 4. Implement game_end Enhancements
 
@@ -23,9 +24,13 @@
 - [x] 5.2 Update `cpp/play_driver.cpp`: pass `setup` to `log_move`
 - [x] 5.3 Update `cpp/tui/tui_main.cpp`: pass setup to `log_game_start` and both `log_move` call sites
 
-## 6. Update Tests
+## 6. Fix circle ordering in `make_setup`
 
-- [x] 6.1 Find all Catch2 tests in `tests/` that assert NDJSON output strings for `game_start`, `move`, or `game_end` events
-- [x] 6.2 Update each such test to include the new fields (`circle` in game_start, `income`/`free_spaces`/`board_value`/`circle` in move, `p0`/`p1` objects with `income`/`free_spaces` in game_end)
-- [x] 6.3 Add new Catch2 test cases covering: circle string length is 33 at game start; circle shrinks after a buy-patch move; `board_value` is 0 for a fresh player; `game_end` contains `income` and `free_spaces` for both players
-- [x] 6.4 Build and run the full test suite (`meson test` or equivalent) and confirm all tests pass
+- [x] 6.1 Update `cpp/game_setups.hpp`: `make_setup(id)` now places `kPatches[0]='2'` always last (position 32), rotating kPatches[1..32] by `id` positions — matching game convention that the neutral token is after the '2' tile
+
+## 7. Update Tests
+
+- [x] 7.1 Find all Catch2 tests in `tests/` that assert NDJSON output strings for `game_start`, `move`, or `game_end` events
+- [x] 7.2 Update each such test to include the new fields (`circle` in game_start, `income`/`free_spaces`/`board_value`/`circle`/`patch_symbol` in move, `p0`/`p1` objects with `income`/`free_spaces` in game_end)
+- [x] 7.3 Add new Catch2 test cases covering: circle string length is 33 at game start; circle shrinks after a buy-patch move; `board_value = buttons - 2 * free_spaces` for a fresh player; `game_end` contains `income` and `free_spaces` for both players
+- [x] 7.4 Build and run the full test suite (`meson test` or equivalent) and confirm all tests pass
