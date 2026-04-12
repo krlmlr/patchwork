@@ -138,8 +138,8 @@ TEST_CASE("log_move: circle shrinks after buy_patch move", "[game_logger]") {
     GameSetup setup = make_setup(0);
     SimplifiedGameState state;
     // With make_setup(0), circle[0] = kPatches[1] ('v', cost=1 button).
-    // Buy that patch; the player starts with 5 buttons so it is affordable.
-    Move mv = BuyPatch{1};
+    // kPatches[1] has patch_index=1, which is what BuyPatch takes.
+    Move mv = BuyPatch{1};  // kPatches[1], the patch at circle position 0
     SimplifiedGameState new_state = apply_move(state, mv, setup);
     std::ostringstream oss;
     log_move(oss, 0, 0, mv, new_state, setup);

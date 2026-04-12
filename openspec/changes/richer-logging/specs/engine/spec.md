@@ -2,7 +2,7 @@
 
 ### Requirement: Game-start event is logged when a game begins
 
-The logger SHALL write a JSON object line (NDJSON) of type `"game_start"` immediately before the first move is applied. The event SHALL include: `event` (`"game_start"`), `seed` (integer), `setup_id` (integer or string), initial state summary (both players' starting buttons, income, and free_spaces), and `circle` — a 33-character string of single-character patch names in circle order from the `GameSetup`, encoding the full initial patch arrangement. By game convention the `'2'` tile (the two-square patch) is always the last character of the circle string, as the neutral token is placed immediately after it.
+The logger SHALL write a JSON object line (NDJSON) of type `"game_start"` immediately before the first move is applied. The event SHALL include: `event` (`"game_start"`), `seed` (integer), `setup_id` (integer or string), and an initial state summary with both players' starting `buttons`, `income`, and `free_spaces`. It SHALL also include a `circle` field — a 33-character string of single-character patch names in circle order from the `GameSetup`. By game convention the `'2'` tile (the two-square patch) is always the last character of the circle string, as the neutral token is placed immediately after it.
 
 #### Scenario: Game-start line is well-formed JSON
 
