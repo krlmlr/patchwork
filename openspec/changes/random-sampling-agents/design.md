@@ -30,11 +30,69 @@ Current state: `random_move(state, setup, rng)` performs uniform selection over 
 
 ### Decision: Weight for `Advance` moves
 
-**Chosen:** `Advance` receives a fixed weight of `1.0` regardless of strategy. This means biased agents still advance when they cannot afford any patch or when advancing is the only legal move — correct game-rule behaviour. The weight is a compile-time constant in `biased_random_agent.hpp`, not a runtime parameter, to keep the interface simple.
+**Chosen:** `Advance` receives a fixed weight of `1.0` for all biased strategies (exposed as a named constant `kAdvanceWeight = 1.0` in `biased_random_agent.hpp`). The value is not a runtime parameter in this phase — callers wishing to experiment should change the constant and rebuild.
+
+#### Advance weight in the uniform strategy
+
+The existing `random_move` assigns implicit equal weight `1` to every legal move, including `Advance`. So if there are `N` legal moves, `Advance` is selected with probability `1/N`. There is no free parameter here.
+
+#### Advance weight in the biased strategies
+
+For biased strategies the `Advance` weight competes directly with the `BuyPatch` weights. The meaning of `kAdvanceWeight = 1.0` depends on the strategy:
+
+| Strategy | BuyPatch weight range | Advance weight | Interpretation |
+|---|---|---|---|
+| `cheap` | `1/(cost+1)` → `[0.09, 1.0]` for costs 0–10 | `1.0` | Advance is as likely as buying the cheapest (cost-0) patch; the agent becomes progressively more likely to advance as available patches get more expensive. |
+| `income` | `income+1` → `[1, income_max+1]` | `1.0` | Advance is as likely as buying a zero-income patch; the agent strongly prefers high-income patches and advances only when all visible patches have low income. |
+| `income-per-time` | `(income+0.5)/time` → variable | `1.0` | Advance weight is context-dependent. Typically lower-than-average for patches with good income-per-time ratios, so the agent still advances when patches are time-costly with low income. |
+
+#### Caller guidance
+
+- **Increasing `kAdvanceWeight`** (e.g., to `2.0`) makes the agent more likely to pass and spend buttons, useful for studying "patience" strategies where waiting for a better buy window is preferred.
+- **Decreasing `kAdvanceWeight`** (e.g., to `0.5`) pushes the agent to buy more aggressively; ensure the minimum `BuyPatch` weight is also checked so the distribution never degenerates when all patches are affordable.
+- **Setting `kAdvanceWeight = 0`** is **forbidden**: if only `Advance` is legal (player cannot afford any patch), the discrete distribution would have all-zero weights and `std::discrete_distribution` would produce undefined behaviour. The implementation asserts that at least one weight is positive.
+- For this phase, `1.0` is the recommended default: it is numerically safe, keeps `Advance` reachable under all strategies, and produces intuitive behaviour without per-strategy tuning.
 
 **Alternatives considered:**
-- Weight of 0 for `Advance`: would cause assertion failure when only `Advance` is legal.
-- Configurable advance weight: unnecessary complexity for this phase.
+- Weight of 0 for `Advance`: forbidden — causes assertion failure when only `Advance` is legal.
+- Per-strategy advance weights (e.g., `0.5` for `cheap`, `2.0` for `income`): more expressive but requires additional API surface; deferred to a future parameter-sweep phase.
+- Derive advance weight from `max(BuyPatch weights)`: keeps `Advance` always at the same relative probability, but adds runtime overhead and makes the semantics harder to explain.
+
+## CLI Examples
+
+The following examples cover all supported play driver arguments. Defaults: `--seed1 42`, `--seed2 42`, `--agent1 random`, `--agent2 random`, `--setup 0`, output to stdout.
+
+```sh
+# Minimal: uniform random vs. uniform random, setup 0, seeds 42/42
+patchwork-play --setup 0
+
+# Reproducible game with explicit seeds
+patchwork-play --setup 3 --seed1 1 --seed2 2
+
+# Biased agent vs. uniform random (head-to-head benchmark)
+patchwork-play --setup 0 --agent1 cheap --seed1 1 --seed2 2
+
+# Head-to-head biased strategies with explicit seeds
+patchwork-play --setup 0 --agent1 income --seed1 100 --agent2 income-per-time --seed2 200
+
+# Same strategies and seeds — log is byte-for-byte identical on every run
+patchwork-play --setup 7 --agent1 cheap --seed1 42 --agent2 cheap --seed2 42
+
+# Write log to file instead of stdout
+patchwork-play --setup 0 --seed1 1 --seed2 1 --output game.ndjson
+
+# Replay a game exactly from a recorded game_start line:
+#   {"event":"game_start","setup":5,"agent_p0":"income","seed_p0":77,"agent_p1":"cheap","seed_p1":88}
+patchwork-play --setup 5 --agent1 income --seed1 77 --agent2 cheap --seed2 88
+```
+
+The TUI uses the same strategy names at the launch-screen prompt:
+
+```
+Setup index [0-99, default 0]: 3
+Seed for opponent [default 42]: 1
+Opponent strategy [random/cheap/income/income-per-time, default random]: cheap
+```
 
 ### Decision: `weight_cheap` formula
 

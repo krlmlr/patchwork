@@ -2,7 +2,7 @@
 
 ### Requirement: Biased random agent selects a BuyPatch move with probability proportional to its weight
 
-`biased_random_move(state, setup, rng, weight_fn)` SHALL assign a weight to each `BuyPatch` move by calling `weight_fn` with the corresponding `PatchData`, assign a fixed weight of `1.0` to the `Advance` move when present, and return a move sampled from `std::discrete_distribution` using those weights. It SHALL NOT be called on a terminal state.
+`biased_random_move(state, setup, rng, weight_fn)` SHALL assign a weight to each `BuyPatch` move by calling `weight_fn` with the corresponding `PatchData`, assign the compile-time constant `kAdvanceWeight` (default `1.0`) to the `Advance` move when present, and return a move sampled from `std::discrete_distribution` using those weights. It SHALL assert that at least one weight is positive before sampling. It SHALL NOT be called on a terminal state.
 
 #### Scenario: Selected move is legal
 
