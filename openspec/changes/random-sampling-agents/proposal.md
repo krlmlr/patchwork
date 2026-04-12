@@ -20,11 +20,12 @@ The uniform random agent (already implemented) serves only as a trivial baseline
 
 ### Modified Capabilities
 - `agents`: Extend with requirements for biased random selection, three built-in weight functions (`weight_cheap`, `weight_income`, `weight_income_per_time`), the `AgentStrategy` enum + `make_weight_fn` factory, and the unified `select_move` dispatch function.
-- `engine`: Extend play driver with the `--agent <strategy>` argument and an `"agent"` field in the `game_start` NDJSON event.
+- `engine`: Extend play driver with `--agent1`/`--agent2` per-player strategy flags, `--seed1`/`--seed2` per-player seed flags, and `"agent_p0"`, `"agent_p1"`, `"seed_p0"`, `"seed_p1"` fields in the `game_start` NDJSON event.
+- `tui`: Extend launch screen to prompt for opponent strategy; add strategy name to frame header; extend `History` to store per-player RNG states for deterministic undo/redo.
 
 ## Impact
 
 - New files: `cpp/biased_random_agent.hpp`, `cpp/biased_random_agent.cpp`
-- Modified files: `cpp/play_driver.cpp` (add `--agent` / `--agent1` / `--agent2` CLI argument), `openspec/specs/agents/spec.md`, `openspec/specs/engine/spec.md`
-- No changes to game state, move generation, or logging formats
+- Modified files: `cpp/play_driver.cpp` (add `--agent1`/`--agent2`/`--seed1`/`--seed2` CLI arguments), `cpp/tui_launch.cpp` (add strategy prompt), `cpp/tui_display.hpp` (header shows strategy), `cpp/tui_history.hpp` (per-player RNG states), `openspec/specs/agents/spec.md`, `openspec/specs/engine/spec.md`, `openspec/specs/tui/spec.md`
+- No changes to game state, move generation, or logging formats beyond the new `game_start` fields
 - No new external dependencies

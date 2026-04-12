@@ -10,14 +10,12 @@ Current state: `random_move(state, setup, rng)` performs uniform selection over 
 - Add `biased_random_move(state, setup, rng, weight_fn)` that samples `BuyPatch` moves with weights derived from a caller-supplied function, and `Advance` with a configurable fixed weight.
 - Ship three named weight functions: `weight_cheap`, `weight_income`, `weight_income_per_time`.
 - Expose a `AgentStrategy` enum (`Random`, `Cheap`, `Income`, `IncomePerTime`) so the play driver and TUI can select a strategy by name.
-- Extend the play driver with `--agent <strategy>` (applies to both players).
+- Extend the play driver with `--agent1 <strategy>` / `--agent2 <strategy>` for independent per-player strategy selection, and `--seed1 <n>` / `--seed2 <n>` for independent per-player RNG seeds. This enables head-to-head benchmarking and exact game replay from a log.
+- Extend the TUI launch screen to let the user choose the opponent agent strategy; extend `History` to store per-player RNG states so that undo/redo is deterministic even when two distinct RNG streams are in play.
 - Cover all new code with Catch2 tests.
 
 **Non-Goals:**
-- `--agent1`/`--agent2` per-player strategy flags — a symmetric `--agent` is sufficient for this benchmarking phase; asymmetric flags can be added when the analysis phase requires head-to-head comparisons.
-- `--seed1`/`--seed2` per-player seed flags — a single seed drives one `std::mt19937` shared between both players; this already provides full reproducibility and allows sweeping seeds in R analysis. Independent per-agent streams can always be derived from the master seed in code if needed.
 - Deterministic/greedy agents (always pick best move) — out of scope for this change.
-- Per-player agent type in NDJSON log format — deferred; logs will record strategy name as an informational field in `game_start` only.
 - Shape-aware heuristics (requires full quilt board) — deferred to Piece Placement Agent phase.
 
 ## Decisions
@@ -50,8 +48,15 @@ Current state: `random_move(state, setup, rng)` performs uniform selection over 
 
 **Chosen:** `cpp/biased_random_agent.hpp` / `cpp/biased_random_agent.cpp`, mirroring the existing random agent. `AgentStrategy` enum lives in `cpp/agent_strategy.hpp` (a header-only enum + factory) so the play driver, TUI, and tests can include it without pulling in implementation.
 
+### Decision: Per-player RNG streams
+
+**Chosen:** Each player is assigned an independent `std::mt19937` seeded by `--seed1` and `--seed2` respectively. This makes it possible to replay the exact same game from a log entry: the log records both seeds and strategies, so an external tool (or the TUI) can reconstruct any game state deterministically. It also means a human in the TUI can undo/redo the agent's moves without disturbing the agent's RNG sequence for future moves.
+
+**Alternatives considered:**
+- Single shared seed with separate streams derived via seed-splitting: works but couples the two streams; changing one player's strategy would alter the other's outcomes.
+- Single shared `std::mt19937` (previous approach): cannot distinguish which player's RNG produced which decision, making replay against a human impossible.
+
 ## Risks / Trade-offs
 
 - [Risk] `std::function` wrapping may pessimise tight benchmarking loops → Mitigation: this agent is not on the hot path for MCTS; acceptable for this phase.
-- [Risk] Adding `--agent1`/`--agent2` complicates CLI parsing → Mitigation: keep `--agent` as a single symmetric default; add asymmetric flags only if needed.
 - [Risk] Weight functions produce near-zero values for all legal moves, making `std::discrete_distribution` degenerate → Mitigation: assert that at least one weight is positive before sampling; covered by tests.
