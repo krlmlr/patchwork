@@ -79,14 +79,14 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
-### Fast CI/CD Setup
+### Fast CI/CD Setup *(done)*
 
 - Install R packages from PPM
 - For GHA, Copilot and devcontainer
 
 ---
 
-### TUI / Interactive Mode
+### TUI / Interactive Mode *(done)*
 
 - Simple text-based UI for playing against a human
 - Display game state in ASCII art (buttons, income, free spaces, time track with player positions, patch circle)
