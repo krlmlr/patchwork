@@ -16,9 +16,9 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 | [Data](#data) | [`data/spec.md`](data/spec.md) | Canonical data files, code-generation pipelines, game terminology glossary |
 | [Game Core](#game-core) | [`game-core/spec.md`](game-core/spec.md) | Fundamental game-state types and initial setup structures |
 | [Game Logic](#game-logic) | [`game-logic/spec.md`](game-logic/spec.md) | Rules: legal moves, move application, terminal detection, scoring |
-| [Engine](#engine) | [`engine/spec.md`](engine/spec.md) | Game loop, play drivers, NDJSON logging, seed/setup plumbing |
+| [Engine](#engine) | [`engine/spec.md`](engine/spec.md) | Game loop, play drivers, NDJSON logging, per-player seed/agent plumbing |
 | [TUI](#tui) | [`tui/spec.md`](tui/spec.md) | Terminal display rendering, keyboard input, game session launch, undo/redo history |
-| [Agents](#agents) | [`agents/spec.md`](agents/spec.md) | Concrete decision-making strategies and the agent interface |
+| [Agents](#agents) | [`agents/spec.md`](agents/spec.md) | Concrete decision-making strategies, agent interface, and weight functions |
 | [Analysis](#analysis) | [`analysis/spec.md`](analysis/spec.md) | R analysis scripts, plot outputs, statistical summaries of game data |
 
 ---
@@ -59,7 +59,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > The game loop and everything that makes a game run reproducibly end-to-end.
 
-[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed`, `--setup`, `--output`), NDJSON event logging (game-start, move, game-end events), and NDJSON format constraints.
+[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed1`, `--seed2`, `--setup`, `--output`, `--agent1`, `--agent2`), NDJSON event logging (game-start, move, game-end events), per-player agent strategy and seed recorded in `game_start`, and NDJSON format constraints.
 
 ---
 
@@ -67,7 +67,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > The interactive terminal user interface for human play.
 
-[`tui/spec.md`](tui/spec.md) covers: box-framed display rendering, patch circle with adaptive detail lines, wide/narrow layouts, color, resizable NDJSON log pane, scrolling event log, single-keypress input, RawMode guard, command legality enforcement, launch screen, game-result summary, and undo/redo history stack.
+[`tui/spec.md`](tui/spec.md) covers: box-framed display rendering, patch circle with adaptive detail lines, wide/narrow layouts, color, resizable NDJSON log pane, scrolling event log, single-keypress input, RawMode guard, command legality enforcement, launch screen (setup, seed, opponent agent strategy), agent strategy name in header, game-result summary, undo/redo history stack with per-player RNG states.
 
 ---
 
@@ -75,7 +75,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > Concrete decision-making strategies.
 
-[`agents/spec.md`](agents/spec.md) covers: random agent (uniform move selection, reproducibility via seed, standalone compilation).
+[`agents/spec.md`](agents/spec.md) covers: random agent (uniform move selection, reproducibility via seed, standalone compilation); biased random agent (`biased_random_move` with pluggable weight functions); built-in weight functions `weight_cheap`, `weight_income`, `weight_income_per_time`; `AgentStrategy` enum and `make_weight_fn` factory; unified `select_move` dispatch.
 
 ---
 
