@@ -16,11 +16,11 @@ The uniform random agent (already implemented) serves only as a trivial baseline
 ## Capabilities
 
 ### New Capabilities
-- `biased-random-agent`: Weighted random move selection with pluggable weight functions and three built-in heuristics (cheap, income, income-per-time).
+<!-- None: all new requirements extend existing domains -->
 
 ### Modified Capabilities
-- `agents`: Extend the existing spec with requirements for biased random selection, weight functions, and named strategy selection.
-- `engine`: Extend play driver to support an `--agent` argument that selects the agent strategy for each player.
+- `agents`: Extend with requirements for biased random selection, three built-in weight functions (`weight_cheap`, `weight_income`, `weight_income_per_time`), the `AgentStrategy` enum + `make_weight_fn` factory, and the unified `select_move` dispatch function.
+- `engine`: Extend play driver with the `--agent <strategy>` argument and an `"agent"` field in the `game_start` NDJSON event.
 
 ## Impact
 

@@ -16,9 +16,9 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 | [Data](#data) | [`data/spec.md`](data/spec.md) | Canonical data files, code-generation pipelines, game terminology glossary |
 | [Game Core](#game-core) | [`game-core/spec.md`](game-core/spec.md) | Fundamental game-state types and initial setup structures |
 | [Game Logic](#game-logic) | [`game-logic/spec.md`](game-logic/spec.md) | Rules: legal moves, move application, terminal detection, scoring |
-| [Engine](#engine) | [`engine/spec.md`](engine/spec.md) | Game loop, play drivers, NDJSON logging, seed/setup plumbing |
+| [Engine](#engine) | [`engine/spec.md`](engine/spec.md) | Game loop, play drivers, NDJSON logging, seed/setup/agent plumbing |
 | [TUI](#tui) | [`tui/spec.md`](tui/spec.md) | Terminal display rendering, keyboard input, game session launch, undo/redo history |
-| [Agents](#agents) | [`agents/spec.md`](agents/spec.md) | Concrete decision-making strategies and the agent interface |
+| [Agents](#agents) | [`agents/spec.md`](agents/spec.md) | Concrete decision-making strategies, agent interface, and weight functions |
 | [Analysis](#analysis) | [`analysis/spec.md`](analysis/spec.md) | R analysis scripts, plot outputs, statistical summaries of game data |
 
 ---
@@ -59,7 +59,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > The game loop and everything that makes a game run reproducibly end-to-end.
 
-[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed`, `--setup`, `--output`), NDJSON event logging (game-start, move, game-end events), and NDJSON format constraints.
+[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed`, `--setup`, `--output`, `--agent`), NDJSON event logging (game-start, move, game-end events), agent strategy recorded in `game_start`, and NDJSON format constraints.
 
 ---
 
@@ -75,7 +75,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > Concrete decision-making strategies.
 
-[`agents/spec.md`](agents/spec.md) covers: random agent (uniform move selection, reproducibility via seed, standalone compilation).
+[`agents/spec.md`](agents/spec.md) covers: random agent (uniform move selection, reproducibility via seed, standalone compilation); biased random agent (`biased_random_move` with pluggable weight functions); built-in weight functions `weight_cheap`, `weight_income`, `weight_income_per_time`; `AgentStrategy` enum and `make_weight_fn` factory; unified `select_move` dispatch.
 
 ---
 

@@ -10,10 +10,12 @@ Current state: `random_move(state, setup, rng)` performs uniform selection over 
 - Add `biased_random_move(state, setup, rng, weight_fn)` that samples `BuyPatch` moves with weights derived from a caller-supplied function, and `Advance` with a configurable fixed weight.
 - Ship three named weight functions: `weight_cheap`, `weight_income`, `weight_income_per_time`.
 - Expose a `AgentStrategy` enum (`Random`, `Cheap`, `Income`, `IncomePerTime`) so the play driver and TUI can select a strategy by name.
-- Extend the play driver with `--agent <strategy>` (applies to both players) or `--agent1`/`--agent2` for independent per-player selection.
+- Extend the play driver with `--agent <strategy>` (applies to both players).
 - Cover all new code with Catch2 tests.
 
 **Non-Goals:**
+- `--agent1`/`--agent2` per-player strategy flags — a symmetric `--agent` is sufficient for this benchmarking phase; asymmetric flags can be added when the analysis phase requires head-to-head comparisons.
+- `--seed1`/`--seed2` per-player seed flags — a single seed drives one `std::mt19937` shared between both players; this already provides full reproducibility and allows sweeping seeds in R analysis. Independent per-agent streams can always be derived from the master seed in code if needed.
 - Deterministic/greedy agents (always pick best move) — out of scope for this change.
 - Per-player agent type in NDJSON log format — deferred; logs will record strategy name as an informational field in `game_start` only.
 - Shape-aware heuristics (requires full quilt board) — deferred to Piece Placement Agent phase.
