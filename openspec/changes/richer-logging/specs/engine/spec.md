@@ -19,6 +19,11 @@ The logger SHALL write a JSON object line (NDJSON) of type `"game_start"` immedi
 - **WHEN** `log_game_start` is called with a valid `GameSetup`
 - **THEN** the emitted JSON line contains a `"circle"` field whose value is a 33-character string of patch-name characters in `GameSetup` circle order
 
+#### Scenario: Circle string ends with the two-square patch '2'
+
+- **WHEN** the circle is serialised at game start
+- **THEN** the last character of the circle string SHALL be `'2'` (the two-square patch, by neutral-token convention)
+
 #### Scenario: Circle string encodes patch names not IDs
 
 - **WHEN** the circle is serialised at game start

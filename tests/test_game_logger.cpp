@@ -49,6 +49,21 @@ TEST_CASE("log_game_start: circle string is 33 characters", "[game_logger]") {
     REQUIRE(end - pos == 33);
 }
 
+TEST_CASE("log_game_start: circle string ends with '2' (neutral token convention)", "[game_logger]") {
+    SimplifiedGameState state;
+    GameSetup setup = make_setup(0);
+    std::ostringstream oss;
+    log_game_start(oss, 1, 0, state, setup);
+    auto line = oss.str();
+    auto pos = line.find(R"("circle":")");
+    REQUIRE(pos != std::string::npos);
+    pos += std::string(R"("circle":")").size();
+    auto end = line.find('"', pos);
+    REQUIRE(end != std::string::npos);
+    REQUIRE(end - pos == 33);
+    REQUIRE(line[end - 1] == '2');
+}
+
 TEST_CASE("log_game_start: circle encodes patch names not IDs", "[game_logger]") {
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);

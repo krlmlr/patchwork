@@ -172,16 +172,16 @@ it.
 
 **game log**
 An NDJSON file recording all moves, state transitions, and outcomes of a game.
-Used for analysis and reproducibility. Each `move` event includes `board_value`,
-`projected_income`, and `projected_score` for the active player after the move.
+Used for analysis and reproducibility. Each `move` event includes `board value`,
+`projected income`, and `projected score` for the active player after the move.
 
-**board_value**
+**board value**
 A per-player, per-move metric equal to `buttons − 2 × free_spaces`. This is the
 game-score formula applied to the current state, treating remaining income and
 the bonus tile as zero. For a player starting with 5 buttons and an empty 9×9
 board it evaluates to approximately `5 − 2 × 81 = −157`.
 
-**projected_income**
+**projected income**
 The total buttons a player will earn from the remaining button-income spaces,
 given their current income rate: `income × (number of income spaces still ahead
 of the player's time token)`. There are 9 income spaces at positions 5, 11, 17,
@@ -190,11 +190,11 @@ passes position 53. Note that the "projected income" under the **patch gain**
 entry refers to the same formula but applied to a single patch rather than the
 player total.
 
-**projected_score**
+**projected score**
 A forward-looking score estimate for the current player state:
-`buttons + projected_income − 2 × free_spaces`. Unlike `board_value`, this
+`buttons + projected_income − 2 × free_spaces`. Unlike `board value`, this
 accounts for future button-income payouts. At game end (position ≥ 53) projected
-score equals `board_value` because no income spaces remain.
+score equals `board value` because no income spaces remain.
 
 **random agent**
 An agent that selects uniformly at random among all legal moves. Serves as a
