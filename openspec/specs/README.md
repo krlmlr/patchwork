@@ -59,7 +59,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > The game loop and everything that makes a game run reproducibly end-to-end.
 
-[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed1`, `--seed2`, `--setup`, `--output`, `--agent1`, `--agent2`), NDJSON event logging (game-start, move, game-end events), per-player agent strategy and seed recorded in `game_start`, and NDJSON format constraints.
+[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed1`, `--seed2`, `--setup`, `--output`, `--agent1`, `--agent2`, `--advance-weight`), NDJSON event logging (game-start, move, game-end events), per-player agent strategy and seed plus advance weight recorded in `game_start`, and NDJSON format constraints.
 
 ---
 

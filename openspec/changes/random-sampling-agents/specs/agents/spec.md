@@ -2,7 +2,7 @@
 
 ### Requirement: Biased random agent selects a BuyPatch move with probability proportional to its weight
 
-`biased_random_move(state, setup, rng, weight_fn)` SHALL assign a weight to each `BuyPatch` move by calling `weight_fn` with the corresponding `PatchData`, assign the compile-time constant `kAdvanceWeight` (default `1.0`) to the `Advance` move when present, and return a move sampled from `std::discrete_distribution` using those weights. It SHALL assert that at least one weight is positive before sampling. It SHALL NOT be called on a terminal state.
+`biased_random_move(state, setup, rng, weight_fn, advance_weight)` SHALL assign a weight to each `BuyPatch` move by calling `weight_fn` with the corresponding `PatchData`, assign `advance_weight` to the `Advance` move when present, and return a move sampled from `std::discrete_distribution` using those weights. It SHALL assert that `advance_weight > 0` and that at least one weight is positive before sampling. It SHALL NOT be called on a terminal state.
 
 #### Scenario: Selected move is legal
 
@@ -14,10 +14,20 @@
 - **WHEN** `biased_random_move` is called 10 000 times with a weight function that assigns weight 9.0 to one BuyPatch move and weight 1.0 to all others, using a fixed seed
 - **THEN** the high-weight move is selected more than 60 % of the time
 
-#### Scenario: Advance move receives fixed weight 1.0
+#### Scenario: Advance move weight comes from the advance_weight parameter
 
-- **WHEN** the only legal moves are one BuyPatch (weight 1.0 from weight_fn) and one Advance
+- **WHEN** `biased_random_move` is called with `advance_weight = 1.0`, one BuyPatch (weight 1.0 from weight_fn), and one Advance as the only legal moves
 - **THEN** each is selected approximately 50 % of the time over 10 000 calls (between 40 % and 60 %)
+
+#### Scenario: Larger advance_weight increases Advance selection frequency
+
+- **WHEN** `biased_random_move` is called with `advance_weight = 9.0`, one BuyPatch (weight 1.0 from weight_fn), and one Advance as the only legal moves
+- **THEN** the Advance move is selected more than 60 % of the time over 10 000 calls
+
+#### Scenario: Zero or negative advance_weight is rejected
+
+- **WHEN** `biased_random_move` is called with `advance_weight <= 0`
+- **THEN** the implementation asserts and does not proceed
 
 ### Requirement: Biased random agent is reproducible given the same seed
 
@@ -86,7 +96,7 @@ A header `cpp/agent_strategy.hpp` SHALL define an enum class `AgentStrategy` wit
 
 ### Requirement: Agent interface supports selecting a move by strategy name
 
-A free function `select_move(state, setup, rng, strategy)` SHALL dispatch to `random_move` when `strategy == AgentStrategy::Random` and to `biased_random_move` with the appropriate weight function for all other strategies. It SHALL NOT be called on a terminal state.
+A free function `select_move(state, setup, rng, strategy, advance_weight)` SHALL dispatch to `random_move` when `strategy == AgentStrategy::Random` (ignoring `advance_weight`) and to `biased_random_move` with the appropriate weight function and `advance_weight` for all other strategies. It SHALL NOT be called on a terminal state.
 
 #### Scenario: Random strategy delegates to uniform random selection
 

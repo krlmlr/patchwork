@@ -178,6 +178,36 @@ Used for analysis and reproducibility.
 An agent that selects uniformly at random among all legal moves. Serves as a
 baseline for benchmarking.
 
+**biased random agent**
+An agent that samples from legal moves using a weighted distribution. Buy-patch
+moves are weighted by a caller-supplied weight function; the advance move
+receives the advance weight. Provides non-trivial baselines above the uniform
+random agent. Implemented in `cpp/biased_random_agent.hpp/.cpp`.
+
+**agent strategy**
+A named policy that determines how an agent selects its move. Encoded as the
+`AgentStrategy` enum with values `Random`, `Cheap`, `Income`, and
+`IncomePerTime`. Selected via `--agent1`/`--agent2` on the play driver command
+line or via the TUI launch screen.
+
+**weight function**
+A function `(PatchData) → double` that assigns a positive sampling weight to a
+buy-patch move. Used by the biased random agent to skew move selection toward
+patches that score well under a given criterion. Three built-in functions are
+provided: `weight_cheap` (prefers low button cost), `weight_income` (prefers
+high button income), `weight_income_per_time` (prefers high income-to-time
+ratio).
+
+**advance weight**
+A strictly positive floating-point value that sets the relative sampling weight
+of the advance move in the biased random agent's distribution. A value of `1.0`
+gives the advance move the same weight as a buy-patch move with weight `1.0`;
+values greater than `1.0` produce a more patient (advancing) agent; values
+closer to zero produce a more aggressive (buying) agent. Must be strictly
+greater than zero because the advance move may be the only legal move when the
+player cannot afford any patch. Configurable via `--advance-weight` on the play
+driver command line.
+
 **heuristic agent**
 An agent that scores positions with a hand-crafted evaluation function and picks
 the highest-scoring legal move.
