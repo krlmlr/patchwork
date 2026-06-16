@@ -38,7 +38,9 @@ For each item we decided whether the **spec** or the **code/docs** was wrong:
 - **Data spec drift** — *spec wrong.* The generated `PatchData` has a
   `num_cells` field the spec omits, and `cells` is a fixed 8-element array; the
   canonical-form "equivalently…" clause contradicts the lexicographic-minimum
-  rule the R codegen actually implements.
+  rule the R codegen actually implements; and the "no patch data hardcoded in
+  C++" rule contradicts itself (the committed generated header is C++ holding
+  patch data) — restate it as "generated from the YAML, never hand-written."
 - **Infrastructure** — `mise` PATH is `build/cpp`, not `build` (*spec wrong*);
   `install-tools.sh` invokes `sudo` internally and must be run **without**
   `sudo bash`, but `README.md`/`BUILD.md` say `sudo bash` (*docs wrong*); the

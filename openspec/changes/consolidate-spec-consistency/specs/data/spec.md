@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: YAML catalog is single source of truth
-The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. No patch data SHALL be hardcoded anywhere in the C++ source directly.
+The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. All patch data that appears in C++ SHALL be produced by the codegen pipeline from `data/patches.yaml` and live only in the committed generated header under `cpp/generated/`. No patch data SHALL be hand-written or maintained directly in hand-edited C++ source, and the generated header SHALL NOT be edited by hand.
 
 #### Scenario: Catalog contains all patches
 - **WHEN** the catalog file is loaded
