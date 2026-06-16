@@ -27,8 +27,11 @@ devcontainer.
 The shared tool installer can also be run directly on a plain Ubuntu 24.04
 system:
 
+The script invokes `sudo` internally where it needs elevated privileges, so
+run it as a regular user **without** `sudo`:
+
 ```sh
-sudo bash scripts/install-tools.sh
+bash scripts/install-tools.sh
 ```
 
 ## Project structure
