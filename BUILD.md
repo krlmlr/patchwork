@@ -8,10 +8,12 @@ cloud session**. The `.devcontainer/devcontainer.json` configuration
 automatically installs all prerequisites listed below, so you can start
 building immediately without any manual steps.
 
-Alternatively, run the shared installer on a plain Ubuntu 24.04 system:
+Alternatively, run the shared installer on a plain Ubuntu 24.04 system. The
+script invokes `sudo` internally where needed, so run it as a regular user
+**without** `sudo`:
 
 ```sh
-sudo bash scripts/install-tools.sh
+bash scripts/install-tools.sh
 ```
 
 ## Manual prerequisites
