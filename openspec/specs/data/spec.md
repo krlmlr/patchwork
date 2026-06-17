@@ -2,10 +2,9 @@
 
 ## Purpose
 Defines the canonical data files that are the single source of truth for game content, the code-generation pipelines that produce committed C++ headers from those files, and the shared game terminology glossary.
-
 ## Requirements
 ### Requirement: YAML catalog is single source of truth
-The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. No patch data SHALL be hardcoded anywhere in the C++ source directly.
+The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork patches. All patch data that appears in C++ SHALL be produced by the codegen pipeline from `data/patches.yaml` and live only in the committed generated header under `cpp/generated/`. No patch data SHALL be hand-written or maintained directly in hand-edited C++ source, and the generated header SHALL NOT be edited by hand.
 
 #### Scenario: Catalog contains all patches
 - **WHEN** the catalog file is loaded
@@ -23,7 +22,7 @@ The file `data/patches.yaml` SHALL be the canonical definition of all Patchwork 
 
 #### Scenario: Patch shapes are in canonical form
 - **WHEN** any `shape` value is read from the catalog
-- **THEN** it equals the canonical form for that tile: the grid string (rows joined by newline) produced by the orientation — among all 8 (4 rotations × 2 reflections) — whose normalised `(row, col)` cell coordinates are lexicographically smallest when sorted and compared as a sequence of `"row,col"` pairs joined by `;`; equivalently, the orientation that produces the widest (most columns) bounding box when there is a tie, and where `(0,1) < (1,0)` so horizontal shapes are preferred over vertical ones
+- **THEN** it equals the canonical form for that tile: among all 8 orientations (4 rotations × 2 reflections), the one whose normalised `(row, col)` cell coordinates, sorted and serialised as `"row,col"` pairs joined by `;`, are lexicographically smallest
 - **AND** the R codegen script SHALL assert this property for every entry before generating the header
 
 #### Scenario: Catalog entries are sorted by size and cost
@@ -58,7 +57,7 @@ The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write
 
 #### Scenario: All patches accessible at compile time
 - **WHEN** the generated header is included
-- **THEN** a `constexpr` collection of exactly 33 `PatchData` entries is available, each with `id`, `name`, `buttons`, `time`, `income`, and `cells` (list of `(row, col)` offsets from the top-left of the bounding box)
+- **THEN** a `constexpr` collection of exactly 33 `PatchData` entries is available, each with `id`, `name`, `buttons`, `time`, `income`, `num_cells`, and `cells` — where `cells` is a fixed-size `std::array<CellOffset, 8>` of `(row, col)` offsets from the top-left of the bounding box, of which the first `num_cells` entries are valid and any remaining entries are `{0, 0}`
 
 #### Scenario: Patch data matches catalog
 - **WHEN** any patch is accessed from the generated array
@@ -146,3 +145,4 @@ At least the OpenSpec apply prompt (`opsx-apply.prompt.md`) SHALL reference `doc
 
 - **WHEN** `.github/prompts/opsx-apply.prompt.md` is read
 - **THEN** it contains a reference to `docs/glossary.md`
+

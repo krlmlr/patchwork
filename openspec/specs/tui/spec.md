@@ -2,9 +2,7 @@
 
 ## Purpose
 Defines the terminal user interface: display rendering, keyboard input handling, game session launch, and undo/redo history. The TUI lets a human play interactively against the random agent.
-
 ## Requirements
-
 ### Requirement: Game state is rendered as a responsive box-framed ASCII layout
 
 The TUI SHALL render the full game state into a box-drawn frame on each display update. The frame SHALL use Unicode box-drawing characters (`┌`, `─`, `┐`, `│`, `├`, `┤`, `└`, `┘`, `┬`, `┴`, `┼`) for all borders and section dividers. **Every row in the rendered frame SHALL have the same visual display width equal to the terminal column count `W`; the right border character (or corner) SHALL appear at exactly the same horizontal position on every row.** The frame SHALL contain five sections: (1) header (seed, setup, active player), (2) patch circle with adaptive detail and keyboard-shortcut legend, (3) player stats, (4) two 9×9 quilt boards side by side with the event log to the right, (5) NDJSON log pane (resizable, spanning the full width). The frame SHALL be redrawn in full on every update. A narrow layout (80–159 cols) and a wide layout (≥160 cols) SHALL be supported.
@@ -254,7 +252,7 @@ The input module SHALL provide a `RawMode` RAII class. Its constructor SHALL swi
 
 ### Requirement: Command is only dispatched when it is legal
 
-The input loop SHALL check whether the resolved `Move` is present in the legal moves list returned by `generate_moves` before applying it. Illegal commands (e.g., `BuyPatch{3}` when fewer than 4 patches are in the circle, or any move when the game is terminal) SHALL be silently ignored; the display SHALL be refreshed with no state change.
+The input loop SHALL check whether the resolved `Move` is present in the legal moves list returned by `legal_moves` before applying it. Illegal commands (e.g., `BuyPatch{3}` when fewer than 4 patches are in the circle, or any move when the game is terminal) SHALL be silently ignored; the display SHALL be refreshed with no state change.
 
 #### Scenario: Illegal BuyPatch index is ignored
 
@@ -313,25 +311,6 @@ After the game reaches a terminal state (or the user presses `q`), the TUI SHALL
 - **WHEN** player 1 claimed the 7×7 bonus tile
 - **THEN** player 1's displayed score includes an additional `+7`
 
-### Requirement: History stack stores `(GameState, RngState)` pairs
-
-The `History` class SHALL store a sequence of `HistoryEntry` values, where each entry pairs a `GameState` snapshot with an `RngState` snapshot capturing the full `std::mt19937_64` state of the random agent at that point. The initial entry is pushed at construction. Each call to `push` appends a new entry and advances the cursor to it. When `push` is called with a cursor that is not at the end (i.e., after one or more undos), all entries above the cursor SHALL be discarded before appending.
-
-#### Scenario: Initial entry is stored at construction
-
-- **WHEN** a `History` is constructed with a given `GameState` and initial `RngState`
-- **THEN** `current_state()` returns that `GameState`, `current_rng()` returns that `RngState`, and `can_undo()` returns `false`
-
-#### Scenario: Push advances the cursor
-
-- **WHEN** `push` is called with a new `GameState` and `RngState`
-- **THEN** `current_state()` returns the new `GameState` and `can_undo()` returns `true`
-
-#### Scenario: Push after undo discards future entries
-
-- **WHEN** the history has entries [E0, E1, E2] with cursor at E1 (after one undo) and `push(E3)` is called
-- **THEN** the history contains [E0, E1, E3], `current_state()` returns E3's state, and `can_redo()` returns `false`
-
 ### Requirement: Undo and redo move the cursor without losing entries
 
 `undo` SHALL decrement the cursor by one if `can_undo()` is true, otherwise it SHALL be a no-op. `redo` SHALL increment the cursor by one if `can_redo()` is true, otherwise it SHALL be a no-op. Neither operation SHALL modify stored entries.
@@ -378,3 +357,23 @@ All `History` behaviours SHALL have Catch2 unit tests covering construction, pus
 
 - **WHEN** `meson test -C build` is run
 - **THEN** all history tests pass with exit code 0
+
+### Requirement: History stack stores `(SimplifiedGameState, RngState, log-snapshot)` entries
+
+The `History` class SHALL store a sequence of `HistoryEntry` values. Each entry SHALL contain a `SimplifiedGameState` snapshot, an `RngState` snapshot capturing the full `std::mt19937` state of the random agent at that point, and a `log_entries` snapshot (a `std::vector<std::string>` of the event-log lines visible at that point) so undo/redo can restore the displayed log. The initial entry is pushed at construction. Each call to `push` appends a new entry and advances the cursor to it. When `push` is called with a cursor that is not at the end (i.e., after one or more undos), all entries above the cursor SHALL be discarded before appending.
+
+#### Scenario: Initial entry is stored at construction
+
+- **WHEN** a `History` is constructed with a given `SimplifiedGameState` and initial `RngState`
+- **THEN** `current_state()` returns that `SimplifiedGameState`, `current_rng()` returns that `RngState`, and `can_undo()` returns `false`
+
+#### Scenario: Push advances the cursor
+
+- **WHEN** `push` is called with a new `SimplifiedGameState`, `RngState`, and log snapshot
+- **THEN** `current_state()` returns the new state, `current_log_entries()` returns the new log snapshot, and `can_undo()` returns `true`
+
+#### Scenario: Push after undo discards future entries
+
+- **WHEN** the history has entries [E0, E1, E2] with cursor at E1 (after one undo) and `push(E3)` is called
+- **THEN** the history contains [E0, E1, E3], `current_state()` returns E3's state, and `can_redo()` returns `false`
+
