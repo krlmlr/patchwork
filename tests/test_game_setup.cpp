@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "game_setup.hpp"
+#include "game_setups.hpp"
 #include "generated/game_setups.hpp"
 #include "generated/patches.hpp"
 
@@ -71,6 +72,35 @@ TEST_CASE("kGameSetups canonical setups", "[game_setup]") {
         SECTION("last character is always '2' (two-square tile)") {
             REQUIRE(sv.back() == '2');
         }
+    }
+}
+
+TEST_CASE("make_setup sources circles from kGameSetups", "[game_setup]") {
+    using patchwork::make_setup;
+
+    SECTION("make_setup(id) equals kGameSetups[id] for in-range ids") {
+        for (std::size_t i = 0; i < kNumGameSetups; ++i) {
+            REQUIRE(make_setup(static_cast<int>(i)).circle() ==
+                    GameSetup(kGameSetups[i]).circle());
+        }
+    }
+
+    SECTION("id wraps around the canonical table") {
+        REQUIRE(make_setup(static_cast<int>(kNumGameSetups)).circle() ==
+                GameSetup(kGameSetups[0]).circle());
+        REQUIRE(make_setup(static_cast<int>(kNumGameSetups) + 3).circle() ==
+                GameSetup(kGameSetups[3]).circle());
+    }
+
+    SECTION("negative id uses floored modulo") {
+        REQUIRE(make_setup(-1).circle() ==
+                GameSetup(kGameSetups[kNumGameSetups - 1]).circle());
+    }
+
+    SECTION("last tile of the produced circle is the two-square patch") {
+        // Driver and TUI now agree: the canonical circles all end in '2'.
+        GameSetup gs = make_setup(7);
+        REQUIRE(kPatches[gs.circle().back()].name == '2');
     }
 }
 

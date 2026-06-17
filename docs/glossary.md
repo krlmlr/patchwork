@@ -39,6 +39,12 @@ game that player has progressed.
 The 9×9 grid each player fills with patches. Empty spaces cost 2 points at end
 of game.
 
+**free spaces** (also: empty spaces)
+The cells of a player's quilt board not yet covered by any patch. At the end of
+the game each free space costs 2 points, so the final score subtracts
+2 × free spaces. In the simplified game state, free spaces are tracked directly
+as a counter, starting at 81 for an empty board.
+
 **button cost** (also: patch cost)
 The number of buttons a player must pay to purchase a patch. Listed on the patch
 label.
@@ -59,6 +65,11 @@ The current number of buttons a player holds. Players start with 5 buttons.
 The event triggered when a player's time token passes or lands on a
 button-symbol space on the time track. The player receives buttons equal to the
 total button income of all patches on their quilt board. Also called a payout.
+
+**button-income space** (also: payout space, button-symbol space)
+A space on the time track marked with a button symbol that triggers an income
+phase when a player's time token passes or lands on it. In the simplified
+engine these are the nine positions 5, 11, 17, 23, 29, 35, 41, 47, 53.
 
 **leather** (also: leather patch, 1×1 patch; [rulebook: "special patch"])
 A 1×1 patch awarded to a player when their time token passes one of the five
@@ -88,9 +99,19 @@ its button cost, places it on their quilt board, and advances their time token
 by its time cost.
 
 **bonus tile** ([rulebook: "special tile"])
-A tile worth 7 points awarded to the first player to completely fill a 7×7 area
-(49 cells) on their quilt board. In the engine, its ownership is tracked by the
-`BonusStatus` enum. Sometimes called the "7×7 bonus."
+A tile worth 7 points awarded for completing a 7×7 region of the quilt board.
+Two distinct thresholds apply, and they SHALL be kept separate:
+
+- **Final game** (with piece placement): awarded to the first player to
+  completely fill a contiguous 7×7 area — **49 cells** — of their quilt board.
+- **Simplified rules** (current implementation, piece placement not modelled):
+  approximated by occupied-cell count and claimed by the first player to reach
+  **56 occupied cells** (i.e. 81 − free spaces ≥ 56). This 56-cell count is a
+  deliberate proxy, not the 49-cell rule; the final-game 49-cell area rule is
+  deferred until piece placement lands.
+
+In the engine, ownership is tracked by the `BonusStatus` enum. Sometimes called
+the "7×7 bonus."
 
 **active player**
 The player whose turn it is to move. Determined by turn order. At the start of
