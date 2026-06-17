@@ -8,10 +8,12 @@ cloud session**. The `.devcontainer/devcontainer.json` configuration
 automatically installs all prerequisites listed below, so you can start
 building immediately without any manual steps.
 
-Alternatively, run the shared installer on a plain Ubuntu 24.04 system:
+Alternatively, run the shared installer on a plain Ubuntu 24.04 system. The
+script invokes `sudo` internally where needed, so run it as a regular user
+**without** `sudo`:
 
 ```sh
-sudo bash scripts/install-tools.sh
+bash scripts/install-tools.sh
 ```
 
 ## Manual prerequisites
@@ -77,7 +79,7 @@ For verbose output: `meson test -C build -v`
 
 ## Code Generation
 
-Patch data in `src/generated/patches.hpp` is auto-generated from `data/patches.yaml`.
+Patch data in `cpp/generated/patches.hpp` is auto-generated from `data/patches.yaml`.
 To regenerate it:
 
 ```sh
@@ -90,6 +92,6 @@ mise run codegen
 Rscript codegen/generate_patches.R
 ```
 
-Requires R with the `yaml` package (`install.packages("yaml")`).
+Requires R with `yaml` and `pkgload` packages (installed automatically by `pak::pak()`).
 
 </details>

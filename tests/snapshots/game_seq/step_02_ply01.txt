@@ -1,0 +1,39 @@
+┌ PATCHWORK -- seed ? / setup 0 --────────────────────────────────────── ▶ P1 ─┐
+│ Circle: Z.Lv3kuywJqUSOAXox41TzpedlsNHjm52                                    │
+│           ^                                                                  │
+│ [ 1] L  cost  4  time  6  inc 2      [1/2/3]buy  [a]adv      [q]quit         │
+│ [ 2] v  cost  1  time  3  inc 0      [z/u]undo [Z/r]redo   [</>]log  [w]wrap │
+│ [ 3] 3  cost  2  time  2  inc 0      [m]v [f]^ [h]^/2  [,]- [.]+             │
+│ [ 4] k  cost  2  time  1  inc 0                                              │
+│ [ 5] u  cost  1  time  2  inc 0                                              │
+│ [ 6] y  cost  3  time  4  inc 1                                              │
+│ [ 7] w  cost 10  time  4  inc 3                                              │
+│ [ 8] J  cost 10  time  3  inc 2                                              │
+│ [ 9] q  cost 10  time  5  inc 3                                              │
+│ [10] U  cost  1  time  5  inc 1                                              │
+│ [11] S  cost  7  time  6  inc 3                                              │
+│ [12] O  cost  5  time  3  inc 1                                              │
+│ [13] A  cost  0  time  3  inc 1                                              │
+│ [14] X  cost  1  time  4  inc 1                                              │
+│ [15] o  cost  6  time  5  inc 2                                              │
+│ [16] x  cost  5  time  4  inc 2                                              │
+│ [17] 4  cost  3  time  3  inc 1                                              │
+│ [18] 1  cost  7  time  2  inc 2                                              │
+├───────────────────────────────────────┬──────────────────────────────────────┤
+│ P1  btn   3  inc  0  pos  2  fr 77    │ P2  btn   8  inc  0  pos  3  fr 81   │
+├───────────┬───────────┬───────────────┴──────────────────────────────────────┤
+│ P1 quilt  │ P2 quilt  │ Event log                                            │
+│ ????????? │ ????????? │ > P1 bought [t]                                      │
+│ ????????? │ ????????? │ > P2 advanced                                        │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+│ ????????? │ ????????? │                                                      │
+├───────────┴───────────┴─ ndjson log (3 lines) ─────────[m]v [f]^ [h]^/2 [,.]─┤
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘

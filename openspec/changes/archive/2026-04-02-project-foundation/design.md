@@ -57,7 +57,7 @@ Each `.` is an empty cell, each `X` is an occupied cell. The shape is normalised
 
 ### Codegen: R → committed C++ header
 
-R is already in the toolchain for game analysis. Having R emit `src/generated/patches.hpp` makes the pipeline explicit: edit `data/patches.yaml`, run `codegen/generate_patches.R`, commit the result. No build-time R dependency, no hidden generation step.
+R is already in the toolchain for game analysis. Having R emit `cpp/generated/patches.hpp` makes the pipeline explicit: edit `data/patches.yaml`, run `codegen/generate_patches.R`, commit the result. No build-time R dependency, no hidden generation step.
 
 **Alternative considered:** Python codegen — R is already a project dependency; adding Python for codegen only increases the toolchain surface unnecessarily.
 

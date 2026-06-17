@@ -167,4 +167,6 @@ When things crystallize, you might offer a summary - but it's optional. Sometime
 - **Don't auto-capture** - Offer to save insights, don't just do it
 - **Do visualize** - A good diagram is worth many paragraphs
 - **Do explore the codebase** - Ground discussions in reality
+- **Do use canonical terminology** - See [docs/glossary.md](../../docs/glossary.md)
+  for game and engine terms
 - **Do question assumptions** - Including the user's and your own

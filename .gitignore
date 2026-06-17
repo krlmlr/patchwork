@@ -2,3 +2,4 @@
 /logs/*.ndjson
 /.cache/
 *.o
+*.so

@@ -33,7 +33,7 @@
 
 ## 6. Align with mise spec
 
-- [x] 6.1 Add `[tasks.format]` to `.mise.toml` running `clang-format` on all C++ files in `src/`
+- [x] 6.1 Add `[tasks.format]` to `.mise.toml` running `clang-format` on all C++ files in `cpp/`
 - [x] 6.2 Add `[tasks.lint]` to `.mise.toml` running `markdownlint-cli2` on all Markdown files
 - [x] 6.3 Update `README.md` to reference `mise run setup`, `mise run test`, `mise run format`, `mise run lint` as the primary invocations
 - [x] 6.4 Update `BUILD.md` to reference `mise run <task>` as the primary invocation for every documented action (raw commands moved to `<details>` blocks)

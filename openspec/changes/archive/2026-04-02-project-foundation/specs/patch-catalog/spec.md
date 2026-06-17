@@ -23,18 +23,18 @@ Each patch shape SHALL be encoded as a multiline string of `.` (empty) and `X` (
 - **THEN** all rows have equal length
 
 ### Requirement: R codegen produces committed C++ header
-The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write `src/generated/patches.hpp`. The generated file SHALL be committed to version control.
+The script `codegen/generate_patches.R` SHALL read `data/patches.yaml` and write `cpp/generated/patches.hpp`. The generated file SHALL be committed to version control.
 
 #### Scenario: Codegen runs without errors
 - **WHEN** `codegen/generate_patches.R` is executed with R
-- **THEN** it exits without error and `src/generated/patches.hpp` is created or updated
+- **THEN** it exits without error and `cpp/generated/patches.hpp` is created or updated
 
 #### Scenario: Generated header is valid C++
-- **WHEN** `src/generated/patches.hpp` is included in a C++ translation unit
+- **WHEN** `cpp/generated/patches.hpp` is included in a C++ translation unit
 - **THEN** it compiles without errors
 
 ### Requirement: Generated header exposes patch array
-`src/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
+`cpp/generated/patches.hpp` SHALL define a `constexpr` array of patch data accessible at compile time.
 
 #### Scenario: All patches accessible at compile time
 - **WHEN** the generated header is included

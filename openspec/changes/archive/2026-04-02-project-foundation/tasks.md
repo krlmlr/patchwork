@@ -2,7 +2,7 @@
 
 - [x] 1.1 Create `meson.build` at the project root with project name, C++23 standard, and default warning flags
 - [x] 1.2 Add `subprojects/` directory and fetch Catch2 v3 wrap (`meson wrap install catch2`)
-- [x] 1.3 Create `src/meson.build` declaring the engine library target (initially empty or with a placeholder header)
+- [x] 1.3 Create `cpp/meson.build` declaring the engine library target (initially empty or with a placeholder header)
 - [x] 1.4 Create `tests/meson.build` declaring a Catch2 test executable linked against the engine library
 - [x] 1.5 Add a trivial baseline test in `tests/test_main.cpp` that asserts `true` — verify `meson setup build && meson test -C build` passes
 - [x] 1.6 Create `logs/` directory with a `.gitkeep` and add `logs/*.ndjson` to `.gitignore`
@@ -14,18 +14,18 @@
 
 ## 3. R Codegen
 
-- [x] 3.1 Create `codegen/generate_patches.R` that reads `data/patches.yaml`, parses ASCII art shapes into `(row, col)` offset lists, and writes `src/generated/patches.hpp`
+- [x] 3.1 Create `codegen/generate_patches.R` that reads `data/patches.yaml`, parses ASCII art shapes into `(row, col)` offset lists, and writes `cpp/generated/patches.hpp`
 - [x] 3.2 Define the output format: a `PatchData` struct and a `constexpr std::array<PatchData, 33> kPatches` in the generated header, with all cell offsets embedded as `constexpr` initialiser lists
-- [x] 3.3 Run `codegen/generate_patches.R` and commit the resulting `src/generated/patches.hpp`
+- [x] 3.3 Run `codegen/generate_patches.R` and commit the resulting `cpp/generated/patches.hpp`
 - [x] 3.4 Add a compile-time check (`static_assert`) in the generated header that `kPatches.size() == 33`
 
 ## 4. Game State Types
 
-- [x] 4.1 Create `src/player_state.hpp` defining `PlayerState` with: `std::bitset<81>` board, and packed scalar fields for position (0–53), buttons (0–127), income (0–31)
+- [x] 4.1 Create `cpp/player_state.hpp` defining `PlayerState` with: `std::bitset<81>` board, and packed scalar fields for position (0–53), buttons (0–127), income (0–31)
 - [x] 4.2 Implement `PlayerState` default constructor initialising board empty, position 0, buttons 5, income 0
 - [x] 4.3 Implement cell accessors: `bool cell(int row, int col) const` and `void set_cell(int row, int col, bool v)` with bounds assertions
 - [x] 4.4 Add a `static_assert(sizeof(PlayerState) <= 16)` to enforce the 128-bit layout budget
-- [x] 4.5 Create `src/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum)
+- [x] 4.5 Create `cpp/game_state.hpp` defining `GameState` with two `PlayerState` members and packed shared state: patch availability (33-bit mask), circle marker (0–32), 7×7 bonus (2-bit enum)
 - [x] 4.6 Implement `GameState` default constructor: both players default-constructed, all 33 patches available, circle marker 0, bonus unclaimed
 - [x] 4.7 Implement `GameState` accessors: `patch_available(int idx)`, `set_patch_available(int idx, bool)`, `circle_marker()`, `set_circle_marker(int)`, `bonus_status()`, `set_bonus_status(...)`
 

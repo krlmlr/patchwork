@@ -134,6 +134,8 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
+- Use canonical terminology from [docs/glossary.md](../../docs/glossary.md) when
+  implementing game and engine concepts
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task

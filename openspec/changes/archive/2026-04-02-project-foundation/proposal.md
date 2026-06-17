@@ -9,7 +9,7 @@ This is a greenfield hobby project using Uwe Rosenberg's Patchwork as a case stu
 - Create a **YAML patch catalog** as the single source of truth for all 33 Patchwork patches, encoding shapes as ASCII art grids
 - Add an **R codegen script** that reads the catalog and emits a committed C++ header with patch definitions
 - Define **core game state types** as dense 128-bit-friendly structs: per-player state (quilt board + position + buttons + income) and shared game state (patch availability + circle marker + bonus flags)
-- Establish **project directory structure**: `src/`, `tests/`, `data/`, `codegen/`, `logs/`
+- Establish **project directory structure**: `cpp/`, `tests/`, `data/`, `codegen/`, `logs/`
 
 ## Capabilities
 
