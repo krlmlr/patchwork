@@ -2,7 +2,7 @@
 
 This file is the authoritative index of all OpenSpec specifications. Specs are organised **by domain** — one spec file per domain — following the OpenSpec convention of `openspec/specs/<domain>/spec.md`. Each domain spec is a single, coherent document that describes all behavior within that domain; changes to existing behavior produce `## MODIFIED Requirements` deltas against the appropriate domain spec.
 
-> **Maintenance:** every change that adds, modifies, or removes requirements MUST update this file if the affected domain spec changes.
+> **Maintenance:** every change that adds, removes, or renames a spec, or that changes a domain's described coverage in this catalog, MUST update this file. (This mirrors the infrastructure "Catalog is kept up to date" requirement, so the two never diverge.)
 
 ---
 
