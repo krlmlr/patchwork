@@ -2,9 +2,7 @@
 
 ## Purpose
 Defines the game loop and everything that makes a game run reproducibly end-to-end: the play driver executable, NDJSON event logging, and seed/setup plumbing.
-
 ## Requirements
-
 ### Requirement: Play driver runs a complete game between two random agents and writes a log
 
 The play driver executable SHALL accept `--seed <n>` and `--setup <id>` command-line arguments, run a full game between two random agents on the given setup starting with the given seed, and write the NDJSON game log to stdout. An optional `--output <file>` argument SHALL redirect the log to a file instead.
@@ -70,17 +68,18 @@ The logger SHALL write a JSON object line of type `"move"` after each move is ap
 
 ### Requirement: Game-end event is logged when the game reaches a terminal state
 
-The logger SHALL write a JSON object line of type `"game_end"` after the last move is applied and the terminal state is detected. The event SHALL include: `event` (`"game_end"`), `score_p0` and `score_p1` (integer scores), and `winner` (0, 1, or -1 for draw).
+The logger SHALL write a JSON object line of type `"game_end"` after the last move is applied and the terminal state is detected. The event SHALL include: `event` (`"game_end"`), `score_p0` and `score_p1` (integer scores), and `winner` (`0` or `1`). Draws are structurally impossible: the `first_to_finish` tiebreaker resolves equal scores (see the game-logic `winner` requirement), so `winner` SHALL be `0` or `1` only and SHALL NOT take any other value such as `-1`.
 
 #### Scenario: Game-end line records correct scores and winner
 
 - **WHEN** the game ends with player 0 score 18 and player 1 score 14
 - **THEN** the game-end line has `"score_p0": 18`, `"score_p1": 14`, `"winner": 0`
 
-#### Scenario: Game-end records draw
+#### Scenario: Equal scores are resolved by first-to-finish, never a draw
 
-- **WHEN** both players finish with equal scores
-- **THEN** the game-end line has `"winner": -1`
+- **WHEN** both players finish with equal scores and `first_to_finish` records player 1
+- **THEN** the game-end line has `"winner": 1`
+- **AND** `winner` is never `-1`
 
 ### Requirement: Log output is NDJSON (one JSON object per line)
 
@@ -90,3 +89,4 @@ Each log line SHALL be a self-contained valid JSON object terminated by a newlin
 
 - **WHEN** a complete game log is produced
 - **THEN** every line, read individually, parses as a valid JSON object
+
