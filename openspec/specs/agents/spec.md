@@ -2,17 +2,15 @@
 
 ## Purpose
 Defines concrete decision-making strategies. Each agent implements a shared interface and can be plugged into the play driver or TUI.
-
 ## Requirements
-
 ### Requirement: Random agent selects a legal move uniformly at random
 
-`random_move(state, rng)` SHALL select and return one move from the collection returned by `legal_moves(state)` with equal probability for each legal move. It SHALL NOT call `legal_moves` when the state is terminal.
+`random_move(state, setup, rng)` SHALL select and return one move from the collection returned by `legal_moves(state, setup)` with equal probability for each legal move. The `setup` parameter (a `const GameSetup&`) is required because legal-move generation depends on the patch circle. The caller SHALL NOT invoke `random_move` on a terminal state.
 
 #### Scenario: Selected move is legal
 
 - **WHEN** `random_move` is called on any non-terminal state
-- **THEN** the returned move is a member of `legal_moves(state)`
+- **THEN** the returned move is a member of `legal_moves(state, setup)`
 
 #### Scenario: Distribution is approximately uniform over many samples
 
@@ -36,3 +34,4 @@ The random agent SHALL be declared in a header under `cpp/` and implemented in a
 
 - **WHEN** `random_agent.hpp` is included in a translation unit that does not include the logger
 - **THEN** the code compiles without error
+
