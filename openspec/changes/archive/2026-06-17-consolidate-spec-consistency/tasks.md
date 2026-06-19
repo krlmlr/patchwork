@@ -23,4 +23,4 @@
 
 - [x] 5.1 Run `openspec validate consolidate-spec-consistency` and resolve any delta-format issues (especially the TUI `RENAMED` operation; fall back to MODIFIED-only if needed)
 - [x] 5.2 Run `air format` / `mise run lint` as applicable and ensure markdown lint passes
-- [ ] 5.3 Archive the change so the seven domain spec deltas are folded into `openspec/specs/` (`game-logic`, `engine`, `game-core`, `agents`, `tui`, `data`, `infrastructure`) — hold until after `/opsx:verify`
+- [x] 5.3 Archive the change so the seven domain spec deltas are folded into `openspec/specs/` (`game-logic`, `engine`, `game-core`, `agents`, `tui`, `data`, `infrastructure`)

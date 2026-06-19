@@ -68,8 +68,9 @@ total button income of all patches on their quilt board. Also called a payout.
 
 **button-income space** (also: payout space, button-symbol space)
 A space on the time track marked with a button symbol that triggers an income
-phase when a player's time token passes or lands on it. In the simplified
-engine these are the nine positions 5, 11, 17, 23, 29, 35, 41, 47, 53.
+phase when a player's time token passes or lands on it. These are the nine
+positions 5, 11, 17, 23, 29, 35, 41, 47, 53 — the same in both the simplified
+engine and the full game.
 
 **leather** (also: leather patch, 1×1 patch; [rulebook: "special patch"])
 A 1×1 patch awarded to a player when their time token passes one of the five
@@ -104,7 +105,7 @@ Two distinct thresholds apply, and they SHALL be kept separate:
 
 - **Final game** (with piece placement): awarded to the first player to
   completely fill a contiguous 7×7 area — **49 cells** — of their quilt board.
-- **Simplified rules** (current implementation, piece placement not modelled):
+- **Simplified rules** (piece placement not modelled):
   approximated by occupied-cell count and claimed by the first player to reach
   **56 occupied cells** (i.e. 81 − free spaces ≥ 56). This 56-cell count is a
   deliberate proxy, not the 49-cell rule; the final-game 49-cell area rule is
