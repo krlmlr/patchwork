@@ -2,9 +2,7 @@
 
 ## Purpose
 Defines the rules of the simplified Patchwork ruleset: which moves are legal, how a move transforms state, when the game ends, and how the score is computed. These are the verbs of the system.
-
 ## Requirements
-
 ### Requirement: Move type represents all legal actions
 
 A `Move` type SHALL represent exactly two variants: `BuyPatch` (buying a patch by its index in `kPatches`) and `Advance` (advancing past the leading player and earning 1 button per space moved). No other move variants are valid in the simplified ruleset.
@@ -183,7 +181,9 @@ The time track has five 1×1 leather patch squares at positions 26, 32, 38, 44, 
 
 ### Requirement: 7×7 bonus is claimed when a player reaches 56 occupied cells
 
-The 7×7 bonus tile is claimed by the first player whose occupied cells (81 − free_spaces) reach or exceed 56. After each `BuyPatch` move, if the bonus is unclaimed and the buyer's occupied cells ≥ 56, the bonus status SHALL be set to that player.
+Under the **simplified rules** (tile placement is not modelled), the 7×7 special-tile bonus is approximated by counting occupied cells. The bonus tile is claimed by the first player whose occupied cells (81 − free_spaces) reach or exceed **56**. After each `BuyPatch` move, if the bonus is unclaimed and the buyer's occupied cells ≥ 56, the bonus status SHALL be set to that player.
+
+The **final game** (once piece placement lands) awards this bonus to the first player to completely fill a contiguous **7×7 area (49 cells)** of their quilt board. That placement-based 49-cell rule is intentionally deferred; the 56-occupied-cell count is a deliberate simplified-rules proxy, **not** the final-game rule. The code, this spec, and `docs/glossary.md` SHALL keep the two thresholds distinct and clearly labelled (56 = simplified, 49 = final).
 
 #### Scenario: Bonus claimed on reaching 56 occupied cells
 
@@ -199,6 +199,12 @@ The 7×7 bonus tile is claimed by the first player whose occupied cells (81 − 
 
 - **WHEN** an Advance move is applied regardless of occupied cells
 - **THEN** the bonus status is unchanged
+
+#### Scenario: Final-game 49-cell area rule is deferred
+
+- **WHEN** the simplified rules are in effect (piece placement is not modelled)
+- **THEN** the 56-occupied-cell proxy is the active rule
+- **AND** the final-game 49-cell 7×7-area rule is not applied until piece placement lands
 
 ### Requirement: Non-active player's state is unchanged by any move
 
@@ -265,3 +271,4 @@ The 7×7 bonus tile is claimed by the first player whose occupied cells (81 − 
 
 - **WHEN** both players have the same score and `first_to_finish` records player 1
 - **THEN** `winner` returns 1
+

@@ -16,7 +16,7 @@ when those PRs are reviewed.
 For each item we decided whether the **spec** or the **code/docs** was wrong:
 
 - **Bonus tile (49 vs 56 cells)** — *both numbers are correct in different rule
-  sets.* The simplified rules (current implementation, tile placement ignored)
+  sets.* The simplified rules (tile placement ignored)
   claim the bonus at **56 occupied cells**; the final game (with placement)
   claims it for a filled **7×7 area (49 cells)**. The glossary and `game-logic`
   spec conflated the two. Make the distinction crystal-clear in both, and state
