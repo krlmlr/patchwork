@@ -136,12 +136,12 @@ The `.mise.toml` SHALL define tasks for every action documented in `BUILD.md`:
 - **THEN** the R codegen script runs (`Rscript codegen/generate_patches.R`) and `cpp/generated/patches.hpp` is produced
 
 ### Requirement: build directory is on PATH in mise-managed shells
-The `.mise.toml` SHALL configure `[env] _.path` to include `{{config_root}}/build` so that compiled binaries in the `build/` directory are accessible by name without a full path.
+The `.mise.toml` SHALL configure `[env] _.path` to include `{{config_root}}/build/cpp` so that compiled binaries produced under `build/cpp/` are accessible by name without a full path.
 
 #### Scenario: compiled binary is reachable by name
 - **GIVEN** a developer has run `mise run build` and is in a mise-managed shell
 - **WHEN** the developer types the binary name (without a path prefix)
-- **THEN** the shell resolves the binary from the `build/` directory
+- **THEN** the shell resolves the binary from the `build/cpp/` directory
 
 ### Requirement: mise tasks are the primary entry point in project documentation
 Project documentation SHALL reference `mise run <task>` as the canonical invocation for every documented project action. The underlying raw commands MAY be shown as secondary details, but mise tasks SHALL be presented first.
@@ -256,9 +256,9 @@ The catalog SHALL document the kebab-case naming convention for spec folders and
 - **THEN** the catalog SHALL provide enough guidance to choose a spec folder name without needing to ask someone else
 
 ### Requirement: Catalog is kept up to date
-Every change that adds or removes a spec SHALL include a task step to update `openspec/specs/README.md`.
+Every change that adds, removes, or renames a spec, or that changes a domain's described coverage in the catalog, SHALL include a task step to update `openspec/specs/README.md`. This SHALL match the maintenance rule stated at the top of `openspec/specs/README.md` itself, so the two never diverge.
 
 #### Scenario: Change tasks include a catalog update step
-- **WHEN** a change's `tasks.md` introduces a new spec
-- **THEN** the tasks list SHALL include an explicit step: "Update `openspec/specs/README.md` to add the new spec under its domain"
+- **WHEN** a change's `tasks.md` introduces, removes, or renames a spec, or changes what a domain covers
+- **THEN** the tasks list SHALL include an explicit step to update `openspec/specs/README.md` accordingly
 
