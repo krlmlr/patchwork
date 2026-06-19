@@ -138,16 +138,23 @@ patch_df <- do.call(rbind, lapply(catalog, function(p) {
 # ---------------------------------------------------------------------------
 # 3. Patch gain model
 # ---------------------------------------------------------------------------
+#
+# Patch gain = placement gain + projected income (see docs/glossary.md).
+#   placement gain  = 2 * (squares covered) - button cost
+#   projected income = button income * (number of button-income spaces remaining)
+# gain_per_time normalises patch gain by time cost; the advance move yields a
+# nominal 1 button per time unit, so gain_per_time >= 1.0 marks the break-even.
 
 # Placement gain = 2 * cells - button_cost (may be negative).
 patch_df$placement_gain <- 2L * patch_df$cells - patch_df$button_cost
 
-# Payout spaces on the time track.
-payout_spaces <- c(5L, 11L, 17L, 23L, 29L, 35L, 41L, 47L, 53L)
+# Button-income spaces on the time track (the nine payout positions). These are
+# the same in both the simplified engine and the full game.
+income_spaces <- c(5L, 11L, 17L, 23L, 29L, 35L, 41L, 47L, 53L)
 
-# Count payout spaces strictly ahead of pos.
+# Count button-income spaces strictly ahead of pos (payouts still remaining).
 reachable_payouts <- function(pos) {
-  sum(payout_spaces > pos)
+  sum(income_spaces > pos)
 }
 
 # Verify required values.
@@ -187,7 +194,9 @@ gain_curves_list <- lapply(seq_len(nrow(patch_df)), function(i) {
 })
 gain_curves_df <- do.call(rbind, gain_curves_list)
 
-# Compute advance_breakeven_pos: latest pos where gain_per_time >= 1.0.
+# Compute advance_breakeven_pos: latest pos where gain_per_time >= 1.0, i.e. the
+# last position at which buying the patch matches the advance move's nominal
+# return of 1 button per time unit. Past this point, advancing is preferable.
 advance_breakeven_pos <- vapply(seq_len(nrow(patch_df)), function(i) {
   row <- patch_df[i, ]
   gpt <- vapply(positions, function(pos) {
@@ -206,7 +215,8 @@ patch_df$gain_per_time_pos18 <- mapply(gain_per_time_at,
 patch_df$gain_per_time_pos36 <- mapply(gain_per_time_at,
   patch_df$placement_gain, patch_df$button_income, patch_df$time_cost, 36L)
 
-# Total gain (not normalised by time): placement_gain + income * reachable_payouts.
+# Total patch gain (not normalised by time):
+# placement gain + projected income = placement_gain + income * reachable_payouts.
 total_gain_at <- function(placement_gain, button_income, pos) {
   placement_gain + button_income * reachable_payouts(pos)
 }
@@ -228,9 +238,9 @@ total_gain_list <- lapply(seq_len(nrow(patch_df)), function(i) {
 })
 total_gain_df <- do.call(rbind, total_gain_list)
 
-# Position bands defined by payout spaces: within each band, reachable_payouts
-# is constant. Representative position for each band is its lower bound.
-band_breaks <- c(0L, payout_spaces)
+# Position bands defined by button-income spaces: within each band,
+# reachable_payouts is constant. Representative position is the band's lower bound.
+band_breaks <- c(0L, income_spaces)
 band_labels <- c("0–4", "5–10", "11–16", "17–22", "23–28",
                  "29–34", "35–40", "41–46", "47–52", "53")
 band_rep_pos <- c(0L, 5L, 11L, 17L, 23L, 29L, 35L, 41L, 47L, 53L)

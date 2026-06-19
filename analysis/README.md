@@ -6,6 +6,16 @@ This directory contains R scripts that analyse the Patchwork patch catalog and p
 
 The scripts compute shape features and gain metrics for all 33 patches based solely on `data/patches.yaml`. The resulting tables and plots are committed to the repository so they are available without re-running R.
 
+## Gain model
+
+Terminology follows `docs/glossary.md`. **Patch gain** is the net effect on a player's final score from acquiring a patch:
+
+- **placement gain** = 2 × (squares covered) − button cost
+- **projected income** = button income × (number of button-income spaces remaining)
+- **total patch gain** = placement gain + projected income
+
+The nine button-income spaces (also called payout spaces) sit at time-track positions 5, 11, 17, 23, 29, 35, 41, 47, 53 — the same in both the simplified engine and the full game. `gain_per_time` normalises total patch gain by the patch's time cost. Because the advance move yields a nominal 1 button per time unit, `gain_per_time ≥ 1.0` marks the break-even: `advance_breakeven_pos` is the latest position at which buying the patch still matches or beats advancing.
+
 ## Required R Packages
 
 Packages declared in `DESCRIPTION` are loaded via `pkgload::load_all()`. The following additional packages must be installed separately before running the script:
