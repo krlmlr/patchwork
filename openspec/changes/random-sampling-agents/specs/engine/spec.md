@@ -1,3 +1,8 @@
+## RENAMED Requirements
+
+- FROM: `### Requirement: Play driver runs a complete game between two random agents and writes a log`
+- TO: `### Requirement: Play driver runs a complete game between two agents and writes a log`
+
 ## MODIFIED Requirements
 
 ### Requirement: Play driver runs a complete game between two agents and writes a log

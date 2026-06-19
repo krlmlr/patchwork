@@ -121,6 +121,16 @@ Opponent strategy [random/cheap/income/income-per-time, default random]: cheap
 - Single shared seed with separate streams derived via seed-splitting: works but couples the two streams; changing one player's strategy would alter the other's outcomes.
 - Single shared `std::mt19937` (previous approach): cannot distinguish which player's RNG produced which decision, making replay against a human impossible.
 
+### Decision: `game_start` log composition and supersession of single `seed`
+
+**Chosen:** This change adds `agent_p0`, `agent_p1`, `seed_p0`, `seed_p1`, and `advance_weight` to the `game_start` NDJSON object. The per-player `seed_p0`/`seed_p1` fields **supersede** the single `seed` field of the baseline engine spec: with two independent RNG streams there is no longer a single game seed, so the play driver records one seed per player. A log line is therefore self-sufficient for exact replay (setup + both strategies + both seeds + advance weight).
+
+### Decision: Cross-PR coordination with richer-logging (#26)
+
+The richer-logging change (#26) also modifies the `game_start` event — it adds a `circle` field (33-char patch arrangement) — and changes the logger signatures `log_game_start` / `log_move` to take a `const GameSetup&`. This change (#27) adds the agent/seed/advance-weight fields to the same `game_start` event.
+
+**These two sets of `game_start` fields are additive and non-conflicting:** #26 contributes `circle`; #27 contributes `agent_p0`/`agent_p1`/`seed_p0`/`seed_p1`/`advance_weight` (and supersedes the single `seed`). The combined `log_game_start` signature must carry **both** the `const GameSetup&` parameter introduced by #26 **and** the agent-strategy / per-player-seed / advance-weight parameters introduced by #27. To avoid a churned, conflict-prone merge, **#26 should merge before #27** so that #27's implementation extends the already-`GameSetup&`-aware logger signature rather than racing it. This is a coordination note for implementation only; the delta specs of the two changes remain independent (orthogonal requirements on the same event).
+
 ## Risks / Trade-offs
 
 - [Risk] `std::function` wrapping may pessimise tight benchmarking loops → Mitigation: this agent is not on the hot path for MCTS; acceptable for this phase.

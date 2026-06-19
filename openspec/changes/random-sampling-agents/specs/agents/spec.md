@@ -7,7 +7,7 @@
 #### Scenario: Selected move is legal
 
 - **WHEN** `biased_random_move` is called on any non-terminal state
-- **THEN** the returned move is a member of `legal_moves(state)`
+- **THEN** the returned move is a member of `legal_moves(state, setup)`
 
 #### Scenario: Higher-weight move is selected more often
 
@@ -101,7 +101,7 @@ A free function `select_move(state, setup, rng, strategy, advance_weight)` SHALL
 #### Scenario: Random strategy delegates to uniform random selection
 
 - **WHEN** `select_move` is called with `AgentStrategy::Random`
-- **THEN** the returned move is drawn uniformly from `legal_moves(state)` (verified by distribution test matching `random_move`)
+- **THEN** the returned move is drawn uniformly from `legal_moves(state, setup)` (verified by distribution test matching `random_move`)
 
 #### Scenario: Biased strategy delegates to weighted selection
 
