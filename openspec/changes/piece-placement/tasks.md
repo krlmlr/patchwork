@@ -1,7 +1,7 @@
 ## 1. Orientation Engine
 
-- [ ] 1.1 Create `src/moves.hpp` in namespace `patchwork`, include `src/generated/patches.hpp`
-  and `src/game_setup.hpp`; add the forward declarations for `orient_cells`,
+- [ ] 1.1 Create `cpp/moves.hpp` in namespace `patchwork`, include `cpp/generated/patches.hpp`
+  and `cpp/game_setup.hpp`; add the forward declarations for `orient_cells`,
   `unique_orientations`, `fits_at`, `visible_patches`, `legal_moves`, `apply`, and
   `current_player`
 - [ ] 1.2 Add `constexpr std::array<int, 9> kIncomeSpaces = {5, 11, 17, 23, 29, 35, 41, 47, 53}`
@@ -24,15 +24,19 @@
   `uint8_t orientation` (0–7), `uint8_t row`, `uint8_t col`
 - [ ] 3.2 Add `struct AdvanceAndReceive` (empty struct, used as tag)
 - [ ] 3.3 Add `using Move = std::variant<PlacePatch, AdvanceAndReceive>` and include `<variant>`
+- [ ] 3.4 Document the mapping to the existing engine vocabulary: `PlacePatch` is the orientation-
+  aware successor of `cpp/move.hpp`'s `BuyPatch`, and `AdvanceAndReceive` of `Advance`; the NDJSON
+  `move_type` strings remain `"buy_patch"` / `"advance"` when integrated (no logger schema change)
 
 ## 4. Visible Patches and Move Generator
 
-- [ ] 4.1 Implement `visible_patches(const GameSetup& setup, const GameState& state) → std::array<int, 3>`:
+- [ ] 4.1 Implement `visible_patches(const GameState& state, const GameSetup& setup) → std::array<int, 3>`:
   return `setup.circle[(m+1)%33]`, `setup.circle[(m+2)%33]`, `setup.circle[(m+3)%33]`
   where `m = state.circle_marker()`
 - [ ] 4.2 Implement `current_player(const GameState& state) → int`:
   return 0 if `state.player(0).position() <= state.player(1).position()`, else 1
-- [ ] 4.3 Implement `legal_moves(const GameSetup& setup, const GameState& state, int player_idx) → std::vector<Move>`:
+- [ ] 4.3 Implement `legal_moves(const GameState& state, const GameSetup& setup, int player_idx) → std::vector<Move>`
+  (matching the engine's `(state, setup)` argument-ordering convention in `cpp/move_generation.hpp`):
   - Add `AdvanceAndReceive{}` if the player's position < 53
   - For each `circle_offset` in {0, 1, 2}: look up the patch via `visible_patches`, skip if
     `player.buttons() < patch.buttons`; otherwise iterate `unique_orientations`; for each
@@ -43,7 +47,8 @@
 
 - [ ] 5.1 Add a helper `income_spaces_crossed(int from, int to) → int` that counts elements of
   `kIncomeSpaces` strictly greater than `from` and less than or equal to `to`
-- [ ] 5.2 Implement `apply(const GameSetup& setup, GameState& state, int player_idx, const Move& move)`:
+- [ ] 5.2 Implement `apply(GameState& state, const Move& move, const GameSetup& setup, int player_idx)`
+  (mirroring the engine's `apply_move(state, move, setup)` argument order in `cpp/move_application.hpp`):
   - For `PlacePatch`: retrieve the patch (via `visible_patches` + `kPatches`); deduct button cost;
     advance time (cap at 53); award `player.income() × income_spaces_crossed(old_pos, new_pos)` buttons;
     add patch income to player income; stamp board cells at the given orientation+anchor; mark patch
@@ -51,7 +56,7 @@
   - For `AdvanceAndReceive`: compute target = `min(other_player.position() + 1, 53)`;
     award `(target - player.position())` buttons; award income for crossed income spaces;
     set new position
-- [ ] 5.3 Add `src/moves.hpp` to the umbrella header `src/patchwork.hpp`
+- [ ] 5.3 Add `cpp/moves.hpp` to the umbrella header `cpp/patchwork.hpp`
 
 ## 6. Unit Tests
 

@@ -68,26 +68,27 @@ the board.
 
 ### Requirement: `visible_patches` returns the three patches ahead of the circle marker
 
-`visible_patches(setup, state)` SHALL return a `std::array<int, 3>` of patch IDs corresponding to
+`visible_patches(state, setup)` SHALL return a `std::array<int, 3>` of patch IDs corresponding to
 positions `(circle_marker + 1) % 33`, `(circle_marker + 2) % 33`, and `(circle_marker + 3) % 33`
-in `setup.circle`.
+in `setup.circle`. The argument order follows the engine's `(state, setup)` convention
+(`cpp/move_generation.hpp`).
 
 #### Scenario: Visible patches match circle positions
 
 - **GIVEN** a `GameSetup` with a known circle arrangement and a `GameState` with `circle_marker`
   set to some value `m`
-- **WHEN** `visible_patches(setup, state)` is called
+- **WHEN** `visible_patches(state, setup)` is called
 - **THEN** the returned IDs equal `circle[(m+1)%33]`, `circle[(m+2)%33]`, `circle[(m+3)%33]`
 
 #### Scenario: Wrapping at the end of the circle
 
 - **GIVEN** a `GameState` with `circle_marker` set to 31 (near the end)
-- **WHEN** `visible_patches(setup, state)` is called
+- **WHEN** `visible_patches(state, setup)` is called
 - **THEN** the returned IDs include patches from positions 32, 0, and 1 (wrapping around)
 
 ### Requirement: `legal_moves` enumerates all legal moves
 
-`legal_moves(setup, state, player_idx)` SHALL return a `std::vector<Move>` containing:
+`legal_moves(state, setup, player_idx)` SHALL return a `std::vector<Move>` containing:
 
 1. One `AdvanceAndReceive` move (always legal as long as the player's position is less than 53).
 2. For each of the three visible patches the current player can afford (buttons ≥ patch button
@@ -121,7 +122,7 @@ in `setup.circle`.
 
 ### Requirement: `apply` updates `GameState` correctly for `PlacePatch`
 
-`apply(setup, state, player_idx, move)` with a `PlacePatch` move SHALL:
+`apply(state, move, setup, player_idx)` with a `PlacePatch` move SHALL:
 
 1. Deduct the patch's button cost from the player's button balance.
 2. Add the patch's income value to the player's income.
@@ -177,7 +178,7 @@ in `setup.circle`.
 
 ### Requirement: `apply` updates `GameState` correctly for `AdvanceAndReceive`
 
-`apply(setup, state, player_idx, move)` with an `AdvanceAndReceive` move SHALL:
+`apply(state, move, setup, player_idx)` with an `AdvanceAndReceive` move SHALL:
 
 1. Advance the player's position to `other_player.position() + 1` (capped at 53).
 2. Award `spaces_moved` buttons (one per space advanced).
@@ -202,10 +203,11 @@ in `setup.circle`.
 - **WHEN** `apply` is called with `AdvanceAndReceive` for player 0
 - **THEN** player 0 receives 9 × 1 (spaces) + 3 × 2 (income × 2 crossed) = 15 additional buttons
 
-### Requirement: Button income spaces are the 9 canonical positions
+### Requirement: Button-income spaces are the 9 canonical positions
 
 The 9 button-income space positions on the time track SHALL be encoded as a `constexpr` array and
-SHALL equal `{5, 11, 17, 23, 29, 35, 41, 47, 53}`.
+SHALL equal `{5, 11, 17, 23, 29, 35, 41, 47, 53}`. These nine positions are identical in the
+simplified engine and the full game (they are not a simplification), matching the `game-logic` spec.
 
 #### Scenario: Income space array has exactly 9 entries
 

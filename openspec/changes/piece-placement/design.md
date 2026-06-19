@@ -4,9 +4,11 @@ The Foundation phase established `GameState` (two `PlayerState` instances + 64-b
 and `GameSetup` (the initial patch circle arrangement + seed). The next logical step is to expose
 the game's core action: choosing one of the three visible patches, orienting it on the quilt board,
 and advancing the time track. The design.md for `game-setup` explicitly documents the calling
-convention: `(const GameSetup&, GameState&)` for all legal-move functions.
+convention. The current engine settled on `(state, setup)` argument ordering (see
+`cpp/move_generation.hpp`: `legal_moves(const SimplifiedGameState&, const GameSetup&)`); this change
+follows that ordering.
 
-This change adds `src/moves.hpp` — a single header with no new external dependencies — containing
+This change adds `cpp/moves.hpp` — a single header with no new external dependencies — containing
 the orientation engine, fit checker, move types, move generator, and move applicator.
 
 ## Goals / Non-Goals
@@ -17,7 +19,8 @@ the orientation engine, fit checker, move types, move generator, and move applic
 - Provide an orientation engine that enumerates all distinct orientations for any patch (up to 8)
 - Provide `fits_at` for board-placement validation
 - Define `PlacePatch` and `AdvanceAndReceive` move types, plus a `Move` variant
-- Provide `legal_moves` to enumerate every legal `Move` from a given position
+- Provide `legal_moves(state, setup, player_idx)` to enumerate every legal `Move` from a given
+  position, matching the engine's `(state, setup)` argument-ordering convention
 - Provide `apply` to update a `GameState` (buttons, time, board, circle marker, button income)
 - Fully unit-test all of the above
 
@@ -31,13 +34,13 @@ the orientation engine, fit checker, move types, move generator, and move applic
 
 ## Decisions
 
-### Single header `src/moves.hpp` (no new source file)
+### Single header `cpp/moves.hpp` (no new source file)
 
 All piece-placement logic is pure functions that operate on `GameSetup`, `GameState`, and
 `PlayerState` by reference or value. There is no mutable state to encapsulate, so a header-only
 module keeps things simple. The pattern matches `game_state.hpp` (header-only).
 
-**Alternative considered:** A `src/moves.cpp` translation unit — would reduce recompilation on
+**Alternative considered:** A `cpp/moves.cpp` translation unit — would reduce recompilation on
 large builds, but unnecessary at this project's scale.
 
 ### Orientations encoded as index 0–7 (bit 0 = flip, bits 1–2 = rotation)
@@ -70,6 +73,28 @@ makes the API more cumbersome; the vector cost is negligible for legal-move enum
 **Alternative considered:** Store the patch ID directly — more self-contained but ties the move to
 a specific setup permutation; the offset is the canonical game-rule representation.
 
+### Move-type naming vs the existing engine vocabulary (`BuyPatch` / `Advance`)
+
+The existing simplified engine (`cpp/move.hpp`) already defines `Move = std::variant<BuyPatch,
+Advance>`, where `BuyPatch{patch_index}` buys a circle patch and `Advance{}` advances the time
+token; the NDJSON logger (`cpp/game_logger.cpp`) emits `move_type` strings `"buy_patch"` and
+`"advance"`, and the TUI colours those exact strings. This change keeps the descriptive design
+names `PlacePatch` and `AdvanceAndReceive` to emphasise the new orientation-aware semantics, but
+treats them as the orientation-aware successors of `BuyPatch` and `Advance` respectively:
+
+- `PlacePatch` ≙ `BuyPatch` plus an orientation index and anchor (row, col).
+- `AdvanceAndReceive` ≙ `Advance`.
+
+When this model is integrated into the engine, the logged `move_type` strings SHALL remain
+`"buy_patch"` and `"advance"` (a `PlacePatch` logs as `"buy_patch"`, an `AdvanceAndReceive` logs as
+`"advance"`), so the log schema, downstream tooling, and TUI colouring stay stable. The C++ type
+names may be unified with the engine's `BuyPatch`/`Advance` during integration; the design names
+here are documentation-facing.
+
+**Alternative considered:** Renaming the design types to `BuyPatch`/`Advance` outright — clearer
+1:1 mapping, but loses the signal that this phase adds orientation/anchor data that the simplified
+engine does not yet carry; deferred to the integration phase.
+
 ### `apply` takes an explicit `int player_idx`
 
 The current player is the one with the lower time-track position. `apply` takes an explicit
@@ -80,12 +105,14 @@ acknowledged simplification).
 **Alternative considered:** Encode active-player in `GameState` with a spare bit — more accurate
 for tie-breaking but changes the data model; deferred until turn-order tie-breaking is specified.
 
-### Button income spaces encoded as `constexpr std::array`
+### Button-income spaces encoded as `constexpr std::array`
 
 The 9 button-income spaces on the time track (at positions 5, 11, 17, 23, 29, 35, 41, 47, 53 in
-the 0-indexed 54-space track) are stored as a `constexpr` array in `src/moves.hpp`. When a
-player's position advances, `apply` counts how many income spaces lie strictly between old and new
-positions and awards `income × count` buttons.
+the 0-indexed 54-space track) are stored as a `constexpr` array in `cpp/moves.hpp`. When a
+player's position advances, `apply` counts how many button-income spaces lie strictly between old
+and new positions and awards `income × count` buttons. These nine positions are identical in the
+simplified engine and the full game (they are not a simplification), matching the existing
+`game-logic` spec.
 
 **Alternative considered:** Compute income spaces procedurally (5 + 6k) — the formula is not
 exact for the real game board, which has irregular spacing; the constant array is the ground truth.

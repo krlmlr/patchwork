@@ -16,11 +16,12 @@ which is the direct prerequisite for MCTS and RL training.
   `AdvanceAndReceive` (no data), plus a `Move` variant combining both
 - Add `visible_patches` to query the three patches currently ahead of the circle marker in a
   `GameSetup` + `GameState`
-- Add `legal_moves` to enumerate every `Move` (all valid `PlacePatch` × orientation × anchor
-  combinations, plus the always-legal `AdvanceAndReceive`)
+- Add `legal_moves(state, setup, player_idx)` to enumerate every `Move` (all valid `PlacePatch` ×
+  orientation × anchor combinations, plus the always-legal `AdvanceAndReceive`), following the
+  existing engine's `(state, setup)` argument-ordering convention (`cpp/move_generation.hpp`)
 - Add `apply` to apply a `Move` to a `GameState`: deduct buttons, advance time, stamp board cells,
   advance circle marker past the chosen patch, and award **button income** when the player's time
-  token crosses any income space
+  token crosses any button-income space
 - Add **unit tests** covering the orientation engine, fit checking, move generation, and move
   application (including button-income triggering)
 - Add a `[tasks.codegen:setups]` mise task (carries forward from `game-setup` scope)
@@ -36,7 +37,15 @@ which is the direct prerequisite for MCTS and RL training.
 
 - `piece-placement`: patch orientation engine (rotate/flip, dedup), placement validator, `PlacePatch`
   and `AdvanceAndReceive` move types, `legal_moves` generator, `apply` move-application function
-  (including button-income awards when crossing income spaces)
+  (including button-income awards when crossing button-income spaces)
+
+**Move-type vocabulary** — this change introduces an orientation-aware placement model that is richer
+than the existing simplified engine (`cpp/move.hpp`, which models `BuyPatch{patch_index}` /
+`Advance{}` and logs `move_type` `"buy_patch"` / `"advance"` in the NDJSON output). The design's
+`PlacePatch` corresponds to the engine's `BuyPatch` (a buy of a circle patch) but additionally
+carries orientation and anchor; `AdvanceAndReceive` corresponds to `Advance`. When the orientation-
+aware model is integrated, the logged `move_type` strings remain `"buy_patch"` / `"advance"` so the
+log schema and TUI colouring (which key on those exact strings) stay stable.
 
 ### Modified Capabilities
 
@@ -45,8 +54,8 @@ which is the direct prerequisite for MCTS and RL training.
 
 ## Impact
 
-- New header `src/moves.hpp` with all move logic; included in `src/patchwork.hpp`
-- `src/game_setup.hpp` is consumed but not modified (depends on `game-setup` being implemented)
+- New header `cpp/moves.hpp` with all move logic; included in `cpp/patchwork.hpp`
+- `cpp/game_setup.hpp` is consumed but not modified (depends on `game-setup` being implemented)
 - No changes to `GameState`, `PlayerState`, the patch catalog, or the build system
-- The button income spaces (the 9 time-track positions that trigger income) are encoded as a
-  `constexpr` array in `src/moves.hpp`; their exact positions match the published Patchwork rules
+- The button-income spaces (the 9 time-track positions that trigger income) are encoded as a
+  `constexpr` array in `cpp/moves.hpp`; their exact positions match the published Patchwork rules
