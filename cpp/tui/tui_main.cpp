@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     // Log game-start to ndjson.
     {
         std::ostringstream oss;
-        log_game_start(oss, static_cast<long long>(launch.seed), launch.setup_index, initial_state);
+        log_game_start(oss, static_cast<long long>(launch.seed), launch.setup_index, initial_state, setup);
         append_ndjson(ndjson, oss.str());
     }
 
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
         // Log move.  Patch names (single char) give consistent-width entries.
         {
             std::ostringstream oss;
-            log_move(oss, ply, state.active_player(), move, new_state);
+            log_move(oss, ply, state.active_player(), move, new_state, setup);
             std::string line = oss.str();
             if (!line.empty() && line.back() == '\n') line.pop_back();
             append_ndjson(ndjson, line);
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
                 SimplifiedGameState after_opp = apply_move(new_state, opp_move, setup);
                 {
                     std::ostringstream oss;
-                    log_move(oss, ply, new_state.active_player(), opp_move, after_opp);
+                    log_move(oss, ply, new_state.active_player(), opp_move, after_opp, setup);
                     std::string line = oss.str();
                     if (!line.empty() && line.back() == '\n') line.pop_back();
                     append_ndjson(ndjson, line);
