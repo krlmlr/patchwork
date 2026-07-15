@@ -15,18 +15,22 @@
 #           output = analysis/output/
 #
 # R package dependencies beyond DESCRIPTION (Imports: yaml):
-#   duckdb   — in-process database the records are ingested into and queried from
-#   jsonlite — parse the NDJSON records before loading them into DuckDB
+#   duckdb   — in-process database that reads the NDJSON and extracts fields
 #   ggplot2  — plots
 #   dplyr    — per-setup aggregation
 # All are available in the project's PPM-backed toolchain.
+#
+# NDJSON is read entirely inside DuckDB: each line is scanned as one VARCHAR and
+# the game_summary fields are pulled out with core regexp_extract. This avoids
+# the DuckDB json extension (which needs network access to install) and scales
+# to tens of millions of records (10M rows in ~5s vs minutes for a row-by-row
+# JSON parse in R).
 
 suppressWarnings(suppressMessages({
   pkgload::load_all(quiet = TRUE)
   library(duckdb)
   library(dplyr)
   library(ggplot2)
-  library(jsonlite)
 }))
 
 args <- commandArgs(trailingOnly = TRUE)
@@ -43,25 +47,42 @@ if (!file.exists(input_path)) {
 }
 
 # ── Ingest into DuckDB ───────────────────────────────────────────────────────
-# Parse the NDJSON records, load them into an in-process DuckDB table, then
-# derive the per-game view (including the score margin P1 − P0) in DuckDB SQL.
+# Read each NDJSON line as a single VARCHAR (delimiter = a byte that never
+# appears in the data, quoting disabled), keep only game_summary records, and
+# extract each field with DuckDB's core regexp_extract. The per-game score
+# margin (P1 − P0) is derived in SQL.
 con <- dbConnect(duckdb::duckdb())
 on.exit(dbDisconnect(con, shutdown = TRUE), add = TRUE)
 
-raw <- jsonlite::stream_in(file(input_path), verbose = FALSE)
-raw <- raw[
-  raw$event == "game_summary",
-  c("setup_id", "seed", "score_p0", "score_p1", "winner", "plies")
-]
-duckdb::duckdb_register(con, "game_summary_raw", raw)
-
-games <- dbGetQuery(
-  con,
+field <- function(key, sign = "-?") {
+  sprintf(
+    "CAST(regexp_extract(line, %s, 1) AS BIGINT) AS %s",
+    dbQuoteString(con, sprintf('"%s":(%s[0-9]+)', key, sign)), key
+  )
+}
+read_lines_sql <- sprintf(
+  "read_csv(%s, columns={'line': 'VARCHAR'}, delim=%s, header=false, quote=%s)",
+  dbQuoteString(con, normalizePath(input_path)),
+  dbQuoteString(con, "\a"),  # bell byte — never present in the NDJSON
+  dbQuoteString(con, "")
+)
+inner_sql <- sprintf(
+  "SELECT %s FROM %s WHERE line LIKE %s",
+  paste(
+    field("setup_id"), field("seed", sign = ""), field("score_p0"),
+    field("score_p1"), field("winner"), field("plies", sign = ""),
+    sep = ", "
+  ),
+  read_lines_sql,
+  dbQuoteString(con, "%\"event\":\"game_summary\"%")
+)
+games <- dbGetQuery(con, sprintf(
   "SELECT setup_id, seed, score_p0, score_p1, winner, plies,
           (score_p1 - score_p0) AS margin
-   FROM game_summary_raw
-   ORDER BY setup_id, seed"
-)
+   FROM (%s) s
+   ORDER BY setup_id, seed",
+  inner_sql
+))
 
 n_games <- nrow(games)
 if (n_games == 0) {
@@ -238,6 +259,12 @@ cat(sprintf(
   "  win-rate CI %s 0.5; margin CI %s 0\n",
   if (wr_covers_fair) "covers" else "excludes",
   if (margin_covers_fair) "covers" else "excludes"
+))
+# Effect size vs statistical significance: at very large n a practically
+# negligible bias still becomes significant, so report the magnitude too.
+cat(sprintf(
+  "  effect size: P1 win rate %+.3f pp from 50%%; mean margin %+.4f pts (margin sd %.1f)\n",
+  100 * (p1_win_rate - 0.5), margin_mean, sd(games$margin)
 ))
 cat("wrote:", csv_path, "\n")
 cat("wrote:", file.path(output_dir, "fairness_winrate_by_setup.png"), "\n")

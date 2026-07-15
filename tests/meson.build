@@ -98,13 +98,14 @@ test_game_loop = executable(
 )
 test('game_loop', test_game_loop)
 
-# End-to-end batch_driver checks driven through the built executables.
-python_prog = find_program('python3', required : false)
-if python_prog.found()
+# End-to-end batch_driver checks driven through the built executables. Written
+# in R to match the project's tooling (R is already a CI dependency).
+rscript_prog = find_program('Rscript', required : false)
+if rscript_prog.found()
   test(
     'batch_cli',
-    python_prog,
-    args : [files('batch_cli_test.py'), batch_driver_exe, play_driver_exe],
+    rscript_prog,
+    args : [files('batch_cli_test.R'), batch_driver_exe, play_driver_exe],
   )
 endif
 
