@@ -106,11 +106,35 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 
 ---
 
+### Batch Simulation & Fairness Study
+
+- C++ batch runner: loops internally over a `(setup × seed)` grid in a
+  single process — random games are microseconds, so no per-game process
+  fan-out; deterministic child-seed scheme from one master seed for
+  full-batch reproducibility
+- Summary output mode: one row per game (setup, seed, final scores, winner,
+  plies); full per-move NDJSON opt-in to keep 100–1000-game batches tractable
+- Goal: with two identical random-sampling agents, decide whether the game
+  is *fair* or *overly dependent on the starting state*
+  - Fairness: with identical agents, a P1 win rate / mean score margin that
+    deviates from 50 % / 0 directly measures structural first-player
+    advantage — no seat-swapping needed
+  - Setup-dependence: variance decomposition — between-setup variance vs
+    within-setup (agent-RNG) variance of the outcome
+- R analysis (NDJSON → DuckDB): win-rate binomial CIs, score-margin
+  distributions, variance decomposition, per-setup win-rate spread; plots
+  and tables
+
+---
+
 ### Monte Carlo Tree Search
 
 - MCTS with UCB1
 - MCTS + simple rollout policy
 - Benchmarking MCTS vs minimax at various time budgets
+- Seat-swapping when comparing *different* agents (play each `(setup, seed)`
+  in both seat orders) to cancel the structural first-player advantage and
+  isolate the skill delta — reuses the batch runner
 - R analysis: MCTS convergence, node visit distributions
 
 ---
