@@ -39,3 +39,9 @@
 - [x] 5.1 Add batch runner and fairness terms to `docs/glossary.md`
 - [x] 5.2 Run `openspec validate batch-fairness-runner` and resolve any issues
 - [ ] 5.3 Fold the delta specs into `openspec/specs/engine/spec.md` and `openspec/specs/analysis/spec.md` at archive time (handled by `/opsx:archive`)
+
+## 6. DuckDB JSON extension (pending)
+
+- [ ] 6.1 Make the DuckDB `json` extension available offline — its autoload/`INSTALL` fetch to `wrapdb`/extension repos is blocked by the network policy, so the analysis currently reads NDJSON as VARCHAR lines and pulls fields with core `regexp_extract`. Options: add `duckdb`'s extension download host to the environment allow-list and pre-install into a persistent `DUCKDB_EXTENSION_DIRECTORY`, or vendor the `json.duckdb_extension` for the pinned DuckDB version.
+- [ ] 6.2 Once the extension installs and loads, switch `analysis/fairness_analysis.R` ingest to native `read_json_auto(..., format='newline_delimited')` and drop the regex-extraction fallback (simpler, and robust to field order / nested fields).
+- [ ] 6.3 Document the extension install step in the toolchain/setup (devcontainer + `scripts/install-tools.sh` / CI) so a fresh checkout has it, and note the `duckdb` R package dependency in `DESCRIPTION`.
