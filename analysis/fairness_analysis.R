@@ -134,6 +134,21 @@ setup_ci <- do.call(rbind, setup_ci)
 by_setup$wr_lo <- setup_ci$wr_lo
 by_setup$wr_hi <- setup_ci$wr_hi
 
+# ── Per-setup seat bias: is the spread real, and how large? ───────────────────
+# The grand-average win rate can sit at ~0.5 while individual setups are heavily
+# seat-biased, because per-setup first-mover advantages cancel across setups.
+# Compare the observed spread of per-setup win rates against the sampling spread
+# expected if every setup were truly fair, and count how many setups carry a
+# statistically real bias (95% CI excluding 0.5).
+setup_wr_sd <- sd(by_setup$p1_win_rate)
+fair_se <- sqrt(0.25 / stats::median(by_setup$n_games))
+signal_ratio <- if (fair_se > 0) setup_wr_sd / fair_se else NA_real_
+real_bias_setups <- sum(by_setup$wr_lo > 0.5 | by_setup$wr_hi < 0.5)
+dev <- abs(by_setup$p1_win_rate - 0.5)
+frac_5545 <- mean(dev >= 0.05)  # 55:45 or worse
+frac_5248 <- mean(dev >= 0.02)  # 52:48 or worse
+max_bias <- max(dev)
+
 # ── Committed per-setup table ────────────────────────────────────────────────
 fairness_by_setup <- by_setup %>%
   transmute(
@@ -253,6 +268,15 @@ cat(sprintf(
   min(by_setup$p1_win_rate),
   max(by_setup$p1_win_rate),
   sd(by_setup$p1_win_rate)
+))
+cat(sprintf(
+  "per-setup seat bias: spread is %.1fx sampling noise (obs sd %.4f vs fair se %.4f)\n",
+  signal_ratio, setup_wr_sd, fair_se
+))
+cat(sprintf(
+  "  setups with real bias (95%% CI excludes 0.5): %d/%d; %.0f%% >= 55:45, %.0f%% >= 52:48; worst %.0f:%.0f\n",
+  real_bias_setups, nrow(by_setup), 100 * frac_5545, 100 * frac_5248,
+  100 * (0.5 + max_bias), 100 * (0.5 - max_bias)
 ))
 cat(sprintf("\nVERDICT: %s\n", verdict))
 cat(sprintf(
