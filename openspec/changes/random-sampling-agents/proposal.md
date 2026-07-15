@@ -1,0 +1,31 @@
+## Why
+
+The uniform random agent (already implemented) serves only as a trivial baseline. To support meaningful benchmarking, heuristic development, and data collection, the engine needs biased sampling agents that prefer game-relevant moves — cheaper patches, high-income patches, or patches with the best income-per-time-cost ratio. These are the lowest-cost agents that exhibit non-trivial strategy and provide a realistic baseline for future MCTS and heuristic agents.
+
+## What Changes
+
+- Add a `biased_random_agent` that selects legal moves by weighted sampling, where each `BuyPatch` move's weight is determined by a caller-supplied weight function; `Advance` receives a configurable advance weight (default `1.0`) passed at call time.
+- Provide three built-in weight functions:
+  - `weight_cheap`: prefers patches with lower button cost (weight = 1 / (cost + 1))
+  - `weight_income`: prefers patches with higher button income
+  - `weight_income_per_time`: prefers patches with better income-to-time-cost ratio
+- Expose an enum or tag type so the play driver and TUI can select a named bias strategy without depending on raw function pointers.
+- Extend the play driver to accept `--agent1`/`--agent2` per-player strategy arguments (defaulting to `random`), `--seed1`/`--seed2` per-player seed arguments (defaulting to `42`), and `--advance-weight <w>` to tune how strongly biased agents prefer the advance move (default `1.0`, must be strictly positive).
+- Add tests for each weight function, the weighted-sampling distribution, and advance-weight validation.
+
+## Capabilities
+
+### New Capabilities
+<!-- None: all new requirements extend existing domains -->
+
+### Modified Capabilities
+- `agents`: Extend with requirements for biased random selection, three built-in weight functions (`weight_cheap`, `weight_income`, `weight_income_per_time`), the `AgentStrategy` enum + `make_weight_fn` factory, and the unified `select_move` dispatch function.
+- `engine`: Extend play driver with `--agent1`/`--agent2` per-player strategy flags, `--seed1`/`--seed2` per-player seed flags, and `--advance-weight` for the advance move's sampling weight; make `--setup` optional (default `0`) so every argument has a default and a bare invocation runs a game; record `"agent_p0"`, `"agent_p1"`, `"seed_p0"`, `"seed_p1"`, `"advance_weight"` in the `game_start` NDJSON event, with the per-player seeds superseding (replacing) the single `seed` field.
+- `tui`: Extend launch screen to prompt for opponent strategy; add strategy name to frame header; extend `History` to store per-player RNG states for deterministic undo/redo.
+
+## Impact
+
+- New files: `cpp/agent_strategy.hpp` (enum + `make_weight_fn` factory), `cpp/agent.hpp` (`select_move` dispatch), `cpp/biased_random_agent.hpp`, `cpp/biased_random_agent.cpp`
+- Modified files: `cpp/play_driver.cpp` (add `--agent1`/`--agent2`/`--seed1`/`--seed2`/`--advance-weight` CLI arguments), `cpp/tui/launch.cpp` (add strategy prompt), `cpp/tui/display.hpp`/`cpp/tui/display.cpp` (header shows strategy), `cpp/tui/history.hpp` (per-player RNG states), `openspec/specs/agents/spec.md`, `openspec/specs/engine/spec.md`, `openspec/specs/tui/spec.md`, `docs/glossary.md`
+- No changes to game state or move generation; the only logging-format change is to `game_start` (new per-player agent/seed and advance-weight fields; the single `seed` field is replaced by `seed_p0`/`seed_p1`; the `circle` field from #26 is retained)
+- No new external dependencies
