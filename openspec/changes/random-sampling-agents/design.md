@@ -61,11 +61,11 @@ For biased strategies the advance weight competes directly with the `BuyPatch` w
 
 ## CLI Examples
 
-The following examples cover all supported play driver arguments. Defaults: `--seed1 42`, `--seed2 42`, `--agent1 random`, `--agent2 random`, `--setup 0`, `--advance-weight 1.0`, output to stdout.
+The following examples cover all supported play driver arguments. Every argument is optional. Defaults: `--seed1 42`, `--seed2 42`, `--agent1 random`, `--agent2 random`, `--setup 0`, `--advance-weight 1.0`, output to stdout.
 
 ```sh
-# Minimal: uniform random vs. uniform random, setup 0, seeds 42/42
-patchwork-play --setup 0
+# Minimal: no arguments — setup 0, seeds 42/42, uniform random vs. uniform random
+patchwork-play
 
 # Reproducible game with explicit seeds
 patchwork-play --setup 3 --seed1 1 --seed2 2
@@ -127,13 +127,15 @@ Opponent strategy [random/cheap/income/income-per-time, default random]: cheap
 
 ### Decision: `game_start` log composition and supersession of single `seed`
 
-**Chosen:** This change adds `agent_p0`, `agent_p1`, `seed_p0`, `seed_p1`, and `advance_weight` to the `game_start` NDJSON object. The per-player `seed_p0`/`seed_p1` fields **supersede** the single `seed` field of the baseline engine spec: with two independent RNG streams there is no longer a single game seed, so the play driver records one seed per player. A log line is therefore self-sufficient for exact replay (setup + both strategies + both seeds + advance weight).
+**Chosen:** This change expresses the full `game_start` shape as a **MODIFIED** of the "Game-start event is logged when a game begins" requirement (rather than a standalone ADDED requirement), so the archived spec has a single, self-consistent description of the event. The MODIFIED requirement adds `agent_p0`, `agent_p1`, `seed_p0`, `seed_p1`, and `advance_weight`, and drops the single `seed` field. The per-player `seed_p0`/`seed_p1` fields **supersede** the single `seed` field: with two independent RNG streams there is no longer a single game seed, so the play driver records one seed per player and no longer emits `seed`. A log line is therefore self-sufficient for exact replay (setup + circle + both strategies + both seeds + advance weight).
+
+Expressing this as a MODIFIED (not an ADDED that leaves the baseline `seed` field in place) is what the earlier standalone-ADDED form got wrong: the baseline requirement kept mandating `seed` while a separate requirement redefined the seeding, so the archived spec would have required both `seed` and `seed_p0`/`seed_p1`. The MODIFIED form resolves that contradiction. The same explicit-supersession pattern is used for the TUI `History` requirement.
 
 ### Decision: Cross-PR coordination with richer-logging (#26)
 
-The richer-logging change (#26) also modifies the `game_start` event — it adds a `circle` field (33-char patch arrangement) — and changes the logger signatures `log_game_start` / `log_move` to take a `const GameSetup&`. This change (#27) adds the agent/seed/advance-weight fields to the same `game_start` event.
+The richer-logging change (#26) also modifies the `game_start` event — it adds a `circle` field (33-char patch arrangement) — and changes the logger signatures `log_game_start` / `log_move` to take a `const GameSetup&`. **#26 has now been merged to `main`** (implementation and updated change artifacts); its OpenSpec change is still pending archive, so the baseline `engine/spec.md` retains the single-`seed` `game_start` until #26 is archived.
 
-**These two sets of `game_start` fields are additive and non-conflicting:** #26 contributes `circle`; #27 contributes `agent_p0`/`agent_p1`/`seed_p0`/`seed_p1`/`advance_weight` (and supersedes the single `seed`). The combined `log_game_start` signature must carry **both** the `const GameSetup&` parameter introduced by #26 **and** the agent-strategy / per-player-seed / advance-weight parameters introduced by #27. To avoid a churned, conflict-prone merge, **#26 should merge before #27** so that #27's implementation extends the already-`GameSetup&`-aware logger signature rather than racing it. This is a coordination note for implementation only; the delta specs of the two changes remain independent (orthogonal requirements on the same event).
+Because both #26 and #27 MODIFY the same "Game-start event is logged when a game begins" requirement, and OpenSpec's MODIFIED replaces the requirement wholesale, #27's MODIFIED **reproduces #26's `circle` field and its circle scenarios** so nothing is lost when the two changes are merged into the baseline. **#26 must be archived before #27**: archiving #26 first yields a baseline with `circle` + single `seed`, which #27's MODIFIED then rewrites to `circle` + per-player seeds. Archiving in the other order would let #26's MODIFIED clobber #27's per-player-seed fields. The combined `log_game_start` signature carries **both** the `const GameSetup&` parameter from #26 **and** the agent-strategy / per-player-seed / advance-weight parameters from #27.
 
 ## Risks / Trade-offs
 

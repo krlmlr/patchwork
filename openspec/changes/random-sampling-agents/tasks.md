@@ -21,11 +21,12 @@
 
 - [ ] 4.1 Add `--agent1 <strategy>` and `--agent2 <strategy>` argument parsing to `cpp/play_driver.cpp`, each defaulting to `"random"`
 - [ ] 4.2 Add `--seed1 <n>` and `--seed2 <n>` argument parsing, each defaulting to `42`; construct two independent `std::mt19937` instances seeded accordingly
-- [ ] 4.3 Add `--advance-weight <w>` argument parsing (default `1.0`); validate that the value is strictly positive on startup and exit non-zero with a stderr error if not
-- [ ] 4.4 Replace the hard-coded `random_move` calls in the play driver game loop with per-player `select_move(..., strategy_pN, advance_weight)` using the corresponding RNG instance
-- [ ] 4.5 Add `"agent_p0"`, `"agent_p1"`, `"seed_p0"`, `"seed_p1"`, `"advance_weight"` fields to the `game_start` NDJSON log event
-- [ ] 4.6 Update the `usage()` message to document the new `--agent1`, `--agent2`, `--seed1`, `--seed2`, `--advance-weight` flags
-- [ ] 4.7 Validate that an invalid `--agent1` or `--agent2` value prints an error to stderr and exits non-zero
+- [ ] 4.3 Make `--setup <id>` optional, defaulting to `0`; remove the "missing seed/setup is an error" handling so a bare `patchwork-play` invocation runs a complete game. A malformed value (non-numeric seed, non-numeric or out-of-range setup) still exits non-zero with a stderr usage message
+- [ ] 4.4 Add `--advance-weight <w>` argument parsing (default `1.0`); validate that the value is strictly positive on startup and exit non-zero with a stderr error if not
+- [ ] 4.5 Replace the hard-coded `random_move` calls in the play driver game loop with per-player `select_move(..., strategy_pN, advance_weight)` using the corresponding RNG instance
+- [ ] 4.6 Change the `game_start` NDJSON event to add `"agent_p0"`, `"agent_p1"`, `"seed_p0"`, `"seed_p1"`, `"advance_weight"` fields and drop the single `"seed"` field (superseded by the per-player seeds); keep the `"circle"` field from #26
+- [ ] 4.7 Update the `usage()` message to document that all arguments are optional and the new `--agent1`, `--agent2`, `--seed1`, `--seed2`, `--advance-weight` flags
+- [ ] 4.8 Validate that an invalid `--agent1` or `--agent2` value prints an error to stderr and exits non-zero
 
 ## 5. TUI integration
 
@@ -47,6 +48,7 @@
 
 ## 7. Archive specs
 
+- [ ] 7.0 Archive the richer-logging change (#26) **before** this one, so the baseline `game_start` already carries `circle`; this change's `game_start` MODIFIED then rewrites the single `seed` to per-player `seed_p0`/`seed_p1` while preserving `circle` (see design.md cross-PR note)
 - [ ] 7.1 Update `openspec/specs/agents/spec.md` by merging the `agents` delta spec
-- [ ] 7.2 Update `openspec/specs/engine/spec.md` by merging the `engine` delta spec (`--agent1`/`--agent2`/`--seed1`/`--seed2`/`--advance-weight`, per-player NDJSON fields + `advance_weight`)
-- [ ] 7.3 Update `openspec/specs/tui/spec.md` by merging the `tui` delta spec (launch screen strategy prompt, header display, per-player History)
+- [ ] 7.2 Update `openspec/specs/engine/spec.md` by merging the `engine` delta spec (optional `--setup`; `--agent1`/`--agent2`/`--seed1`/`--seed2`/`--advance-weight`; `game_start` drops `seed`, adds per-player agent/seed fields + `advance_weight`, keeps `circle`; invalid-argument handling updated for optional args)
+- [ ] 7.3 Update `openspec/specs/tui/spec.md` by merging the `tui` delta spec (launch screen strategy prompt, header display, per-player History, updated History unit-test coverage)

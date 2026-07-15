@@ -67,6 +67,15 @@ After redo, the opponent agent SHALL be reseeded with the `rng_p1` state saved i
 - **WHEN** the player undoes and then makes a different player move (creating a new branch)
 - **THEN** the opponent's move after the new branch need not match any previously recorded opponent move (it depends on the RNG state at the branch point)
 
+### Requirement: History is unit tested
+
+All `History` behaviours SHALL have Catch2 unit tests covering construction, push, push-after-undo truncation, undo, redo, boundary no-ops, and — **superseding the single-`RngState` coverage of the prior requirement** — deterministic redo via the saved per-player `rng_p0` and `rng_p1` states, including that both streams are stored on `push` and restored independently on undo/redo.
+
+#### Scenario: Tests exist and pass
+
+- **WHEN** `meson test -C build` is run
+- **THEN** all history tests pass with exit code 0
+
 ## ADDED Requirements
 
 ### Requirement: TUI header displays the opponent agent strategy name
