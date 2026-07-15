@@ -15,7 +15,7 @@
 
 ## 3. Unified select_move dispatch
 
-- [ ] 3.1 Add `select_move(state, setup, rng, strategy, advance_weight)` to `cpp/agent_strategy.hpp` (or a new `cpp/agent.hpp`) that dispatches to `random_move` for `Random` (ignoring `advance_weight`) and to `biased_random_move` with the appropriate weight function and `advance_weight` for all other strategies
+- [ ] 3.1 Add `select_move(state, setup, rng, strategy, advance_weight)` to a new `cpp/agent.hpp` (not `cpp/agent_strategy.hpp`, which must stay includable without the agent implementations per the "headers compile independently" requirement) that dispatches to `random_move` for `Random` (ignoring `advance_weight`) and to `biased_random_move` with the appropriate weight function and `advance_weight` for all other strategies
 
 ## 4. Play driver extension
 
@@ -29,9 +29,9 @@
 
 ## 5. TUI integration
 
-- [ ] 5.1 Extend the launch screen in `cpp/tui_launch.cpp` to prompt for the opponent agent strategy (after the seed prompt); validate against `parse_strategy` and show an error listing valid names on invalid input
-- [ ] 5.2 Add the opponent strategy name to the TUI header section in `cpp/tui_display.cpp`
-- [ ] 5.3 Extend `HistoryEntry` in `cpp/tui_history.hpp` to store `rng_p0` and `rng_p1` separately; add `current_rng_p0()` and `current_rng_p1()` accessors
+- [ ] 5.1 Extend the launch screen in `cpp/tui/launch.cpp` to prompt for the opponent agent strategy (after the seed prompt); validate against `parse_strategy` and show an error listing valid names on invalid input
+- [ ] 5.2 Add the opponent strategy name to the TUI header section in `cpp/tui/display.cpp`
+- [ ] 5.3 Extend `HistoryEntry` in `cpp/tui/history.hpp` to store `rng_p0` and `rng_p1` separately; add `current_rng_p0()` and `current_rng_p1()` accessors
 - [ ] 5.4 Update the TUI game loop to pass `rng_p1` to the agent's `select_move` call and restore it from history on undo/redo
 
 ## 6. Tests

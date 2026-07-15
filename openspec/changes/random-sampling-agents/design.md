@@ -105,6 +105,10 @@ Opponent strategy [random/cheap/income/income-per-time, default random]: cheap
 
 **Chosen:** `1.0 / (cost + 1)` where `cost = patch.buttons`. Cost 0 → weight 1.0, cost 1 → 0.5, cost 10 → ~0.09. The `+1` prevents division by zero for free patches.
 
+### Decision: `weight_income` formula
+
+**Chosen:** `static_cast<double>(patch.income + 1)` where `income = patch.income`. Income 0 → weight 1.0, income 3 (the catalog maximum) → 4.0. The `+1` keeps zero-income patches reachable and guarantees a higher-income patch always outweighs a lower-income one.
+
 ### Decision: `weight_income_per_time` formula
 
 **Chosen:** `(income + 0.5) / time` where `income = patch.income` and `time = patch.time`. The `+0.5` additive smoothing avoids zero-weight for 0-income patches and keeps them reachable. Patches with `time == 0` do not exist in the catalog, so no guard is needed, but a static assert in tests will verify this.

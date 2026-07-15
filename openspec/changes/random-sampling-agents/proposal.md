@@ -10,7 +10,7 @@ The uniform random agent (already implemented) serves only as a trivial baseline
   - `weight_income`: prefers patches with higher button income
   - `weight_income_per_time`: prefers patches with better income-to-time-cost ratio
 - Expose an enum or tag type so the play driver and TUI can select a named bias strategy without depending on raw function pointers.
-- Extend the play driver to accept `--agent1`/`--agent2` per-player strategy arguments (defaulting to `random`) and `--advance-weight <w>` to tune how strongly biased agents prefer the advance move (default `1.0`, must be strictly positive).
+- Extend the play driver to accept `--agent1`/`--agent2` per-player strategy arguments (defaulting to `random`), `--seed1`/`--seed2` per-player seed arguments (defaulting to `42`), and `--advance-weight <w>` to tune how strongly biased agents prefer the advance move (default `1.0`, must be strictly positive).
 - Add tests for each weight function, the weighted-sampling distribution, and advance-weight validation.
 
 ## Capabilities
@@ -25,7 +25,7 @@ The uniform random agent (already implemented) serves only as a trivial baseline
 
 ## Impact
 
-- New files: `cpp/biased_random_agent.hpp`, `cpp/biased_random_agent.cpp`
-- Modified files: `cpp/play_driver.cpp` (add `--agent1`/`--agent2`/`--seed1`/`--seed2`/`--advance-weight` CLI arguments), `cpp/tui_launch.cpp` (add strategy prompt), `cpp/tui_display.hpp` (header shows strategy), `cpp/tui_history.hpp` (per-player RNG states), `openspec/specs/agents/spec.md`, `openspec/specs/engine/spec.md`, `openspec/specs/tui/spec.md`, `docs/glossary.md`
+- New files: `cpp/agent_strategy.hpp` (enum + `make_weight_fn` factory), `cpp/agent.hpp` (`select_move` dispatch), `cpp/biased_random_agent.hpp`, `cpp/biased_random_agent.cpp`
+- Modified files: `cpp/play_driver.cpp` (add `--agent1`/`--agent2`/`--seed1`/`--seed2`/`--advance-weight` CLI arguments), `cpp/tui/launch.cpp` (add strategy prompt), `cpp/tui/display.hpp`/`cpp/tui/display.cpp` (header shows strategy), `cpp/tui/history.hpp` (per-player RNG states), `openspec/specs/agents/spec.md`, `openspec/specs/engine/spec.md`, `openspec/specs/tui/spec.md`, `docs/glossary.md`
 - No changes to game state, move generation, or logging formats beyond the new `game_start` fields
 - No new external dependencies
