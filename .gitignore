@@ -3,3 +3,6 @@
 /.cache/
 *.o
 *.so
+
+# Regenerable batch datasets (committed outputs are the CSV + plots only)
+/analysis/output/*.ndjson

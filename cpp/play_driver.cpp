@@ -1,16 +1,10 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <random>
 #include <string>
 
-#include "game_logger.hpp"
+#include "game_loop.hpp"
 #include "game_setups.hpp"
-#include "move_application.hpp"
-#include "move_generation.hpp"
-#include "random_agent.hpp"
-#include "simplified_game_state.hpp"
-#include "terminal_and_scoring.hpp"
 
 namespace {
 
@@ -59,8 +53,6 @@ int main(int argc, char** argv) {
     }
 
     auto setup = patchwork::make_setup(setup_id);
-    std::mt19937 rng(static_cast<unsigned>(seed));
-    patchwork::SimplifiedGameState state;
 
     std::ofstream fout;
     if (!output_file.empty()) {
@@ -72,17 +64,6 @@ int main(int argc, char** argv) {
     }
     std::ostream& out = output_file.empty() ? std::cout : fout;
 
-    patchwork::log_game_start(out, seed, setup_id, state, setup);
-
-    int ply = 0;
-    while (!patchwork::is_terminal(state)) {
-        int player = state.active_player();
-        patchwork::Move mv = patchwork::random_move(state, setup, rng);
-        state = patchwork::apply_move(state, mv, setup);
-        patchwork::log_move(out, ply, player, mv, state, setup);
-        ++ply;
-    }
-
-    patchwork::log_game_end(out, state);
+    patchwork::play_game(setup, setup_id, seed, &out);
     return 0;
 }

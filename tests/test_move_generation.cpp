@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include "move_generation.hpp"
+#include "move_application.hpp"
 #include "game_setups.hpp"
+#include "generated/patches.hpp"
 #include "simplified_game_state.hpp"
 
 using namespace patchwork;
@@ -90,4 +92,42 @@ TEST_CASE("legal_moves: Advance present when no patches affordable", "[move_gene
     auto moves = legal_moves(state, setup);
     REQUIRE(moves.size() == 1);
     REQUIRE(std::holds_alternative<Advance>(moves[0]));
+}
+
+TEST_CASE("legal_moves excludes patches that do not fit on the board", "[move_generation]") {
+    auto setup = make_setup(0);
+    SimplifiedGameState state;
+    state.player(0).set_buttons(127);  // affordable regardless of cost
+
+    // Leave room for only a single cell: any patch larger than 1 cell must be
+    // excluded even though it is affordable.
+    state.player(0).set_free_spaces(1);
+    auto moves = legal_moves(state, setup);
+    for (const auto& m : moves) {
+        if (std::holds_alternative<BuyPatch>(m)) {
+            int id = std::get<BuyPatch>(m).patch_index;
+            REQUIRE(kPatches[static_cast<std::size_t>(id)].num_cells <= 1);
+        }
+    }
+
+    // With zero free spaces no patch fits, so only Advance is legal.
+    state.player(0).set_free_spaces(0);
+    auto none = legal_moves(state, setup);
+    REQUIRE(none.size() == 1);
+    REQUIRE(std::holds_alternative<Advance>(none[0]));
+}
+
+TEST_CASE("applying only legal moves never underflows free spaces", "[move_generation]") {
+    // Regression: random play used to buy patches that did not fit, driving
+    // free_spaces below zero. Every move returned by legal_moves must keep
+    // free_spaces within [0, 81] after application.
+    auto setup = make_setup(0);
+    SimplifiedGameState state;
+    state.player(0).set_buttons(50);
+    state.player(0).set_free_spaces(3);  // tight board
+    for (const auto& m : legal_moves(state, setup)) {
+        auto next = apply_move(state, m, setup);
+        REQUIRE(next.player(0).free_spaces() >= 0);
+        REQUIRE(next.player(0).free_spaces() <= 81);
+    }
 }
