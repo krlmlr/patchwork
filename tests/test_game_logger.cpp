@@ -18,27 +18,46 @@ TEST_CASE("log_game_start: well-formed JSON with event field", "[game_logger]") 
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 42, 7, state, setup);
+    log_game_start(oss, 7, state, setup, "random", "random", 42, 42, 1.0);
     auto line = oss.str();
     REQUIRE(line.back() == '\n');
     REQUIRE(contains(line, R"("event":"game_start")"));
 }
 
-TEST_CASE("log_game_start: records seed and setup_id", "[game_logger]") {
+TEST_CASE("log_game_start: records per-player seeds and setup_id, no single seed",
+          "[game_logger]") {
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 42, 7, state, setup);
+    log_game_start(oss, 7, state, setup, "income", "cheap", 42, 99, 1.5);
     auto line = oss.str();
-    REQUIRE(contains(line, R"("seed":42)"));
     REQUIRE(contains(line, R"("setup_id":7)"));
+    REQUIRE(contains(line, R"("agent_p0":"income")"));
+    REQUIRE(contains(line, R"("agent_p1":"cheap")"));
+    REQUIRE(contains(line, R"("seed_p0":42)"));
+    REQUIRE(contains(line, R"("seed_p1":99)"));
+    REQUIRE(contains(line, R"("advance_weight":1.5)"));
+    // The single-seed field is superseded by the per-player seeds.
+    REQUIRE_FALSE(contains(line, R"("seed":)"));
+}
+
+TEST_CASE("log_game_start: default advance_weight serialises with a decimal point",
+          "[game_logger]") {
+    SimplifiedGameState state;
+    GameSetup setup = make_setup(0);
+    std::ostringstream oss;
+    log_game_start(oss, 0, state, setup, "random", "random", 42, 42, 1.0);
+    auto line = oss.str();
+    REQUIRE(contains(line, R"("advance_weight":1.0)"));
+    REQUIRE(contains(line, R"("agent_p0":"random")"));
+    REQUIRE(contains(line, R"("agent_p1":"random")"));
 }
 
 TEST_CASE("log_game_start: circle string is 33 characters", "[game_logger]") {
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 1, 0, state, setup);
+    log_game_start(oss, 0, state, setup, "random", "random", 1, 1, 1.0);
     auto line = oss.str();
     // Find "circle":"..." and check value length
     auto pos = line.find(R"("circle":")");
@@ -53,7 +72,7 @@ TEST_CASE("log_game_start: circle string ends with '2' (neutral token convention
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 1, 0, state, setup);
+    log_game_start(oss, 0, state, setup, "random", "random", 1, 1, 1.0);
     auto line = oss.str();
     auto pos = line.find(R"("circle":")");
     REQUIRE(pos != std::string::npos);
@@ -68,7 +87,7 @@ TEST_CASE("log_game_start: circle encodes patch names not IDs", "[game_logger]")
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 1, 0, state, setup);
+    log_game_start(oss, 0, state, setup, "random", "random", 1, 1, 1.0);
     auto line = oss.str();
     // Each character in the circle string must be a valid patch name from kPatches
     auto pos = line.find(R"("circle":")");
@@ -252,7 +271,7 @@ TEST_CASE("log_game_start: each line is independently parseable JSON object", "[
     SimplifiedGameState state;
     GameSetup setup = make_setup(0);
     std::ostringstream oss;
-    log_game_start(oss, 1, 0, state, setup);
+    log_game_start(oss, 0, state, setup, "random", "random", 1, 1, 1.0);
     auto line = oss.str();
     // Remove trailing newline and check it starts with { and ends with }
     auto trimmed = line.substr(0, line.size() - 1);

@@ -6,6 +6,7 @@ patchwork_lib = static_library(
   'move_application.cpp',
   'game_logger.cpp',
   'random_agent.cpp',
+  'biased_random_agent.cpp',
   'game_loop.cpp',
   'setup_range.cpp',
 )

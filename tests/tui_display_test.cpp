@@ -2,11 +2,17 @@
 #include "tui/display.hpp"
 #include "simplified_game_state.hpp"
 #include "game_setup.hpp"
+#include "game_setups.hpp"
+
+#include <string>
 
 using patchwork::SimplifiedGameState;
+using patchwork::make_setup;
+using patchwork::tui::DisplayConfig;
 using patchwork::tui::LogState;
 using patchwork::tui::NdjsonState;
 using patchwork::tui::append_log;
+using patchwork::tui::render_frame_to_string;
 using patchwork::tui::ndjson_toggle_minimize;
 using patchwork::tui::ndjson_maximize;
 using patchwork::tui::ndjson_semi_maximize;
@@ -89,4 +95,22 @@ TEST_CASE("ndjson_decr_lines: clamped at 0", "[tui_display]") {
     s.height = 0;
     ndjson_decr_lines(s);
     REQUIRE(s.height == 0);
+}
+
+// ── Header displays opponent strategy name ────────────────────────────────
+
+TEST_CASE("render_frame header shows the opponent strategy name", "[tui_display]") {
+    SimplifiedGameState state;
+    LogState log;
+    NdjsonState ndjson;
+    auto setup = make_setup(0);
+
+    DisplayConfig cfg;
+    cfg.width = 80;
+    cfg.height = 24;
+    cfg.color_enabled = false;
+    cfg.opponent_strategy = "income";
+
+    std::string frame = render_frame_to_string(state, setup, log, ndjson, cfg);
+    REQUIRE(frame.find("income") != std::string::npos);
 }
