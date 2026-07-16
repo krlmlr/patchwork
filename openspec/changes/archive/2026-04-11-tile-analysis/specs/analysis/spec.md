@@ -33,9 +33,9 @@ Circumference equals perimeter for grid-cell shapes: both count exposed cell edg
 
 ### Requirement: Patch gain model is computed for every patch at all positions
 
-The analysis script SHALL compute patch gain for each patch at all time-track positions 0–53 and at representative positions for each payout band (0–4, 5–10, 11–16, 17–22, 23–28, 29–34, 35–40, 41–46, 47–52, 53). **Placement gain** = 2 × cells − button cost. **Projected income at pos** = button income × `reachable_payouts(pos)`. **Total patch gain at pos** = placement gain + projected income at pos. **Gain per time cost at pos** = total patch gain at pos / time cost. Patches with `time == 0` SHALL be excluded from the per-time-cost metric. These definitions match the canonical **patch gain** in `docs/glossary.md`.
+The analysis script SHALL compute patch gain for each patch at all time-track positions 0–53 and at representative positions for each payout band (0–4, 5–10, 11–16, 17–22, 23–28, 29–34, 35–40, 41–46, 47–52, 53). **Placement gain** = 2 × cells − button cost. **Projected income at pos** = button income × `reachable_payouts(pos)`. **Total gain at pos** = placement gain + projected income at pos. **Gain per time cost at pos** = total gain at pos / time cost. Patches with `time == 0` SHALL be excluded from the per-time-cost metric.
 
-`reachable_payouts(pos)` counts how many of the nine button-income spaces (also called payout spaces — time positions 5, 11, 17, 23, 29, 35, 41, 47, 53, the same in both the simplified engine and the full game) are strictly greater than `pos`.
+`reachable_payouts(pos)` counts how many of the nine payout spaces (time positions 5, 11, 17, 23, 29, 35, 41, 47, 53) are strictly greater than `pos`.
 
 #### Scenario: Reachable payouts at key positions
 
