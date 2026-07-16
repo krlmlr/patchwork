@@ -4,5 +4,6 @@
 *.o
 *.so
 
-# Regenerable batch datasets (committed outputs are the CSV + plots only)
+# Regenerable batch datasets and caches (committed outputs are the CSV + plots only)
 /analysis/output/*.ndjson
+/analysis/output/*.parquet

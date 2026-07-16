@@ -40,8 +40,10 @@
 - [x] 5.2 Run `openspec validate batch-fairness-runner` and resolve any issues
 - [ ] 5.3 Fold the delta specs into `openspec/specs/engine/spec.md` and `openspec/specs/analysis/spec.md` at archive time (handled by `/opsx:archive`)
 
-## 6. DuckDB JSON extension (pending)
+## 6. Native DuckDB JSON ingest via duckplyr
 
-- [ ] 6.1 Make the DuckDB `json` extension available offline — its autoload/`INSTALL` fetch to `wrapdb`/extension repos is blocked by the network policy, so the analysis currently reads NDJSON as VARCHAR lines and pulls fields with core `regexp_extract`. Options: add `duckdb`'s extension download host to the environment allow-list and pre-install into a persistent `DUCKDB_EXTENSION_DIRECTORY`, or vendor the `json.duckdb_extension` for the pinned DuckDB version.
-- [ ] 6.2 Once the extension installs and loads, switch `analysis/fairness_analysis.R` ingest to native `read_json_auto(..., format='newline_delimited')` and drop the regex-extraction fallback (simpler, and robust to field order / nested fields).
-- [ ] 6.3 Document the extension install step in the toolchain/setup (devcontainer + `scripts/install-tools.sh` / CI) so a fresh checkout has it, and note the `duckdb` R package dependency in `DESCRIPTION`.
+- [x] 6.1 Confirmed an explicit `INSTALL json` reaches `extensions.duckdb.org` and succeeds in this environment (the earlier failure was autoload not fetching, not a blocked host). Ingest now installs + loads the extension unconditionally.
+- [x] 6.2 Switch `analysis/fairness_analysis.R` ingest to native reading via `duckplyr` (`read_json_duckdb` / `read_parquet_duckdb`) with prudence `"stingy"`; push all aggregation into DuckDB and collect only the small result tables. Dropped the `regexp_extract`-over-VARCHAR fallback.
+- [x] 6.3 One-time NDJSON → Parquet conversion (cached; rebuilt only when stale) via `duckplyr::compute_parquet`; subsequent runs read the Parquet cache.
+- [x] 6.4 Note the `duckplyr` / `ggplot2` analysis dependencies in `DESCRIPTION`; gitignore the Parquet cache.
+- [ ] 6.5 Document the DuckDB `json` extension install in the toolchain/setup (devcontainer + `scripts/install-tools.sh` / CI) and pin a persistent `DUCKDB_EXTENSION_DIRECTORY` so a fresh checkout/CI runner installs it once instead of per session.

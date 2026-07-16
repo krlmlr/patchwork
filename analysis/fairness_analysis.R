@@ -15,20 +15,25 @@
 #           output = analysis/output/
 #
 # R package dependencies beyond DESCRIPTION (Imports: yaml):
-#   duckdb   — in-process database that reads the NDJSON and extracts fields
+#   duckplyr — dplyr backend on DuckDB; reads NDJSON/Parquet and runs the
+#              aggregation in-database
 #   ggplot2  — plots
-#   dplyr    — per-setup aggregation
-# All are available in the project's PPM-backed toolchain.
+# Both are available in the project's PPM-backed toolchain.
 #
-# NDJSON is read entirely inside DuckDB: each line is scanned as one VARCHAR and
-# the game_summary fields are pulled out with core regexp_extract. This avoids
-# the DuckDB json extension (which needs network access to install) and scales
-# to tens of millions of records (10M rows in ~5s vs minutes for a row-by-row
-# JSON parse in R).
+# Data flow — as much computation as possible is pushed into DuckDB via duckplyr:
+#   * The DuckDB `json` extension is installed and loaded (INSTALL then LOAD).
+#   * The NDJSON is converted once to a typed Parquet cache (skipped when the
+#     cache is newer than the NDJSON); re-runs read the Parquet directly.
+#   * Frames use prudence = "stingy", so nothing is materialised into R
+#     implicitly: every aggregate is computed in DuckDB and only the small
+#     result tables (1 overall row, one row per setup, one row per margin bin)
+#     are pulled back with collect(). The 10M per-game rows never enter R.
+#   * Variance is derived from sd() (which duckplyr translates) because var()
+#     does not translate and the dd$ escape hatch is absent in duckplyr 1.2.1.
 
 suppressWarnings(suppressMessages({
   pkgload::load_all(quiet = TRUE)
-  library(duckdb)
+  library(duckplyr)
   library(dplyr)
   library(ggplot2)
 }))
@@ -46,88 +51,102 @@ if (!file.exists(input_path)) {
   stop(sprintf("batch summary file not found: %s", input_path))
 }
 
-# ── Ingest into DuckDB ───────────────────────────────────────────────────────
-# Read each NDJSON line as a single VARCHAR (delimiter = a byte that never
-# appears in the data, quoting disabled), keep only game_summary records, and
-# extract each field with DuckDB's core regexp_extract. The per-game score
-# margin (P1 − P0) is derived in SQL.
-con <- dbConnect(duckdb::duckdb())
-on.exit(dbDisconnect(con, shutdown = TRUE), add = TRUE)
+# ── DuckDB json extension: unconditional INSTALL, then LOAD ───────────────────
+duckplyr::db_exec("INSTALL json;")
+duckplyr::db_exec("LOAD json;")
 
-field <- function(key, sign = "-?") {
-  sprintf(
-    "CAST(regexp_extract(line, %s, 1) AS BIGINT) AS %s",
-    dbQuoteString(con, sprintf('"%s":(%s[0-9]+)', key, sign)), key
-  )
+# ── One-time NDJSON -> Parquet conversion (cached) ────────────────────────────
+# Read the NDJSON natively, keep only game_summary records, project the columns
+# we need plus the derived margin, and write a typed Parquet cache. The cache is
+# rebuilt only when it is missing or older than the NDJSON input.
+parquet_path <- file.path(
+  output_dir,
+  paste0(tools::file_path_sans_ext(basename(input_path)), ".parquet")
+)
+stale <- !file.exists(parquet_path) ||
+  file.mtime(parquet_path) < file.mtime(input_path)
+if (stale) {
+  message("converting NDJSON -> Parquet cache: ", parquet_path)
+  read_json_duckdb(
+    input_path,
+    prudence = "stingy",
+    options = list(format = "newline_delimited")
+  ) |>
+    filter(event == "game_summary") |>
+    transmute(
+      setup_id,
+      seed,
+      score_p0,
+      score_p1,
+      winner,
+      plies,
+      margin = score_p1 - score_p0
+    ) |>
+    compute_parquet(parquet_path)
+  invisible(NULL)
 }
-read_lines_sql <- sprintf(
-  "read_csv(%s, columns={'line': 'VARCHAR'}, delim=%s, header=false, quote=%s)",
-  dbQuoteString(con, normalizePath(input_path)),
-  dbQuoteString(con, "\a"),  # bell byte — never present in the NDJSON
-  dbQuoteString(con, "")
-)
-inner_sql <- sprintf(
-  "SELECT %s FROM %s WHERE line LIKE %s",
-  paste(
-    field("setup_id"), field("seed", sign = ""), field("score_p0"),
-    field("score_p1"), field("winner"), field("plies", sign = ""),
-    sep = ", "
-  ),
-  read_lines_sql,
-  dbQuoteString(con, "%\"event\":\"game_summary\"%")
-)
-games <- dbGetQuery(con, sprintf(
-  "SELECT setup_id, seed, score_p0, score_p1, winner, plies,
-          (score_p1 - score_p0) AS margin
-   FROM (%s) s
-   ORDER BY setup_id, seed",
-  inner_sql
-))
 
-n_games <- nrow(games)
+games <- read_parquet_duckdb(parquet_path, prudence = "stingy")
+
+# ── Aggregates computed in DuckDB; only small tables come back to R ───────────
+overall <- games |>
+  summarise(
+    n = n(),
+    p1_wins = sum(winner == 1L),
+    margin_mean = mean(margin),
+    margin_sd = sd(margin)
+  ) |>
+  collect()
+
+n_games <- overall$n
 if (n_games == 0) {
   stop("no games found in batch summary")
 }
 
+by_setup <- games |>
+  summarise(
+    n_games = n(),
+    p1_wins = sum(winner == 1L),
+    mean_margin = mean(margin),
+    sd_margin = sd(margin),
+    .by = setup_id
+  ) |>
+  arrange(setup_id) |>
+  collect() |>
+  mutate(
+    p1_win_rate = p1_wins / n_games,
+    var_margin = sd_margin^2
+  )
+
+# Score-margin histogram, binned in DuckDB (integer margins -> a few hundred
+# rows) rather than pulling 10M values into R.
+margin_hist <- games |>
+  summarise(n = n(), .by = margin) |>
+  arrange(margin) |>
+  collect()
+
 # ── First-player advantage: win rate + binomial CI, mean margin + CI ─────────
-p1_wins <- sum(games$winner == 1L)
-wr <- binom.test(p1_wins, n_games, p = 0.5)
+wr <- binom.test(overall$p1_wins, n_games, p = 0.5)
 p1_win_rate <- unname(wr$estimate)
 wr_ci <- wr$conf.int
 
-margin_mean <- mean(games$margin)
-margin_tt <- t.test(games$margin, mu = 0)
-margin_ci <- margin_tt$conf.int
+margin_mean <- overall$margin_mean
+margin_sd <- overall$margin_sd
+margin_ci <- margin_mean +
+  c(-1, 1) * qt(0.975, df = n_games - 1) * margin_sd / sqrt(n_games)
 
 # ── Variance decomposition: between-setup vs within-setup ────────────────────
-# Total variance of the margin splits into the variance of per-setup mean
-# margins (between) and the mean of per-setup variances (within). Uses the
-# population identity Var(X) = Var(E[X|g]) + E[Var(X|g)] with n-weighting.
-by_setup <- games %>%
-  group_by(setup_id) %>%
-  summarise(
-    n_games = n(),
-    p1_win_rate = mean(winner == 1L),
-    mean_margin = mean(margin),
-    var_margin = if (n() > 1) var(margin) else 0,
-    .groups = "drop"
-  )
-
-grand_mean <- margin_mean
+# Var(margin) = Var(E[margin | setup]) + E[Var(margin | setup)], n-weighted.
 w <- by_setup$n_games / n_games
-between_var <- sum(w * (by_setup$mean_margin - grand_mean)^2)
+between_var <- sum(w * (by_setup$mean_margin - margin_mean)^2)
 within_var <- sum(w * by_setup$var_margin)
 total_var <- between_var + within_var
 between_share <- if (total_var > 0) between_var / total_var else 0
 within_share <- if (total_var > 0) within_var / total_var else 0
 
-# Per-setup win-rate CIs for the committed table.
+# ── Per-setup win-rate CIs (small table, computed in R) ───────────────────────
 setup_ci <- lapply(seq_len(nrow(by_setup)), function(i) {
-  bt <- binom.test(
-    round(by_setup$p1_win_rate[i] * by_setup$n_games[i]),
-    by_setup$n_games[i],
-    p = 0.5
-  )
+  bt <- binom.test(by_setup$p1_wins[i], by_setup$n_games[i], p = 0.5)
   data.frame(wr_lo = bt$conf.int[1], wr_hi = bt$conf.int[2])
 })
 setup_ci <- do.call(rbind, setup_ci)
@@ -137,20 +156,17 @@ by_setup$wr_hi <- setup_ci$wr_hi
 # ── Per-setup seat bias: is the spread real, and how large? ───────────────────
 # The grand-average win rate can sit at ~0.5 while individual setups are heavily
 # seat-biased, because per-setup first-mover advantages cancel across setups.
-# Compare the observed spread of per-setup win rates against the sampling spread
-# expected if every setup were truly fair, and count how many setups carry a
-# statistically real bias (95% CI excluding 0.5).
 setup_wr_sd <- sd(by_setup$p1_win_rate)
 fair_se <- sqrt(0.25 / stats::median(by_setup$n_games))
 signal_ratio <- if (fair_se > 0) setup_wr_sd / fair_se else NA_real_
 real_bias_setups <- sum(by_setup$wr_lo > 0.5 | by_setup$wr_hi < 0.5)
 dev <- abs(by_setup$p1_win_rate - 0.5)
-frac_5545 <- mean(dev >= 0.05)  # 55:45 or worse
-frac_5248 <- mean(dev >= 0.02)  # 52:48 or worse
+frac_5545 <- mean(dev >= 0.05) # 55:45 or worse
+frac_5248 <- mean(dev >= 0.02) # 52:48 or worse
 max_bias <- max(dev)
 
 # ── Committed per-setup table ────────────────────────────────────────────────
-fairness_by_setup <- by_setup %>%
+fairness_by_setup <- by_setup |>
   transmute(
     setup_id,
     n_games,
@@ -158,14 +174,14 @@ fairness_by_setup <- by_setup %>%
     wr_ci_lo = wr_lo,
     wr_ci_hi = wr_hi,
     mean_margin
-  ) %>%
+  ) |>
   arrange(setup_id)
 csv_path <- file.path(output_dir, "fairness_by_setup.csv")
 write.csv(fairness_by_setup, csv_path, row.names = FALSE)
 
 # ── Plots ─────────────────────────────────────────────────────────────────────
 # Per-setup P1 win rate with CI, sorted; reference line at 0.5.
-plot_setup <- by_setup %>% arrange(p1_win_rate) %>% mutate(rank = row_number())
+plot_setup <- by_setup |> arrange(p1_win_rate) |> mutate(rank = row_number())
 p_wr <- ggplot(plot_setup, aes(x = rank, y = p1_win_rate)) +
   geom_hline(yintercept = 0.5, linetype = "dashed", colour = "grey40") +
   geom_errorbar(aes(ymin = wr_lo, ymax = wr_hi), width = 0, colour = "grey70") +
@@ -190,9 +206,9 @@ ggsave(
   dpi = 120
 )
 
-# Score-margin distribution across all games; reference line at 0.
-p_margin <- ggplot(games, aes(x = margin)) +
-  geom_histogram(binwidth = 1, fill = "#2c7fb8", colour = "white") +
+# Score-margin distribution from the DuckDB-binned counts.
+p_margin <- ggplot(margin_hist, aes(x = margin, y = n)) +
+  geom_col(fill = "#2c7fb8", width = 1) +
   geom_vline(xintercept = 0, linetype = "dashed", colour = "grey40") +
   geom_vline(xintercept = margin_mean, colour = "#d95f0e") +
   labs(
@@ -267,16 +283,22 @@ cat(sprintf(
   "per-setup win rate: min %.3f  max %.3f  sd %.4f\n",
   min(by_setup$p1_win_rate),
   max(by_setup$p1_win_rate),
-  sd(by_setup$p1_win_rate)
+  setup_wr_sd
 ))
 cat(sprintf(
   "per-setup seat bias: spread is %.1fx sampling noise (obs sd %.4f vs fair se %.4f)\n",
-  signal_ratio, setup_wr_sd, fair_se
+  signal_ratio,
+  setup_wr_sd,
+  fair_se
 ))
 cat(sprintf(
   "  setups with real bias (95%% CI excludes 0.5): %d/%d; %.0f%% >= 55:45, %.0f%% >= 52:48; worst %.0f:%.0f\n",
-  real_bias_setups, nrow(by_setup), 100 * frac_5545, 100 * frac_5248,
-  100 * (0.5 + max_bias), 100 * (0.5 - max_bias)
+  real_bias_setups,
+  nrow(by_setup),
+  100 * frac_5545,
+  100 * frac_5248,
+  100 * (0.5 + max_bias),
+  100 * (0.5 - max_bias)
 ))
 cat(sprintf("\nVERDICT: %s\n", verdict))
 cat(sprintf(
@@ -288,9 +310,12 @@ cat(sprintf(
 # negligible bias still becomes significant, so report the magnitude too.
 cat(sprintf(
   "  effect size: P1 win rate %+.3f pp from 50%%; mean margin %+.4f pts (margin sd %.1f)\n",
-  100 * (p1_win_rate - 0.5), margin_mean, sd(games$margin)
+  100 * (p1_win_rate - 0.5),
+  margin_mean,
+  margin_sd
 ))
 cat("wrote:", csv_path, "\n")
+cat("wrote:", parquet_path, "(Parquet cache)\n")
 cat("wrote:", file.path(output_dir, "fairness_winrate_by_setup.png"), "\n")
 cat("wrote:", file.path(output_dir, "fairness_margin_distribution.png"), "\n")
 cat("=====================================================\n")

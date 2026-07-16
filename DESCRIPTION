@@ -8,6 +8,8 @@ License: MIT
 Imports:
     yaml
 Suggests:
+    duckplyr,
+    ggplot2,
     testthat
 Encoding: UTF-8
 Config/roxygen2/version: 7.3.3.9000

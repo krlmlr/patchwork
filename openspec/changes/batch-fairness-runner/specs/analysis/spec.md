@@ -2,7 +2,7 @@
 
 ### Requirement: Fairness analysis ingests batch summary logs via DuckDB
 
-The fairness analysis script at `analysis/fairness_analysis.R` SHALL call `pkgload::load_all()` at startup, read a batch `game_summary` NDJSON file into DuckDB, and expose a per-game table with columns `setup_id`, `seed`, `score_p0`, `score_p1`, `winner`, `plies`, and a derived `margin` = `score_p1 − score_p0`. The script SHALL document any R package dependencies beyond `DESCRIPTION` (at minimum `duckdb`) in a top-of-file comment block.
+The fairness analysis script at `analysis/fairness_analysis.R` SHALL call `pkgload::load_all()` at startup and ingest a batch `game_summary` NDJSON file into DuckDB (via `duckplyr`), exposing a per-game table with columns `setup_id`, `seed`, `score_p0`, `score_p1`, `winner`, `plies`, and a derived `margin` = `score_p1 − score_p0`. Ingestion SHALL install and load the DuckDB `json` extension, convert the NDJSON to a typed Parquet cache once (rebuilt only when the cache is missing or older than the NDJSON), and read subsequent runs from that cache. Frames SHALL use `duckplyr` prudence `"stingy"` so the per-game rows are never materialised into R; all aggregation SHALL be pushed into DuckDB and only the small result tables collected. The script SHALL document any R package dependencies beyond `DESCRIPTION` (at minimum `duckplyr`) in a top-of-file comment block.
 
 #### Scenario: Summary log is loaded
 
