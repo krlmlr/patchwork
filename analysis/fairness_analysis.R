@@ -28,8 +28,9 @@
 #     implicitly: every aggregate is computed in DuckDB and only the small
 #     result tables (1 overall row, one row per setup, one row per margin bin)
 #     are pulled back with collect(). The 10M per-game rows never enter R.
-#   * Variance is derived from sd() (which duckplyr translates) because var()
-#     does not translate and the dd$ escape hatch is absent in duckplyr 1.2.1.
+#   * dplyr's var() is not translated by duckplyr, so per-setup variance is
+#     computed in-database via the dd$ escape hatch (dd$var_samp), which passes
+#     the call straight to DuckDB. See vignette("duckdb", package = "duckplyr").
 
 suppressWarnings(suppressMessages({
   pkgload::load_all(quiet = TRUE)
@@ -108,14 +109,13 @@ by_setup <- games |>
     n_games = n(),
     p1_wins = sum(winner == 1L),
     mean_margin = mean(margin),
-    sd_margin = sd(margin),
+    var_margin = dd$var_samp(margin),
     .by = setup_id
   ) |>
   arrange(setup_id) |>
   collect() |>
   mutate(
-    p1_win_rate = p1_wins / n_games,
-    var_margin = sd_margin^2
+    p1_win_rate = p1_wins / n_games
   )
 
 # Score-margin histogram, binned in DuckDB (integer margins -> a few hundred
