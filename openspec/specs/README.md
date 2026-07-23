@@ -59,7 +59,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > The game loop and everything that makes a game run reproducibly end-to-end.
 
-[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed1`, `--seed2`, `--setup`, `--output`, `--agent1`, `--agent2`, `--advance-weight`), NDJSON event logging (game-start, move, game-end events), per-player agent strategy and seed plus advance weight recorded in `game_start`, and NDJSON format constraints.
+[`engine/spec.md`](engine/spec.md) covers: play driver executable (`--seed1`, `--seed2`, `--setup`, `--output`, `--agent1`, `--agent2`, `--advance-weight`), NDJSON event logging (game-start, move, game-end events), per-player agent strategy and seed plus advance weight recorded in `game_start`, NDJSON format constraints, and the single-process batch runner (grid of games, deterministic per-game seed derivation from a master seed, `game_summary` records with `--full` opt-out).
 
 ---
 
@@ -83,7 +83,7 @@ Eight domains cover the full project surface. Each new requirement belongs to ex
 
 > Offline analysis: R scripts, DuckDB queries, plots, and statistical tables produced from game logs or the patch catalog.
 
-[`analysis/spec.md`](analysis/spec.md) covers: shape feature extraction (cells, perimeter, density), patch gain model (placement gain + projected income, normalised by time cost), time-position-dependent patch gain curves, summary CSV, and plots.
+[`analysis/spec.md`](analysis/spec.md) covers: shape feature extraction (cells, perimeter, density), patch gain model (placement gain + projected income, normalised by time cost), time-position-dependent patch gain curves, summary CSV, and plots; plus fairness analysis of batch summary logs (DuckDB/`duckplyr` ingestion, first-player-advantage win-rate and margin confidence intervals, between-/within-setup variance decomposition, committed per-setup tables and plots).
 
 ---
 
