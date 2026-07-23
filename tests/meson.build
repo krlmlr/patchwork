@@ -77,6 +77,38 @@ test_random_agent = executable(
 )
 test('random_agent', test_random_agent)
 
+test_seed_util = executable(
+  'test_seed_util',
+  'test_seed_util.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('seed_util', test_seed_util)
+
+test_setup_range = executable(
+  'test_setup_range',
+  'test_setup_range.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('setup_range', test_setup_range)
+
+test_game_loop = executable(
+  'test_game_loop',
+  'test_game_loop.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('game_loop', test_game_loop)
+
+# End-to-end batch_driver checks driven through the built executables. Written
+# in R to match the project's tooling (R is already a CI dependency).
+rscript_prog = find_program('Rscript', required : false)
+if rscript_prog.found()
+  test(
+    'batch_cli',
+    rscript_prog,
+    args : [files('batch_cli_test.R'), batch_driver_exe, play_driver_exe],
+  )
+endif
+
 test_tui_history = executable(
   'test_tui_history',
   'tui_history_test.cpp',

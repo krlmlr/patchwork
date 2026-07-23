@@ -340,3 +340,19 @@ TEST_CASE("first_to_finish not overwritten when second player finishes", "[move_
     // p1 moves to 55 (opp+1=54+1=55), crosses 53. But opp (p0) was already >= 53.
     REQUIRE(next.first_to_finish() == 0);
 }
+
+TEST_CASE("leather patch award does not underflow free spaces on a full board",
+          "[move_application]") {
+    // Regression: crossing a leather-patch threshold with a full board (0 free
+    // spaces) must clamp at 0, not drive free_spaces negative.
+    auto setup = make_setup(0);
+    SimplifiedGameState state;
+    state.player(0).set_position(10);
+    state.player(0).set_free_spaces(0);
+    state.player(1).set_position(25);
+    state.set_next_player(0);  // player 0 is behind and active
+    // Advancing moves player 0 to 26, crossing the leather threshold at 26.
+    auto next = apply_move(state, Advance{}, setup);
+    REQUIRE(next.player(0).position() == 26);
+    REQUIRE(next.player(0).free_spaces() == 0);
+}

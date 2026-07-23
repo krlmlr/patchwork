@@ -6,6 +6,8 @@ patchwork_lib = static_library(
   'move_application.cpp',
   'game_logger.cpp',
   'random_agent.cpp',
+  'game_loop.cpp',
+  'setup_range.cpp',
 )
 
 patchwork_dep = declare_dependency(
@@ -13,9 +15,15 @@ patchwork_dep = declare_dependency(
   link_with : patchwork_lib,
 )
 
-executable(
+play_driver_exe = executable(
   'play_driver',
   'play_driver.cpp',
+  dependencies : [patchwork_dep],
+)
+
+batch_driver_exe = executable(
+  'batch_driver',
+  'batch_driver.cpp',
   dependencies : [patchwork_dep],
 )
 

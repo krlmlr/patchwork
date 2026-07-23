@@ -26,7 +26,11 @@ void apply_leather_patches(SimplifiedGameState& state, int player, int old_pos, 
                            int pre_pos_0, int pre_pos_1) {
     for (int t : kLeatherThresholds) {
         if (old_pos < t && new_pos >= t && pre_pos_0 < t && pre_pos_1 < t) {
-            state.player(player).set_free_spaces(state.player(player).free_spaces() - 1);
+            // A leather patch covers one cell. If the board is already full
+            // there is nowhere to place it, so free spaces stays at 0 rather
+            // than underflowing below zero.
+            state.player(player).set_free_spaces(
+                std::max(0, state.player(player).free_spaces() - 1));
         }
     }
 }

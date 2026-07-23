@@ -180,8 +180,9 @@ buy move.
 
 **legal move**
 A move that is valid in the current game state. A buy move is legal if the
-player has enough buttons and the patch is available; an advance move is always
-legal unless the game is terminal.
+player has enough buttons, the patch is available, and the patch fits on the
+board (its cell count does not exceed the player's free spaces); an advance move
+is always legal unless the game is terminal.
 
 **terminal state**
 A game state in which both players have reached or passed position 53 on the
@@ -196,6 +197,22 @@ it.
 An NDJSON file recording all moves, state transitions, and outcomes of a game.
 Used for analysis and reproducibility. Each `move` event includes `board value`,
 `projected income`, and `projected score` for the active player after the move.
+
+**batch runner**
+A driver that plays many games in a single process, sweeping a grid of
+`(setup, game_index)` combinations. Each game's seed is derived deterministically
+from a single master seed, so a whole batch replays identically. By default it
+emits one `game_summary` record per game; `--full` emits complete per-move logs.
+
+**game summary**
+A compact NDJSON record produced by the batch runner for one game: `setup_id`,
+`seed`, `score_p0`, `score_p1`, `winner`, and `plies`. The scores and winner
+carry the same meaning as the full log's `game_end` event.
+
+**master seed**
+The single seed a batch runner is given. Every game's agent seed is a pure
+deterministic function of `(master_seed, setup_id, game_index)`, independent of
+the batch's ordering or size, so any single game can be replayed on its own.
 
 **board value**
 A per-player, per-move metric equal to `buttons − 2 × free_spaces`. This is the
@@ -299,6 +316,28 @@ records for learning.
 **Elo rating**
 A relative skill ranking assigned to agents based on head-to-head game outcomes.
 Used to track agent improvement over training.
+
+**fairness study**
+An analysis over a large batch of games between two identical uniform-random
+agents that asks whether the game is *fair* (no structural first-player
+advantage) or *overly dependent on the starting state* (the dealt setup, rather
+than play, decides the outcome).
+
+**score margin**
+The signed difference `score_p1 − score_p0` for a game. Its mean over a batch
+measures first-player advantage (0 = balanced); its spread measures how much the
+outcome swings.
+
+**first-player advantage**
+A structural bias toward the player who moves first. With two identical agents it
+is measured directly: a P1 win rate or mean score margin that departs from
+50 % / 0 (beyond confidence intervals) indicates the rules + setup favour a seat.
+
+**variance decomposition**
+Splitting the total variance of the score margin into a between-setup component
+(variance of per-setup mean margins) and a within-setup component (mean of
+per-setup margin variances). A dominant between-setup share means the dealt setup
+decides the outcome; a dominant within-setup share means play (agent RNG) does.
 
 ---
 

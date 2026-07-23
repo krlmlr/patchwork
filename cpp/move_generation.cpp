@@ -12,6 +12,7 @@ std::vector<Move> legal_moves(const SimplifiedGameState& state, const GameSetup&
     std::vector<Move> moves;
     int active = state.active_player();
     int buttons = state.player(active).buttons();
+    int free_spaces = state.player(active).free_spaces();
     int marker = state.circle_marker();
 
     int found = 0;
@@ -20,7 +21,13 @@ std::vector<Move> legal_moves(const SimplifiedGameState& state, const GameSetup&
         int patch_id = static_cast<int>(setup.circle()[static_cast<std::size_t>(pos)]);
         if (state.patch_available(patch_id)) {
             ++found;
-            if (buttons >= kPatches[static_cast<std::size_t>(patch_id)].buttons) {
+            const auto& patch = kPatches[static_cast<std::size_t>(patch_id)];
+            // A patch is buyable only if the player can both afford it and fit
+            // it on the board. The simplified board tracks free spaces as a
+            // single count; a patch with more cells than free spaces cannot be
+            // placed, so buying it is not a legal move (and would otherwise
+            // underflow free_spaces).
+            if (buttons >= patch.buttons && free_spaces >= patch.num_cells) {
                 moves.push_back(BuyPatch{patch_id});
             }
         }
