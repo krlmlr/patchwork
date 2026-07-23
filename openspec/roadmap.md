@@ -14,6 +14,7 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 - **Tests from day one.** No change ships without tests.
 - **R for analysis.** Game logs (NDJSON → DuckDB) and data generation are R's domain.
 - **C++ first, Rust later.** Engine in C++23. A Rust reimplementation for learning and benchmarking is a future option, not a commitment.
+- **Evaluate over all starting positions.** Per #34, the outcome under random play is strongly setup-dependent: with two identical random agents the per-setup first-mover advantage ranges up to ~62:38 (95/100 setups show a statistically real bias), even though it nearly cancels in the grand average. Any agent evaluation MUST therefore aggregate over all starting positions (all setups), never a single one — a result on one setup says little about strength. Report per-setup spread, not just the mean.
 
 ---
 
@@ -124,6 +125,17 @@ Uwe Rosenberg's Patchwork as a case study for game engine development, modern C+
 - R analysis (NDJSON → DuckDB): win-rate binomial CIs, score-margin
   distributions, variance decomposition, per-setup win-rate spread; plots
   and tables
+- **Findings (PR #34, 100 setups × 100 000 games = 10M):** globally near-fair
+  — a negligible first-mover edge (P1 win rate 0.4972, ~0.28 pp). But
+  per-setup the game is strongly seat-dependent: per-setup win-rate spread is
+  ~23× sampling noise, 95/100 setups carry a statistically real bias, up to
+  ~62:38. Success therefore depends largely on the starting position; between-
+  setup vs within-setup variance is ~0.9 % / 99.1 % (single games are
+  luck-dominated, but the *mean* per setup is systematically biased).
+  → drives the "evaluate over all starting positions" principle above.
+- Rerunning with more games is cheap (~130k games/s) and safe to redo when
+  more setups/games are added; not expecting material change, only more
+  extreme per-setup outliers as the tails fill in.
 
 ---
 
