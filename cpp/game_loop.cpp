@@ -17,7 +17,10 @@ GameOutcome play_game(const GameSetup& setup, int setup_id, long long seed,
     SimplifiedGameState state;
 
     if (full_log != nullptr) {
-        log_game_start(*full_log, seed, setup_id, state, setup);
+        // Uniform self-play: both players use the random strategy driven by a
+        // single shared RNG stream, so both per-player seeds are the game seed
+        // and the advance weight is the default.
+        log_game_start(*full_log, setup_id, state, setup, "random", "random", seed, seed, 1.0);
     }
 
     int ply = 0;

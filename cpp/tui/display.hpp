@@ -26,6 +26,7 @@ struct DisplayConfig {
     int width{80};
     int height{24};
     bool color_enabled{true};
+    std::string opponent_strategy;  // opponent agent strategy name (empty = unset)
 };
 
 /// State for the in-frame event log pane.

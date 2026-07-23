@@ -56,8 +56,27 @@ LaunchConfig run_launch_screen() {
         std::printf("  Invalid input — enter a non-negative integer.\n");
     }
 
-    std::printf("\n  Starting game: setup %d, seed %llu\n\n", cfg.setup_index,
-                static_cast<unsigned long long>(cfg.seed));
+    // Opponent strategy.
+    for (;;) {
+        std::printf("  Opponent strategy [random/cheap/income/income-per-time, default random]: ");
+        std::fflush(stdout);
+        std::string line;
+        if (!std::getline(std::cin, line)) break;
+        if (line.empty()) {
+            cfg.strategy = AgentStrategy::Random;
+            break;
+        }
+        if (auto s = parse_strategy(line)) {
+            cfg.strategy = *s;
+            break;
+        }
+        std::printf(
+            "  Invalid strategy — choose one of: random, cheap, income, income-per-time.\n");
+    }
+
+    std::printf("\n  Starting game: setup %d, seed %llu, opponent %s\n\n", cfg.setup_index,
+                static_cast<unsigned long long>(cfg.seed),
+                std::string(strategy_name(cfg.strategy)).c_str());
     return cfg;
 }
 
