@@ -267,7 +267,9 @@ static void render_narrow(const SimplifiedGameState& state, const GameSetup& set
 
     // ── Top border.
     {
-        std::string left_txt = " PATCHWORK -- seed ? / setup 0 --";
+        std::string left_txt = cfg.opponent_strategy.empty()
+                                   ? " PATCHWORK -- seed ? / setup 0 --"
+                                   : " PATCHWORK -- vs " + cfg.opponent_strategy + " --";
         std::string right_txt =
             std::string(" ") + kArrow + " P" + char('1' + active) + " " + kBdr_H;
         // right_txt contains kArrow (3 bytes, 1 vis) and kBdr_H (3 bytes, 1 vis):
@@ -488,7 +490,9 @@ static void render_wide(const SimplifiedGameState& state, const GameSetup& setup
 
     // ── Top border: ┌─left─┬─Q1─┬─Q2─┬─event─▶P1─┐
     {
-        std::string left_txt = " PATCHWORK -- seed ? / setup 0 ";
+        std::string left_txt = cfg.opponent_strategy.empty()
+                                   ? " PATCHWORK -- seed ? / setup 0 "
+                                   : " PATCHWORK -- vs " + cfg.opponent_strategy + " ";
         std::string right_txt =
             std::string(" ") + kArrow + " P" + char('1' + active) + " " + kBdr_H;
         // right_txt contains kArrow (3B→1vis) and kBdr_H (3B→1vis): 4 extra bytes.
@@ -696,7 +700,7 @@ static void render_wide(const SimplifiedGameState& state, const GameSetup& setup
 
 DisplayConfig init_display(bool no_color_flag, int /*argc*/, char** /*argv*/) {
     DisplayConfig cfg;
-    struct winsize ws{};
+    struct winsize ws {};
     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
         cfg.width = static_cast<int>(ws.ws_col);
         cfg.height = static_cast<int>(ws.ws_row);

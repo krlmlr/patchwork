@@ -77,6 +77,27 @@ test_random_agent = executable(
 )
 test('random_agent', test_random_agent)
 
+test_biased_random_agent = executable(
+  'test_biased_random_agent',
+  'test_biased_random_agent.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('biased_random_agent', test_biased_random_agent)
+
+test_agent = executable(
+  'test_agent',
+  'test_agent.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('agent', test_agent)
+
+test_agent_headers_standalone = executable(
+  'test_agent_headers_standalone',
+  'test_agent_headers_standalone.cpp',
+  dependencies : [patchwork_dep, catch2_dep],
+)
+test('agent_headers_standalone', test_agent_headers_standalone)
+
 test_seed_util = executable(
   'test_seed_util',
   'test_seed_util.cpp',

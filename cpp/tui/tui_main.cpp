@@ -5,6 +5,8 @@
 #include <sstream>
 #include <variant>
 
+#include "../agent.hpp"
+#include "../agent_strategy.hpp"
 #include "../game_logger.hpp"
 #include "../game_setups.hpp"
 #include "../game_state.hpp"
@@ -12,7 +14,6 @@
 #include "../generated/patches.hpp"
 #include "../move_application.hpp"
 #include "../move_generation.hpp"
-#include "../random_agent.hpp"
 #include "../terminal_and_scoring.hpp"
 #include "display.hpp"
 #include "history.hpp"
@@ -41,14 +42,24 @@ int main(int argc, char** argv) {
     // Launch screen (cooked mode).
     LaunchConfig launch = run_launch_screen();
 
+    // Advance-weight for the opponent agent's biased sampling (the TUI uses the
+    // default; there is no launch prompt to tune it).
+    constexpr double kAdvanceWeight = 1.0;
+
+    // Show the opponent strategy name in the frame header.
+    cfg.opponent_strategy = std::string(strategy_name(launch.strategy));
+
     // Build game.
     GameSetup setup = GameSetup(kGameSetups[static_cast<std::size_t>(
         launch.setup_index % static_cast<int>(kNumGameSetups))]);
     SimplifiedGameState initial_state{};
-    RngState rng(static_cast<std::mt19937::result_type>(launch.seed));
+    // Player 0 is the human (its RNG stream is carried but unused); player 1 is
+    // the opponent agent seeded with the launch seed.
+    RngState initial_rng_p0(static_cast<std::mt19937::result_type>(launch.seed));
+    RngState initial_rng_p1(static_cast<std::mt19937::result_type>(launch.seed));
 
-    // Build history with initial state and RNG.
-    History history(initial_state, rng);
+    // Build history with initial state and both RNG streams.
+    History history(initial_state, initial_rng_p0, initial_rng_p1);
 
     // Log state.
     LogState log;
@@ -57,7 +68,9 @@ int main(int argc, char** argv) {
     // Log game-start to ndjson.
     {
         std::ostringstream oss;
-        log_game_start(oss, static_cast<long long>(launch.seed), launch.setup_index, initial_state, setup);
+        log_game_start(oss, launch.setup_index, initial_state, setup, "human",
+                       strategy_name(launch.strategy), static_cast<long long>(launch.seed),
+                       static_cast<long long>(launch.seed), kAdvanceWeight);
         append_ndjson(ndjson, oss.str());
     }
 
@@ -162,8 +175,10 @@ int main(int argc, char** argv) {
             }
         }
 
-        // Snapshot RNG before opponent move.
-        RngState rng_before = history.current_rng();
+        // Snapshot both RNG streams from the current history entry. Player 0
+        // (human) never consumes its stream; player 1 (opponent) does.
+        RngState rng_p0 = history.current_rng_p0();
+        RngState rng_p1 = history.current_rng_p1();
 
         // Apply player move.
         SimplifiedGameState new_state = apply_move(state, move, setup);
@@ -192,12 +207,13 @@ int main(int argc, char** argv) {
         ++ply;
 
         // Let CPU take all its consecutive turns (may be multiple if human advanced
-        // far ahead on the time track).  Restore RNG once before the CPU sequence
-        // so that redo can reproduce the identical CPU moves deterministically.
+        // far ahead on the time track).  The opponent's RNG stream (rng_p1) was
+        // snapshotted from the history entry above, so redo reproduces the
+        // identical CPU moves deterministically.
         if (!is_terminal(new_state)) {
-            rng = rng_before;
             while (!is_terminal(new_state) && new_state.active_player() != 0) {
-                Move opp_move = random_move(new_state, setup, rng);
+                Move opp_move =
+                    select_move(new_state, setup, rng_p1, launch.strategy, kAdvanceWeight);
                 SimplifiedGameState after_opp = apply_move(new_state, opp_move, setup);
                 {
                     std::ostringstream oss;
@@ -224,8 +240,8 @@ int main(int argc, char** argv) {
             }
         }
 
-        // Push new state + RNG snapshot + log snapshot to history.
-        history.push(new_state, rng, log.entries);
+        // Push new state + both RNG snapshots + log snapshot to history.
+        history.push(new_state, rng_p0, rng_p1, log.entries);
     }
 
     // Result summary.

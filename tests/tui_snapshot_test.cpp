@@ -303,7 +303,7 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
     LogState log{};
     NdjsonState ndjson{};
     ndjson.height = 3;  // fixed for reproducible snapshots
-    History history(state, agent_rng);
+    History history(state, agent_rng, agent_rng);
 
     // Display: 80 cols, 40 rows — taller terminal so more detail lines are shown.
     auto cfg = make_cfg_h(80, 40);
@@ -331,7 +331,7 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
             append_log(log, log_entry_advance(player_1idx));
         }
         state = apply_move(state, move, setup);
-        history.push(state, agent_rng_snap, log.entries);
+        history.push(state, agent_rng_snap, agent_rng_snap, log.entries);
         return true;
     };
 
@@ -347,20 +347,20 @@ TEST_CASE("Snapshot: full game sequence with undo/redo (seed=42, setup=0)",
     history.undo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    agent_rng       = history.current_rng();
+    agent_rng       = history.current_rng_p1();
     snap("undo1");              // step 11
 
     history.undo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    agent_rng       = history.current_rng();
+    agent_rng       = history.current_rng_p1();
     snap("undo2");              // step 12
 
     // Redo once.
     history.redo();
     state     = history.current_state();
     log.entries = history.current_log_entries();
-    agent_rng       = history.current_rng();
+    agent_rng       = history.current_rng_p1();
     snap("redo1");              // step 13
 
     // Continue to end of game.  The guard of 50 (> max game plies ~35) prevents
